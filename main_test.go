@@ -11,7 +11,7 @@ import (
 
 func TestSomemain(t *testing.T) {
 	// Example 1: Manual PMF creation
-	fmt.Println("=== Manual PMF Example ===")
+	t.Log("=== Manual PMF Example ===")
 	pmf1 := NewPMF()
 	// this means P(X=1) = 0.2, P(X=2) = 0.3, P(X=3) = 0.5
 	pmf1.Set(1, 0.2)
@@ -21,7 +21,7 @@ func TestSomemain(t *testing.T) {
 }
 
 func TestPMFRollingTwoDicesAndSum(t *testing.T) {
-	fmt.Println("=== PMF of Rolling Two Dice and Summing ===")
+	t.Log("=== PMF of Rolling Two Dice and Summing ===")
 	pmf := NewPMF()
 	dice1Sides := 6
 	dice2Sides := 6
@@ -41,10 +41,10 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 		return total
 	}()
 
-	fmt.Printf("Possible values when rolling two dice: %d\n", possibleValues)
-	fmt.Println("Frequency of sums:")
+	t.Logf("Possible values when rolling two dice: %d\n", possibleValues)
+	t.Log("Frequency of sums:")
 	for sum, freq := range frequency {
-		fmt.Printf("Sum %d: %d times\n", sum, freq)
+		t.Logf("Sum %d: %d times\n", sum, freq)
 	}
 
 	// Set probabilities based on frequency
@@ -52,7 +52,7 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 		pmf.Set(float64(sum), float64(freq)/float64(possibleValues))
 	}
 
-	fmt.Println("Bar chart:")
+	t.Log("Bar chart:")
 	// Assuming you have a barchart package to visualize the PMF
 	datapoints := []barchart.BarData{}
 	for sum, prob := range pmf.values {
@@ -71,11 +71,11 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 	bc.PushAll(datapoints)
 	bc.Draw()
 
-	fmt.Println(bc.View())
+	t.Log(bc.View())
 }
 
 func TestBinomialDistribution(t *testing.T) {
-	fmt.Println("=== Binomial Distribution PMF ===")
+	t.Log("=== Binomial Distribution PMF ===")
 	pmf := CreateBinomialPMF(10, 0.5)
 	pmf.Print()
 }
@@ -131,7 +131,7 @@ func Integrate(from, to, step float64, fx func(float64) float64) float64 {
 
 // TestGetCDFFromPMF tests the conversion from PMF to CDF
 func TestGetCDFFromPMF(t *testing.T) {
-	fmt.Println("=== Cumulative Distribution Function (CDF) ===")
+	t.Log("=== Cumulative Distribution Function (CDF) ===")
 	pmf := NewPMF()
 	pmf.Set(1, 0.2)
 	pmf.Set(2, 0.3)
@@ -143,9 +143,9 @@ func TestGetCDFFromPMF(t *testing.T) {
 		cumulative += pmf.Get(value)
 		cdf.Set(value, cumulative)
 	}
-	fmt.Println("CDF:")
+	t.Log("CDF:")
 	for _, value := range cdf.orderedValues {
-		fmt.Printf("P(X <= %f) = %.4f\n", value, cdf.Get(value))
+		t.Logf("P(X <= %f) = %.4f\n", value, cdf.Get(value))
 	}
 
 	// Check if the last value in CDF is 1
@@ -156,7 +156,7 @@ func TestGetCDFFromPMF(t *testing.T) {
 }
 
 func TestPDF(t *testing.T) {
-	fmt.Println("=== Probability Density Function (PDF) ===")
+	t.Log("=== Probability Density Function (PDF) ===")
 	pdf := NewPDF(func(x float64) float64 {
 		if x < -3 || x > 10 {
 			return 0
@@ -165,10 +165,10 @@ func TestPDF(t *testing.T) {
 	}, -3, 10)
 
 	// Example usage of PDF
-	fmt.Println("PDF at x=0.5:", pdf.function(0.5))
-	fmt.Println("PDF at x=1.5:", pdf.function(1.5)) // Should return 0 since it's outside the range
+	t.Log("PDF at x=0.5:", pdf.function(0.5))
+	t.Log("PDF at x=1.5:", pdf.function(1.5)) // Should return 0 since it's outside the range
 	pdf.function = func(x float64) float64 {
 		return 1 / (pdf.rangeMax - pdf.rangeMin)
 	}
-	fmt.Println("PDF:", pdf.function(0.5))
+	t.Log("PDF:", pdf.function(0.5))
 }
