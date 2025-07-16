@@ -139,8 +139,8 @@ func TestGetCDFFromPMF(t *testing.T) {
 		cdf.Set(value, cumulative)
 	}
 	fmt.Println("CDF:")
-	for value, prob := range cdf.values {
-		fmt.Printf("P(X <= %f) = %.4f\n", value, prob)
+	for _, value := range cdf.orderedValues {
+		fmt.Printf("P(X <= %f) = %.4f\n", value, cdf.Get(value))
 	}
 
 	// Check if the last value in CDF is 1
