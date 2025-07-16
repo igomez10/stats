@@ -3,7 +3,6 @@ package stats
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"testing"
 
 	"github.com/NimbleMarkets/ntcharts/barchart"
@@ -44,7 +43,7 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 
 	// Set probabilities based on frequency
 	for sum, freq := range frequency {
-		pmf.Set(sum, float64(freq)/float64(36)) // 36 is the total number of outcomes (6*6)
+		pmf.Set(float64(sum), float64(freq)/float64(possibleValues))
 	}
 
 	fmt.Println("Bar chart:")
@@ -52,10 +51,10 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 	datapoints := []barchart.BarData{}
 	for sum, prob := range pmf.values {
 		datapoints = append(datapoints, barchart.BarData{
-			Label: strconv.Itoa(sum),
+			Label: fmt.Sprintf("Sum %f", sum),
 			Values: []barchart.BarValue{
 				{
-					Name:  fmt.Sprintf("Sum %d", sum),
+					Name:  fmt.Sprintf("Sum %f", sum),
 					Value: prob * 100,
 					Style: lipgloss.NewStyle().Foreground(lipgloss.Color("10"))}, // green
 			},
@@ -124,8 +123,8 @@ func Integrate(from, to, step float64, fx func(float64) float64) float64 {
 	return res
 }
 
-// TestGetCumulativeDistribution tests the cumulative distribution function
-func TestGetCumulativeDistribution(t *testing.T) {
+// func TestGetCumulativeDistribution tests the cumulative distribution function
+func TestGetCDFFromPMF(t *testing.T) {
 	fmt.Println("=== Cumulative Distribution Function (CDF) ===")
 	pmf := NewPMF()
 	pmf.Set(1, 0.2)
@@ -133,21 +132,21 @@ func TestGetCumulativeDistribution(t *testing.T) {
 	pmf.Set(3, 0.5)
 	pmf.Normalize()
 
-	cdf := make(map[int]float64)
+	cdf := NewCDF()
 	var cumulative float64
-	for _, value := range pmf.GetSpace() {
+	for _, value := range pmf.orderedValues {
 		cumulative += pmf.Get(value)
-		cdf[value] = cumulative
+		cdf.Set(value, cumulative)
 	}
 	fmt.Println("CDF:")
-	for value, prob := range cdf {
-		fmt.Printf("P(X <= %d) = %.4f\n", value, prob)
+	for value, prob := range cdf.values {
+		fmt.Printf("P(X <= %f) = %.4f\n", value, prob)
 	}
 
 	// Check if the last value in CDF is 1
-	lastValue := pmf.GetSpace()[len(pmf.GetSpace())-1]
-	if math.Abs(cdf[lastValue]-1.0) > 0.01 {
-		t.Errorf("Expected CDF at last value to be 1, got %.4f", cdf[lastValue])
+	lastValue := pmf.orderedValues[len(pmf.orderedValues)-1]
+	if math.Abs(cdf.Get(lastValue)-1.0) > 0.01 {
+		t.Errorf("Expected CDF at last value to be 1, got %.4f", cdf.Get(lastValue))
 	}
 }
 
@@ -157,7 +156,7 @@ func TestPDF(t *testing.T) {
 		if x < -3 || x > 10 {
 			return 0
 		}
-		return 1 / (10 - (-3))
+		return float64(1) / float64((10 - (-3)))
 	}, -3, 10)
 
 	// Example usage of PDF
