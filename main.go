@@ -27,8 +27,8 @@ func Combination(totalItems, takenItems int) int {
 	return numerator / denominator
 }
 
-// factorial calculates factorial of n
-func factorial(n int) int {
+// Factorial calculates Factorial of n
+func Factorial(n int) int {
 	if n <= 1 {
 		return 1
 	}
@@ -61,7 +61,7 @@ func NewPoissonPMF(lambda float64, numEvents int) *PMF {
 	pmf := NewPMF()
 	for currentNumEvents := 0; currentNumEvents <= numEvents; currentNumEvents++ {
 		// Calculate Poisson probability: e^(-λ) * λ^k / k!
-		prob := math.Exp(-lambda) * math.Pow(lambda, float64(currentNumEvents)) / float64(factorial(currentNumEvents))
+		prob := math.Exp(-lambda) * math.Pow(lambda, float64(currentNumEvents)) / float64(Factorial(currentNumEvents))
 		pmf.Set(float64(currentNumEvents), prob)
 	}
 
