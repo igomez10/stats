@@ -53,26 +53,26 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 		pmf.Set(float64(sum), float64(freq)/float64(possibleValues))
 	}
 
-	t.Log("Bar chart:")
+	t.Log("Bar chart:\n")
 	// Assuming you have a barchart package to visualize the PMF
 	datapoints := []barchart.BarData{}
-	for sum, prob := range pmf.values {
+	for _, summedResult := range pmf.orderedValues {
 		datapoints = append(datapoints, barchart.BarData{
-			Label: fmt.Sprintf("Sum %f", sum),
+			Label: fmt.Sprintf("  %d", int(summedResult)),
 			Values: []barchart.BarValue{
 				{
-					Name:  fmt.Sprintf("Sum %f", sum),
-					Value: prob * 100,
-					Style: lipgloss.NewStyle().Foreground(lipgloss.Color("10"))}, // green
+					Value: pmf.Get(summedResult) * 10,
+					Style: lipgloss.NewStyle().Foreground(lipgloss.Color("10")),
+				},
 			},
 		})
 	}
 
-	bc := barchart.New(100, 20)
+	bc := barchart.New(75, 30)
 	bc.PushAll(datapoints)
 	bc.Draw()
 
-	t.Log(bc.View())
+	fmt.Println(bc.View())
 }
 
 func TestBinomialDistribution(t *testing.T) {
@@ -216,15 +216,32 @@ func TestNewNormalPDF(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			pdf := NewNormalPDF(tc.mean, tc.stdDev)
-			pdf.Print(0.1)
-
+			pdf := NewNormalPDF(tc.mean, tc.stdDev, -10, 10)
 			// Validate the PDF at the mean
 			valueAtMean := pdf.function(tc.mean)
 			if math.Abs(valueAtMean-tc.expected) > 0.01 {
 				t.Errorf("Expected PDF at mean %.2f to be %.4f, got %.4f", tc.mean, tc.expected, valueAtMean)
 			}
 
+			datapoints := []barchart.BarData{}
+			for i := pdf.rangeMin; i <= pdf.rangeMax; i += 1 {
+				currentValue := pdf.function(i)
+				datapoints = append(datapoints, barchart.BarData{
+					Label: fmt.Sprintf("%d", int(i)),
+					Values: []barchart.BarValue{
+						{
+							Name:  fmt.Sprintf("  %d", int(i)),
+							Value: currentValue * 10, // Scale for visualization
+							Style: lipgloss.NewStyle().Foreground(lipgloss.Color("10")),
+						},
+					},
+				})
+			}
+
+			bc := barchart.New(100, 30)
+			bc.PushAll(datapoints)
+			bc.Draw()
+			fmt.Println(bc.View())
 		})
 	}
 }

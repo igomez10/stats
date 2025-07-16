@@ -98,15 +98,15 @@ func GetNormalDistributionFunction(mean, stdDev float64) func(float64) float64 {
 
 // }
 
-func NewNormalPDF(mean, stdDev float64) *PDF {
+func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 	if stdDev <= 0 {
 		panic("Standard deviation must be positive")
 	}
 
 	normalPDF := NewPDF(
 		GetNormalDistributionFunction(mean, stdDev),
-		-10, // Range min: negative infinity
-		10,
+		rangeMin,
+		rangeMax,
 	)
 
 	// Validate the PDF expect it to be non-negative and integrate to 1
