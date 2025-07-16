@@ -36,6 +36,12 @@ func (p *PMF) Set(value float64, prob float64) {
 	if prob < 0 || prob > 1 {
 		panic("Probability must be between 0 and 1")
 	}
+
+	// validatate that the sum of all probabilities does not exceed 1
+	if prob+p.TotalSumProbabilities()-1 > 0.01 {
+		panic("Total probability cannot exceed 1")
+	}
+
 	p.values[value] = prob
 	p.orderedValues = append(p.orderedValues, value)
 	// sort the ordered values based on the keys
@@ -47,25 +53,10 @@ func (p *PMF) Get(value float64) float64 {
 	return p.values[value]
 }
 
-// Normalize ensures all probabilities sum to 1
-func (p *PMF) Normalize() {
-	total := p.TotalSum()
-	if total == 0 {
-		return
-	}
-	for value := range p.values {
-		p.values[value] /= total
-	}
-}
-
-// TotalSum returns the sum of all probabilities
-// This is useful to check if the PMF is normalized
+// TotalSumProbabilities returns the sum of all probabilities
 // or to get the total probability mass
 // It should be 1 for a valid PMF
-// If the PMF is not normalized, this will return the total sum of probabilities
-// which can be used to normalize it later
-// If the PMF is already normalized, this will return 1
-func (p *PMF) TotalSum() float64 {
+func (p *PMF) TotalSumProbabilities() float64 {
 	var total float64
 	for _, prob := range p.values {
 		total += prob
@@ -113,7 +104,7 @@ func (p *PMF) Print() {
 	for value, prob := range p.values {
 		fmt.Printf("  P(X=%f) = %.4f\n", value, prob)
 	}
-	fmt.Printf("Total: %.4f\n", p.TotalSum())
+	fmt.Printf("Total: %.4f\n", p.TotalSumProbabilities())
 	fmt.Printf("Mean: %.4f\n", p.Mean())
 	fmt.Printf("Std Dev: %.4f\n", p.StdDev())
 }

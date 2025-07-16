@@ -33,7 +33,13 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 			frequency[sum]++
 		}
 	}
-	possibleValues := len(frequency)
+	possibleValues := func() int {
+		total := 0
+		for _, freq := range frequency {
+			total += freq
+		}
+		return total
+	}()
 
 	fmt.Printf("Possible values when rolling two dice: %d\n", possibleValues)
 	fmt.Println("Frequency of sums:")
@@ -123,14 +129,13 @@ func Integrate(from, to, step float64, fx func(float64) float64) float64 {
 	return res
 }
 
-// func TestGetCumulativeDistribution tests the cumulative distribution function
+// TestGetCDFFromPMF tests the conversion from PMF to CDF
 func TestGetCDFFromPMF(t *testing.T) {
 	fmt.Println("=== Cumulative Distribution Function (CDF) ===")
 	pmf := NewPMF()
 	pmf.Set(1, 0.2)
 	pmf.Set(2, 0.3)
 	pmf.Set(3, 0.5)
-	pmf.Normalize()
 
 	cdf := NewCDF()
 	var cumulative float64
