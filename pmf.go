@@ -101,8 +101,8 @@ func (p *PMF) Values() []float64 {
 // Print displays the PMF in a readable format
 func (p *PMF) Print() {
 	fmt.Println("PMF:")
-	for value, prob := range p.values {
-		fmt.Printf("  P(X=%f) = %.4f\n", value, prob)
+	for _, value := range p.orderedValues {
+		fmt.Printf("  P(X=%f) = %.4f\n", value, p.Get(value))
 	}
 	fmt.Printf("Total: %.4f\n", p.TotalSumProbabilities())
 	fmt.Printf("Mean: %.4f\n", p.Mean())

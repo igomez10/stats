@@ -42,7 +42,7 @@ func CreateBinomialPMF(numberOfTrials int, probSuccess float64) *PMF {
 	pmf := NewPMF()
 	for i := 0; i <= numberOfTrials; i++ {
 		// Calculate binomial coefficient C(n, k)
-		coeff := binomialCoeff(numberOfTrials, i)
+		coeff := Combination(numberOfTrials, i)
 		// Calculate probability: C(n,k) * p^k * (1-p)^(n-k)
 		prob := float64(coeff) * math.Pow(probSuccess, float64(i)) * math.Pow(1-probSuccess, float64(numberOfTrials-i))
 		pmf.Set(float64(i), prob)
@@ -51,24 +51,25 @@ func CreateBinomialPMF(numberOfTrials int, probSuccess float64) *PMF {
 	return pmf
 }
 
-// binomialCoeff calculates binomial coefficient C(n, k)
-// the binomial coefficient is the number of ways to choose k successes in n trials
-func binomialCoeff(numTrials int, numSuccesses int) int {
-	if numSuccesses > numTrials || numSuccesses < 0 {
+// Combination calculates the number of combinations of n items taken r at a time
+func Combination(totalItems, takenItems int) int {
+	if takenItems > totalItems || takenItems < 0 {
 		return 0
 	}
-	if numSuccesses == 0 || numSuccesses == numTrials {
+	if takenItems == 0 || takenItems == totalItems {
 		return 1
 	}
 
-	// Use the property C(n,k) = C(n,n-k) to minimize calculations
-	if numSuccesses > numTrials-numSuccesses {
-		numSuccesses = numTrials - numSuccesses
+	// Use the property C(n, r) = C(n, n-r) to minimize calculations
+	if takenItems > totalItems-takenItems {
+		takenItems = totalItems - takenItems
 	}
 
-	result := 1
-	for i := 0; i < numSuccesses; i++ {
-		result = result * (numTrials - i) / (i + 1)
+	numerator := 1
+	denominator := 1
+	for i := 0; i < takenItems; i++ {
+		numerator *= (totalItems - i)
+		denominator *= (i + 1)
 	}
-	return result
+	return numerator / denominator
 }
