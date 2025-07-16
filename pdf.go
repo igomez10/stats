@@ -45,3 +45,10 @@ func NewPDF(function func(float64) float64, min, max float64) *PDF {
 		rangeMax: max,
 	}
 }
+
+func (pdf *PDF) Print(step float64) {
+	fmt.Printf("PDF from %.2f to %.2f with step %.2f:\n", pdf.rangeMin, pdf.rangeMax, step)
+	for x := pdf.rangeMin; x <= pdf.rangeMax; x += step {
+		fmt.Printf("f(%.2f) = %.4f\n", x, pdf.function(x))
+	}
+}

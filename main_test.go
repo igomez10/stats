@@ -3,6 +3,7 @@ package stats
 import (
 	"fmt"
 	"math"
+	"os"
 	"testing"
 
 	"github.com/NimbleMarkets/ntcharts/barchart"
@@ -17,7 +18,7 @@ func TestSomemain(t *testing.T) {
 	pmf1.Set(1, 0.2)
 	pmf1.Set(2, 0.3)
 	pmf1.Set(3, 0.5)
-	pmf1.Print()
+	pmf1.Print(os.Stdout)
 }
 
 func TestPMFRollingTwoDicesAndSum(t *testing.T) {
@@ -76,8 +77,8 @@ func TestPMFRollingTwoDicesAndSum(t *testing.T) {
 
 func TestBinomialDistribution(t *testing.T) {
 	t.Log("=== Binomial Distribution PMF ===")
-	pmf := CreateBinomialPMF(10, 0.5)
-	pmf.Print()
+	pmf := NewBinomialPMF(10, 0.5)
+	pmf.Print(os.Stdout)
 }
 
 func TestIntegral(t *testing.T) {
@@ -171,4 +172,59 @@ func TestPDF(t *testing.T) {
 		return 1 / (pdf.rangeMax - pdf.rangeMin)
 	}
 	t.Log("PDF:", pdf.function(0.5))
+}
+
+func TestNewPoissonPMF(t *testing.T) {
+	t.Log("=== Poisson PMF ===")
+	lambda := 3.0
+	maxNumEvents := 10
+	pmf := NewPoissonPMF(lambda, maxNumEvents)
+	pmf.Print(os.Stdout)
+
+	// Check if the total sum of probabilities is approximately 1
+	totalProb := pmf.TotalSumProbabilities()
+	if math.Abs(totalProb-1.0) > 0.01 {
+		t.Errorf("Expected total sum of probabilities to be 1, got %.4f", totalProb)
+	}
+}
+
+func TestNewNormalPDF(t *testing.T) {
+	t.Log("=== Normal PDF ===")
+
+	type testCase struct {
+		name     string
+		mean     float64
+		stdDev   float64
+		expected float64
+	}
+
+	testCases := []testCase{
+		{
+			name:   "Standard Normal",
+			mean:   0,
+			stdDev: 1,
+
+			expected: 0.398942,
+		},
+		{
+			name:     "Normal with Mean 5 and StdDev 2",
+			mean:     5,
+			stdDev:   2,
+			expected: 0.199471, // PDF at mean for N(5, 2)
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pdf := NewNormalPDF(tc.mean, tc.stdDev)
+			pdf.Print(0.1)
+
+			// Validate the PDF at the mean
+			valueAtMean := pdf.function(tc.mean)
+			if math.Abs(valueAtMean-tc.expected) > 0.01 {
+				t.Errorf("Expected PDF at mean %.2f to be %.4f, got %.4f", tc.mean, tc.expected, valueAtMean)
+			}
+
+		})
+	}
 }

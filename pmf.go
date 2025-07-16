@@ -2,6 +2,7 @@ package stats
 
 import (
 	"fmt"
+	"io"
 	"math"
 	"sort"
 )
@@ -99,24 +100,12 @@ func (p *PMF) Values() []float64 {
 }
 
 // Print displays the PMF in a readable format
-func (p *PMF) Print() {
+func (p *PMF) Print(out io.Writer) {
 	fmt.Println("PMF:")
 	for _, value := range p.orderedValues {
-		fmt.Printf("  P(X=%f) = %.4f\n", value, p.Get(value))
+		fmt.Fprintf(out, "  P(X=%f) = %.4f\n", value, p.Get(value))
 	}
-	fmt.Printf("Total: %.4f\n", p.TotalSumProbabilities())
-	fmt.Printf("Mean: %.4f\n", p.Mean())
-	fmt.Printf("Std Dev: %.4f\n", p.StdDev())
-}
-
-// factorial calculates factorial of n
-func factorial(n int) int {
-	if n <= 1 {
-		return 1
-	}
-	result := 1
-	for i := 2; i <= n; i++ {
-		result *= i
-	}
-	return result
+	fmt.Fprintf(out, "Total Sum Probabilities: %.4f\n", p.TotalSumProbabilities())
+	fmt.Fprintf(out, "Mean: %.4f\n", p.Mean())
+	fmt.Fprintf(out, "Std Dev: %.4f\n", p.StdDev())
 }
