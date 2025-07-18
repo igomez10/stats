@@ -238,10 +238,59 @@ func TestNewNormalPDF(t *testing.T) {
 				})
 			}
 
-			bc := barchart.New(100, 30)
-			bc.PushAll(datapoints)
-			bc.Draw()
-			fmt.Println(bc.View())
+func TestNormalize(t *testing.T) {
+	t.Log("=== Normalize ===")
+	type testCase struct {
+		name     string
+		x        float64
+		mean     float64
+		stdDev   float64
+		expected float64
+	}
+	testCases := []testCase{
+		{
+			name:     "Standard Normal",
+			x:        0,
+			mean:     0,
+			stdDev:   1,
+			expected: 0,
+		},
+		{
+			name:     "Normal with Mean 5 and StdDev 2",
+			x:        7,
+			mean:     5,
+			stdDev:   2,
+			expected: 1.0, // (7 - 5) / 2 = 1
+		},
+		{
+			name:     "Negative Value",
+			x:        -1,
+			mean:     0,
+			stdDev:   1,
+			expected: -1.0, // (-1 - 0) / 1 = -1
+		},
+		{
+			name:     "Zero Mean and StdDev",
+			x:        0,
+			mean:     0,
+			stdDev:   0.0001, // Small stdDev to avoid division by zero
+			expected: 0.0,    // Should still normalize to 0
+		},
+		{
+			name:     "Exercise",
+			x:        60,
+			mean:     75,
+			stdDev:   100,
+			expected: -0.15, // (60 - 75) / 100 = -0.15
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := Normalize(tc.x, tc.mean, tc.stdDev)
+			if math.Abs(result-tc.expected) > 1e-6 {
+				t.Errorf("Expected %f, got %f", tc.expected, result)
+			}
 		})
 	}
 }

@@ -114,3 +114,7 @@ func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 
 	return normalPDF
 }
+
+func Normalize(x float64, mean, stdDev float64) float64 {
+	return (x - mean) / stdDev
+}
