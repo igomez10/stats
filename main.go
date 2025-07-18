@@ -100,6 +100,9 @@ func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 	if stdDev <= 0 {
 		panic("Standard deviation must be positive")
 	}
+	if rangeMin >= rangeMax {
+		panic("Invalid range: rangeMin must be less than rangeMax")
+	}
 
 	normalPDF := NewPDF(
 		GetNormalDistributionFunction(mean, stdDev),
