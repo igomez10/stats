@@ -39,17 +39,6 @@ func Factorial(n int) int {
 	return result
 }
 
-// NewCDFFromPMF creates a CDF from a PDF
-func NewCDFFromPDF(pdf *PDF) *CDF {
-	cdf := NewCDF()
-
-	for x := pdf.rangeMin; x <= pdf.rangeMax; x += 0.01 {
-		cdf.Set(x, pdf.function(x))
-	}
-
-	return cdf
-}
-
 // NewPoissonPMF creates a Poisson PMF
 // Poisson is always PMF
 // lambda is the average rate of occurrence

@@ -56,3 +56,26 @@ func (c *CDF) GetSpace() []float64 {
 	}
 	return space
 }
+
+// NewCDFFromPMF creates a CDF from a PDF
+func NewCDFFromPDF(pdf *PDF) *CDF {
+	cdf := NewCDF()
+
+	for x := pdf.rangeMin; x <= pdf.rangeMax; x += 0.01 {
+		cdf.Set(x, pdf.function(x))
+	}
+
+	return cdf
+}
+
+func NewCDFFromPMF(pmf *PMF) *CDF {
+	cdf := NewCDF()
+	var cumulative float64
+
+	for _, value := range pmf.orderedValues {
+		cumulative += pmf.Get(value)
+		cdf.Set(value, cumulative)
+	}
+
+	return cdf
+}
