@@ -113,6 +113,11 @@ func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 	return normalPDF
 }
 
+// Normalize normalizes a value x based on the mean and standard deviation
+// It returns the z-score, which is the number of standard deviations away from the mean
+// z = (x - mean) / stdDev
+// This is useful for standardizing values in a normal distribution
+// It transforms the value into a standard normal variable (mean = 0, stdDev = 1)
 func Normalize(x float64, mean, stdDev float64) float64 {
 	return (x - mean) / stdDev
 }
