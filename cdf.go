@@ -2,6 +2,10 @@ package stats
 
 import "sort"
 
+// CDF represents a Cumulative Distribution Function
+// It contains a map of values to cumulative probabilities.
+// The CDF is defined such that P(X <= x) = F(x) where F(x) is the CDF function.
+// The CDF can be created from a PDF or PMF.
 type CDF struct {
 	values        map[float64]float64
 	orderedValues []float64 // To maintain order of insertion
@@ -15,6 +19,9 @@ func NewCDF() *CDF {
 }
 
 // Set sets the cumulative probability for a given value
+// It will be understood as P(X <= value) = prob
+// The cumulative probabilities must be non-decreasing.
+// If the value already exists, it will update the cumulative probability.
 func (c *CDF) Set(value float64, prob float64) {
 	if prob < 0 || prob > 1 {
 		panic("Probability must be between 0 and 1")

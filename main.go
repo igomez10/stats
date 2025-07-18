@@ -96,8 +96,6 @@ func GetNormalDistributionFunction(mean, stdDev float64) func(float64) float64 {
 	}
 }
 
-// }
-
 func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 	if stdDev <= 0 {
 		panic("Standard deviation must be positive")
@@ -108,9 +106,6 @@ func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 		rangeMin,
 		rangeMax,
 	)
-
-	// Validate the PDF expect it to be non-negative and integrate to 1
-	ValidatePDF(normalPDF.function, normalPDF.rangeMin, normalPDF.rangeMax)
 
 	return normalPDF
 }

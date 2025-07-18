@@ -180,7 +180,7 @@ func TestNewPoissonPMF(t *testing.T) {
 	maxNumEvents := 10
 	pmf := NewPoissonPMF(lambda, maxNumEvents)
 	pmf.Print(os.Stdout)
-
+	pmf.PrintAsBarChart(os.Stdout)
 	// Check if the total sum of probabilities is approximately 1
 	totalProb := pmf.TotalSumProbabilities()
 	if math.Abs(totalProb-1.0) > 0.01 {
@@ -223,20 +223,29 @@ func TestNewNormalPDF(t *testing.T) {
 				t.Errorf("Expected PDF at mean %.2f to be %.4f, got %.4f", tc.mean, tc.expected, valueAtMean)
 			}
 
-			datapoints := []barchart.BarData{}
-			for i := pdf.rangeMin; i <= pdf.rangeMax; i += 1 {
-				currentValue := pdf.function(i)
-				datapoints = append(datapoints, barchart.BarData{
-					Label: fmt.Sprintf("%d", int(i)),
-					Values: []barchart.BarValue{
-						{
-							Name:  fmt.Sprintf("  %d", int(i)),
-							Value: currentValue * 10, // Scale for visualization
-							Style: lipgloss.NewStyle().Foreground(lipgloss.Color("10")),
-						},
-					},
-				})
-			}
+			// datapoints := []barchart.BarData{}
+			// for i := pdf.rangeMin; i <= pdf.rangeMax; i += 1 {
+			// 	currentValue := pdf.function(i)
+			// 	datapoints = append(datapoints, barchart.BarData{
+			// 		Label: fmt.Sprintf("%d", int(i)),
+			// 		Values: []barchart.BarValue{
+			// 			{
+			// 				Name:  fmt.Sprintf("  %d", int(i)),
+			// 				Value: currentValue * 10, // Scale for visualization
+			// 				Style: lipgloss.NewStyle().Foreground(lipgloss.Color("10")),
+			// 			},
+			// 		},
+			// 	})
+			// }
+
+			// bc := barchart.New(100, 30)
+			// bc.PushAll(datapoints)
+			// bc.Draw()
+			// fmt.Println(bc.View())
+
+		})
+	}
+}
 
 func TestNormalize(t *testing.T) {
 	t.Log("=== Normalize ===")

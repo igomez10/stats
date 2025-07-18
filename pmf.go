@@ -5,6 +5,9 @@ import (
 	"io"
 	"math"
 	"sort"
+
+	"github.com/NimbleMarkets/ntcharts/barchart"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // PMF represents a Probability Mass Function
@@ -108,4 +111,26 @@ func (p *PMF) Print(out io.Writer) {
 	fmt.Fprintf(out, "Total Sum Probabilities: %.4f\n", p.TotalSumProbabilities())
 	fmt.Fprintf(out, "Mean: %.4f\n", p.Mean())
 	fmt.Fprintf(out, "Std Dev: %.4f\n", p.StdDev())
+}
+
+func (p *PMF) PrintAsBarChart(out io.Writer) {
+	datapoints := []barchart.BarData{}
+	for i := 0; i < len(p.orderedValues); i++ {
+		currentValue := p.Get(p.orderedValues[i])
+		datapoints = append(datapoints, barchart.BarData{
+			Label: fmt.Sprintf("%d", int(p.orderedValues[i])),
+			Values: []barchart.BarValue{
+				{
+					Name:  fmt.Sprintf("  %d", int(i)),
+					Value: currentValue * 10, // Scale for visualization
+					Style: lipgloss.NewStyle().Foreground(lipgloss.Color("10")),
+				},
+			},
+		})
+	}
+
+	bc := barchart.New(100, 30)
+	bc.PushAll(datapoints)
+	bc.Draw()
+	fmt.Fprintln(out, bc.View())
 }
