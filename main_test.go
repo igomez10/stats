@@ -412,3 +412,22 @@ func Test3_4_2(t *testing.T) {
 	integral := Integrate(-100, z, 0.001, GetNormalDistributionFunction(0, 1))
 	t.Logf("Integral from -100 to %.4f: %.3f", z, integral)
 }
+
+func Test3_4_3(t *testing.T) {
+	t.Log("=== 3.4.3 Exercise ===")
+	mean := 0.0
+	stdDev := 1.0
+
+	approximationStart := 5.0
+	step := 0.001
+	for i := 0.0; i <= approximationStart; i += step {
+		from := -approximationStart + i
+		to := approximationStart - i
+		t.Logf("Integrating from %.4f to %.4f", from, to)
+		if Integrate(from, to, step, GetNormalDistributionFunction(mean, stdDev))-0.90 < 0.0001 {
+			t.Logf("Z-score for 90%%: between %.4f and %.4f", from, to)
+			return
+		}
+	}
+	t.Fatalf("Failed to find z-score for 90%% within the range")
+}
