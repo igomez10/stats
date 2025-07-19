@@ -78,6 +78,11 @@ func NewBinomialPMF(numberOfTrials int, probSuccess float64) *PMF {
 	return pmf
 }
 
+// GetNormalDistributionFunction returns a function that represents the normal distribution
+// The function is defined as:
+// fx = (1 / (stdDev * math.Sqrt(2*math.Pi))) * exp(-0.5 * ((x - mean) / stdDev) ^ 2)
+// where mean is the mean of the distribution and stdDev is the standard deviation
+// This function can be used to create a PDF for a normal distribution
 func GetNormalDistributionFunction(mean, stdDev float64) func(float64) float64 {
 	return func(x float64) float64 {
 		// fx = (1 / (stdDev * math.Sqrt(2*math.Pi))) * exp(-0.5 * ((x - mean) / stdDev) ^ 2)
@@ -109,4 +114,12 @@ func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 // It transforms the value into a standard normal variable (mean = 0, stdDev = 1)
 func Normalize(x float64, mean, stdDev float64) float64 {
 	return (x - mean) / stdDev
+}
+
+func Integrate(from, to, step float64, fx func(float64) float64) float64 {
+	var res float64 = 0
+	for x := from; x < to; x += step {
+		res += fx(x) * step
+	}
+	return res
 }
