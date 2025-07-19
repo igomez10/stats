@@ -431,6 +431,13 @@ func Test3_4_3(t *testing.T) {
 	}
 	t.Fatalf("Failed to find z-score for 90%% within the range")
 }
+
+func Test3_4_4(t *testing.T) {
+	t.Log("=== 3.4.4 Exercise ===")
+	// we want mean and stddevto so that find P(X < 89 ) = 0.90
+	// we can normalize X
+}
+
 func TestStudentTDistribution(t *testing.T) {
 	t.Log("=== Student's T Distribution ===")
 	// Example parameters for Student's T distribution
@@ -486,13 +493,21 @@ func TestGetStudentTDistributionFunction(t *testing.T) {
 			},
 			want: 1.372,
 		},
+		{
+			name: "Degrees of Freedom 7 probability 0.95",
+			args: args{
+				degreesOfFreedom: 7,
+				probability:      0.95,
+			},
+			want: 1.895,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tscore := IntegrateUntilValue(
 				-1000,
 				500,
-				0.9,
+				tt.args.probability,
 				0.0001,
 				GetStudentTDistributionFunction(tt.args.degreesOfFreedom),
 			)
