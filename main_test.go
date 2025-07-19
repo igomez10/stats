@@ -431,3 +431,74 @@ func Test3_4_3(t *testing.T) {
 	}
 	t.Fatalf("Failed to find z-score for 90%% within the range")
 }
+func TestStudentTDistribution(t *testing.T) {
+	t.Log("=== Student's T Distribution ===")
+	// Example parameters for Student's T distribution
+	degreesOfFreedom := 10
+
+	tDistributionFunction := GetStudentTDistributionFunction(float64(degreesOfFreedom))
+	// Example usage of the Student's T distribution PDF
+	t.Log("PDF at x=0:", tDistributionFunction(0))
+	t.Log("PDF at x=1:", tDistributionFunction(1))
+	t.Log("PDF at x=-1:", tDistributionFunction(-1))
+
+	// Integrate the PDF from -3 to 3
+	integral := Integrate(-10, 10, 0.001, tDistributionFunction)
+	t.Logf("Integral from -10 to 10: %.4f", integral)
+
+	// Check if the integral is approximately equal to 1
+	if math.Abs(integral-1.0) > 0.01 {
+		t.Errorf("Expected integral to be approximately 1, got %.4f", integral)
+	}
+}
+
+func TestGetStudentTDistributionFunction(t *testing.T) {
+	type args struct {
+		degreesOfFreedom float64
+		probability      float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "Degrees of Freedom 1 probability 0.9",
+			args: args{
+				degreesOfFreedom: 1,
+				probability:      0.9,
+			},
+			want: 3.0787,
+		},
+		{
+			name: "Degrees of Freedom 5 probability 0.9",
+			args: args{
+				degreesOfFreedom: 5,
+				probability:      0.9,
+			},
+			want: 1.4759,
+		},
+		{
+			name: "Degrees of Freedom 10 probability 0.9",
+			args: args{
+				degreesOfFreedom: 10,
+				probability:      0.9,
+			},
+			want: 1.372,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tscore := IntegrateUntilValue(
+				-1000,
+				500,
+				0.9,
+				0.0001,
+				GetStudentTDistributionFunction(tt.args.degreesOfFreedom),
+			)
+			if math.Abs(tscore-tt.want) > 0.01 {
+				t.Errorf("GetStudentTDistributionFunction() = %v, want %v", tscore, tt.want)
+			}
+		})
+	}
+}

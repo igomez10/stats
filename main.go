@@ -90,6 +90,13 @@ func GetNormalDistributionFunction(mean, stdDev float64) func(float64) float64 {
 	}
 }
 
+func GetStudentTDistributionFunction(degreesOfFreedom float64) func(float64) float64 {
+	return func(x float64) float64 {
+		// fx = (Gamma((degreesOfFreedom+1)/2) / (sqrt(degreesOfFreedom*math.Pi) * Gamma(degreesOfFreedom/2))) * (1 + ((x*x)/degreesOfFreedom))^(-(degreesOfFreedom+1)/2)
+		return (math.Gamma((degreesOfFreedom+1)/2) / (math.Sqrt(degreesOfFreedom*math.Pi) * math.Gamma(degreesOfFreedom/2))) * math.Pow(1+((x*x)/degreesOfFreedom), -(degreesOfFreedom+1)/2)
+	}
+}
+
 func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 	if stdDev <= 0 {
 		panic("Standard deviation must be positive")
@@ -107,6 +114,23 @@ func NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF {
 	return normalPDF
 }
 
+func NewStudentTDistributionPDF(degreesOfFreedom, rangeMin, rangeMax float64) *PDF {
+	if degreesOfFreedom <= 0 {
+		panic("Degrees of freedom must be positive")
+	}
+	if rangeMin >= rangeMax {
+		panic("Invalid range: rangeMin must be less than rangeMax")
+	}
+
+	tDistributionPDF := NewPDF(
+		GetStudentTDistributionFunction(degreesOfFreedom),
+		rangeMin,
+		rangeMax,
+	)
+
+	return tDistributionPDF
+}
+
 // Normalize normalizes a value x based on the mean and standard deviation
 // It returns the z-score, which is the number of standard deviations away from the mean
 // z = (x - mean) / stdDev
@@ -122,4 +146,24 @@ func Integrate(from, to, step float64, fx func(float64) float64) float64 {
 		res += fx(x) * step
 	}
 	return res
+}
+
+// IntegrateUntilValue returns the limit of integration until the accumulated value reaches or exceeds targetValue
+// THIS FUNCTION IS NOT A STANDARD INTEGRATION FUNCTION, IT DOES NOT RETURN THE AREA UNDER THE CURVE
+// INSTEAD, IT RETURNS THE ACCUMULATED VALUE OF THE INTEGRAL UNTIL IT REACHES OR EXCEEDS targetValue
+// To avoid infinite loops, it stops at maxValue
+// It uses a step size to approximate the integral
+// The function fx is the integrand function
+// It returns the accumulated value of the integral until it reaches or exceeds targetValue
+// If the integral does not reach targetValue before maxValue, it returns the accumulated value
+// This is useful for numerical integration where you want to find the area under the curve until a certain value is reached
+func IntegrateUntilValue(from, toMaxValue, targetValue float64, step float64, fx func(float64) float64) float64 {
+	var res float64 = 0
+	for x := from; x < toMaxValue; x += step {
+		res += fx(x) * step
+		if res >= targetValue {
+			return x
+		}
+	}
+	panic("Integral did not reach target value before max value")
 }
