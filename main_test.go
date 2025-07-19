@@ -122,14 +122,6 @@ func TestIntegral(t *testing.T) {
 	}
 }
 
-func Integrate(from, to, step float64, fx func(float64) float64) float64 {
-	var res float64 = 0
-	for x := from; x < to; x += step {
-		res += fx(x) * step
-	}
-	return res
-}
-
 // TestGetCDFFromPMF tests the conversion from PMF to CDF
 func TestGetCDFFromPMF(t *testing.T) {
 	t.Log("=== Cumulative Distribution Function (CDF) ===")
@@ -302,4 +294,121 @@ func TestNormalize(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetNormalDistributionFunction(t *testing.T) {
+	stdnormal := NewNormalPDF(0, 1, -10, 10)
+	t.Logf("PDF value at x=0: %.4f", stdnormal.function(0))
+	integral := Integrate(-20, 0, 0.0001, stdnormal.function)
+	t.Logf("Integral from -20 to 0: %.4f", integral)
+
+	// integrate from -20 to -0.15
+	integral = Integrate(-20, -0.15, 0.0001, stdnormal.function)
+	t.Logf("Integral from -20 to -0.15: %.4f", integral)
+}
+
+func TestIntegrate(t *testing.T) {
+	type args struct {
+		from float64
+		to   float64
+		step float64
+		fx   func(float64) float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "Integrate 100 from -10 to 10",
+			args: args{
+				from: -10,
+				to:   10,
+				step: 0.01,
+				fx: func(x float64) float64 {
+					return 5
+				},
+			},
+			want: 100, // Integral of 100 from -10 to 10 is 100
+		},
+		{
+			name: "Integrate x^2 from 0 to 1",
+			args: args{
+				from: 0,
+				to:   1,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return x * x // f(x) = x^2
+				},
+			},
+			want: 0.3333, // Integral of x^2 from 0 to 1 is 1/3
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Integrate(tt.args.from, tt.args.to, tt.args.step, tt.args.fx); (got - tt.want) > 0.1 {
+				t.Errorf("Integrate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalDistributionTable(t *testing.T) {
+	t.Log("=== Normal Distribution Table ===")
+	mean := 0.0
+	stdDev := 1.0
+	pdf := NewNormalPDF(mean, stdDev, -3, 3)
+
+	type testCase struct {
+		name     string
+		zScore   float64
+		expected float64
+	}
+
+	testCases := []testCase{
+		{
+			name:     "Z-score 0",
+			zScore:   0,
+			expected: 0,
+		},
+		{
+			name:     "Z-score 1",
+			zScore:   1,
+			expected: 0.8413,
+		},
+		{
+			name:     "Z-score -1",
+			zScore:   -1,
+			expected: 0.1587,
+		},
+		{
+			name:     "Z-score 1.5",
+			zScore:   1.5,
+			expected: 0.9332,
+		},
+		{
+			name:     "Z-score -1.5",
+			zScore:   -1.5,
+			expected: 0.0668,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			Integrate(-3, tc.zScore, 0.001, pdf.function)
+		})
+	}
+}
+func Test3_4_2(t *testing.T) {
+	t.Log("=== 3.4.2 Exercise ===")
+	mean := 75.0
+	variance := 100.0
+	x := 60.0
+	stdDev := math.Sqrt(variance)
+	// Calculate the z-score by normalizing the x value
+	z := Normalize(x, mean, stdDev)
+	t.Logf("Z-score for x=%.2f: %.4f", x, z)
+
+	// Calculate the integral from -100 to z using mean=0, stdDev=1
+	integral := Integrate(-100, z, 0.001, GetNormalDistributionFunction(0, 1))
+	t.Logf("Integral from -100 to %.4f: %.3f", z, integral)
 }
