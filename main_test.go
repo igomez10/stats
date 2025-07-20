@@ -438,6 +438,15 @@ func Test3_4_4(t *testing.T) {
 	// we can normalize X
 }
 
+func Test3_6_1(t *testing.T) {
+	t.Log("=== 3.6.1 Exercise ===")
+	// find t value for P(T < 2.228)  with degrees of freedom 10
+	degreesOfFreedom := 10.0
+	tDistributionFunction := GetStudentTDistributionFunction(degreesOfFreedom)
+
+	t.Logf("Integrate(-1000, 2.228, 0.0001, tDistributionFunction): %v", Integrate(-10000, 2.227, 0.00001, tDistributionFunction))
+}
+
 func TestStudentTDistribution(t *testing.T) {
 	t.Log("=== Student's T Distribution ===")
 	// Example parameters for Student's T distribution
