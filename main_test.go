@@ -526,3 +526,56 @@ func TestGetStudentTDistributionFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestGetExponentialDistributionFunction(t *testing.T) {
+	type args struct {
+		lambda float64
+		value  float64
+	}
+	tests := []struct {
+		name     string
+		args     args
+		expected float64
+	}{
+		{
+			name: "Exponential PDF with lambda 1",
+			args: args{
+				lambda: 1,
+				value:  0,
+			},
+			expected: 1.0,
+		},
+		{
+			name: "Exponential PDF with lambda 2",
+			args: args{
+				lambda: 2,
+				value:  0,
+			},
+			expected: 2.0,
+		},
+		{
+			name: "Exponential PDF with lambda 0.5",
+			args: args{
+				lambda: 0.5,
+				value:  0,
+			},
+			expected: 0.5,
+		},
+		{
+			name: "Exponential PDF with lambda 1 and value 1",
+			args: args{
+				lambda: 1,
+				value:  1,
+			},
+			expected: 0.3679,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetExponentialDistributionFunction(tt.args.lambda)(tt.args.value)
+			if math.Abs(got-tt.expected) > 0.01 {
+				t.Errorf("GetExponentialDistributionFunction() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}

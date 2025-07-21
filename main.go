@@ -131,6 +131,43 @@ func NewStudentTDistributionPDF(degreesOfFreedom, rangeMin, rangeMax float64) *P
 	return tDistributionPDF
 }
 
+func GetExponentialDistributionFunction(lambda float64) func(float64) float64 {
+	return func(x float64) float64 {
+		if x < 0 {
+			return 0
+		}
+		return lambda * math.Exp(-lambda*x)
+	}
+}
+
+// NewExponentialPDF creates an exponential PDF
+// The exponential distribution is defined for x >= 0
+// The PDF is defined as:
+// fx = lambda * exp(-lambda * x)
+// where lambda is the rate parameter of the distribution
+// The PDF is normalized so that the integral from 0 to infinity equals 1
+// The rangeMin and rangeMax define the limits of integration
+// The PDF is defined for x in [rangeMin, rangeMax]
+func NewExponentialPDF(lambda, rangeMin, rangeMax float64) *PDF {
+	if lambda <= 0 {
+		panic("Lambda must be positive")
+	}
+	if rangeMin >= rangeMax {
+		panic("Invalid range: rangeMin must be less than rangeMax")
+	}
+	if rangeMin < 0 {
+		panic("Exponential distribution is defined for x >= 0")
+	}
+
+	exponentialPDF := NewPDF(
+		GetExponentialDistributionFunction(lambda),
+		rangeMin,
+		rangeMax,
+	)
+
+	return exponentialPDF
+}
+
 // Normalize normalizes a value x based on the mean and standard deviation
 // It returns the z-score, which is the number of standard deviations away from the mean
 // z = (x - mean) / stdDev
