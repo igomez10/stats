@@ -131,6 +131,13 @@ func NewStudentTDistributionPDF(degreesOfFreedom, rangeMin, rangeMax float64) *P
 	return tDistributionPDF
 }
 
+// GetExponentialDistributionFunction returns a function that represents the exponential distribution
+// The function is defined as:
+// fx = lambda * exp(-lambda * x)
+// where lambda is the rate parameter of the distribution
+// This function can be used to create a PDF for an exponential distribution
+// This is used to model the time between events in a Poisson process
+// The exponential distribution is defined for x >= 0 only
 func GetExponentialDistributionFunction(lambda float64) func(float64) float64 {
 	return func(x float64) float64 {
 		if x < 0 {
