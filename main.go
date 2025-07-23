@@ -68,10 +68,10 @@ func NewPoissonPMF(lambda float64, numEvents int) *PMF {
 func NewBinomialPMF(numberOfTrials int, probSuccess float64) *PMF {
 	pmf := NewPMF()
 	for i := 0; i <= numberOfTrials; i++ {
-		// Calculate binomial coefficient C(n, k)
-		coeff := Combination(numberOfTrials, i)
+		// Calculate binomial numCombinations C(n, k)
+		numCombinations := Combination(numberOfTrials, i)
 		// Calculate probability: C(n,k) * p^k * (1-p)^(n-k)
-		prob := float64(coeff) * math.Pow(probSuccess, float64(i)) * math.Pow(1-probSuccess, float64(numberOfTrials-i))
+		prob := float64(numCombinations) * math.Pow(probSuccess, float64(i)) * math.Pow(1-probSuccess, float64(numberOfTrials-i))
 		pmf.Set(float64(i), prob)
 	}
 
