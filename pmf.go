@@ -90,15 +90,6 @@ func (p *PMF) GetVariance() float64 {
 	return variance
 }
 
-// Values returns all values with non-zero probability
-func (p *PMF) Values() []float64 {
-	var values []float64
-	for value := range p.values {
-		values = append(values, value)
-	}
-	return values
-}
-
 // Print displays the PMF in a readable format
 func (p *PMF) Print(out io.Writer) {
 	fmt.Println("PMF:")
