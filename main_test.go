@@ -444,7 +444,7 @@ func Test3_6_1(t *testing.T) {
 	degreesOfFreedom := 10.0
 	tDistributionFunction := GetStudentTDistributionFunction(degreesOfFreedom)
 
-	t.Logf("Integrate(-1000, 2.228, 0.0001, tDistributionFunction): %v", Integrate(-10000, 2.227, 0.00001, tDistributionFunction))
+	t.Logf("Integrate(-1000, 2.228, 0.0001, tDistributionFunction): %v", Integrate(-10000, 2.227, 0.001, tDistributionFunction))
 }
 
 func TestStudentTDistribution(t *testing.T) {

@@ -88,11 +88,6 @@ func (p *PMF) GetVariance() float64 {
 	return variance
 }
 
-// GetStdDev calculates the standard deviation
-func (p *PMF) GetStdDev() float64 {
-	return math.Sqrt(p.GetVariance())
-}
-
 // Values returns all values with non-zero probability
 func (p *PMF) Values() []float64 {
 	var values []float64
@@ -110,7 +105,8 @@ func (p *PMF) Print(out io.Writer) {
 	}
 	fmt.Fprintf(out, "Total Sum Probabilities: %.4f\n", p.TotalSumProbabilities())
 	fmt.Fprintf(out, "Mean: %.4f\n", p.GetExpectedValue())
-	fmt.Fprintf(out, "Std Dev: %.4f\n", p.GetStdDev())
+	stdev := math.Sqrt(p.GetVariance())
+	fmt.Fprintf(out, "Std Dev: %.4f\n", stdev)
 }
 
 func (p *PMF) PrintAsBarChart(out io.Writer) {
