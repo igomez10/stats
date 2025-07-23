@@ -71,3 +71,36 @@ func (pdf *PDF) Print(step float64) {
 		fmt.Printf("f(%.2f) = %.4f\n", x, pdf.function(x))
 	}
 }
+
+// GetExpectedValue calculates the expected value of the PDF
+// The expected value is calculated as E[X] = ∫x * f(x) dx
+// where f(x) is the original PDF function.
+func (pdf *PDF) GetExpectedValue() float64 {
+	expectedValue := 0.0
+	step := 0.01
+	wrapper := func(someX float64) float64 {
+		return someX * pdf.function(someX) * step
+	}
+
+	for x := pdf.rangeMin; x <= pdf.rangeMax; x += step {
+		expectedValue += Integrate(pdf.rangeMin, pdf.rangeMax, step, wrapper)
+	}
+	return expectedValue
+}
+
+// GetVariance calculates the variance of the PDF
+// The variance is calculated as Integral[(x - E[X])^2 * f(x) dx]
+func (pdf *PDF) GetVariance() float64 {
+	mean := pdf.GetExpectedValue()
+	variance := 0.0
+	step := 0.01
+
+	wrapper := func(someX float64) float64 {
+		return math.Pow(someX-mean, 2) * pdf.function(someX) * step
+	}
+
+	for x := pdf.rangeMin; x <= pdf.rangeMax; x += step {
+		variance += Integrate(pdf.rangeMin, pdf.rangeMax, step, wrapper)
+	}
+	return variance
+}
