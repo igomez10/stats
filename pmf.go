@@ -83,7 +83,9 @@ func (p *PMF) GetVariance() float64 {
 	var variance float64
 	for value, prob := range p.values {
 		diff := float64(value) - mean
-		variance += diff * diff * prob
+		diff2 := diff * diff
+
+		variance += diff2 * prob
 	}
 	return variance
 }
@@ -105,8 +107,8 @@ func (p *PMF) Print(out io.Writer) {
 	}
 	fmt.Fprintf(out, "Total Sum Probabilities: %.4f\n", p.TotalSumProbabilities())
 	fmt.Fprintf(out, "Mean: %.4f\n", p.GetExpectedValue())
-	stdev := math.Sqrt(p.GetVariance())
-	fmt.Fprintf(out, "Std Dev: %.4f\n", stdev)
+	stdDev := math.Sqrt(p.GetVariance())
+	fmt.Fprintf(out, "Std Dev: %.4f\n", stdDev)
 }
 
 func (p *PMF) PrintAsBarChart(out io.Writer) {
