@@ -192,6 +192,14 @@ func Integrate(from, to, step float64, fx func(float64) float64) float64 {
 	return res
 }
 
+func Derivate(x, step float64, fx func(float64) float64) func(float64) float64 {
+	return func(x float64) float64 {
+		// Derivative using the finite difference method
+		// f'(x) = (f(x + h) - f(x - h)) / (2 * h)
+		return (fx(x+step) - fx(x-step)) / (2 * step)
+	}
+}
+
 // IntegrateUntilValue returns the limit of integration until the accumulated value reaches or exceeds targetValue
 // THIS FUNCTION IS NOT A STANDARD INTEGRATION FUNCTION, IT DOES NOT RETURN THE AREA UNDER THE CURVE
 // INSTEAD, IT RETURNS THE ACCUMULATED VALUE OF THE INTEGRAL UNTIL IT REACHES OR EXCEEDS targetValue

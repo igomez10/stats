@@ -579,3 +579,68 @@ func TestGetExponentialDistributionFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestDerivate(t *testing.T) {
+	type args struct {
+		x    float64
+		step float64
+		fx   func(float64) float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want func(float64) float64
+	}{
+		{
+			name: "Derivative of x^2",
+			args: args{
+				x:    2,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return x * x // f(x) = x^2
+				},
+			},
+			want: func(x float64) float64 {
+				return 2 * x // f'(x) = 2x
+			},
+		},
+		{
+			name: "Derivative of sin(x)",
+			args: args{
+				x:    0,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return math.Sin(x)
+				},
+			},
+			want: func(x float64) float64 {
+				return math.Cos(x)
+			},
+		},
+		{
+			name: "Derivative of exp(x)",
+			args: args{
+				x:    1,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return math.Exp(x) // f(x) = e^x
+				},
+			},
+			want: func(x float64) float64 {
+				return math.Exp(x) // f'(x) = e^x
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Derivate(tt.args.x, tt.args.step, tt.args.fx)
+			for x := -100.0; x <= 100.0; x += 0.01 {
+				got := got(x)
+				want := tt.want(x)
+				if math.Abs(got-want) > 0.01 && (got/want)-1 > 0.01 {
+					t.Errorf("Derivate() = %v, want %v", got, want)
+				}
+			}
+		})
+	}
+}
