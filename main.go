@@ -226,6 +226,8 @@ func Derivate(x, step float64, fx func(float64) float64) func(float64) float64 {
 	}
 }
 
+// FindInflectionPoint finds the inflection point of a function fx in the range [start, end] with a given step size
+// An inflection point is where the derivative is zero
 func FindInflectionPoint(fx func(float64) float64, start, end, step float64) float64 {
 	// find the inflection point where the derivative is zero
 	for x := start; x <= end; x += step {
