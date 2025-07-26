@@ -630,6 +630,58 @@ func TestDerivate(t *testing.T) {
 				return math.Exp(x) // f'(x) = e^x
 			},
 		},
+		{
+			name: "Derivative of log(x)",
+			args: args{
+				x:    1,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return math.Log(x)
+				},
+			},
+			want: func(x float64) float64 {
+				return 1 / x
+			},
+		},
+		{
+			name: "Derivative of a constant function",
+			args: args{
+				x:    5,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return 42 // f(x) = 42
+				},
+			},
+			want: func(x float64) float64 {
+				return 0 // f'(x) = 0 for a constant function
+			},
+		},
+		{
+			name: "Derivative of a linear function",
+			args: args{
+				x:    3,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return 2*x + 1 // f(x) = 2x + 1
+				},
+			},
+			want: func(x float64) float64 {
+				return 2 // f'(x) = 2 for a linear function
+			},
+		},
+		{
+			name: "Derivative of a quadratic function",
+			args: args{
+				x:    4,
+				step: 0.001,
+				fx: func(x float64) float64 {
+					return x*x + 3*x + 2 // f(x) = x^2 + 3x + 2
+				},
+			},
+			want: func(x float64) float64 {
+				return 2*x + 3 // f'(x) = 2x + 3 for a quadratic function
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -640,6 +692,58 @@ func TestDerivate(t *testing.T) {
 				if math.Abs(got-want) > 0.01 && (got/want)-1 > 0.01 {
 					t.Errorf("Derivate() = %v, want %v", got, want)
 				}
+			}
+		})
+	}
+}
+
+func TestFindInflectionPoint(t *testing.T) {
+	type args struct {
+		fx    func(float64) float64
+		start float64
+		end   float64
+		step  float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "Inflection point of x^2",
+			args: args{
+				fx:    func(x float64) float64 { return x * x }, // f(x) = x^2
+				start: -10,
+				end:   10,
+				step:  0.0000001,
+			},
+			want: 0, // Inflection point at x = 0 for f(x)
+		},
+		{
+			name: "Inflection point of x^3",
+			args: args{
+				fx:    func(x float64) float64 { return x * x * x }, // f(x) = x^3
+				start: -10,
+				end:   10,
+				step:  0.0000001,
+			},
+			want: 0, // Inflection point at x = 0 for f(x)
+		},
+		{
+			name: "Inflection point of x^2 + 2x + 1",
+			args: args{
+				fx:    func(x float64) float64 { return x*x + 2*x + 1 }, // f(x) = x^2 + 2x + 1e
+				start: -10,
+				end:   10,
+				step:  0.0000001,
+			},
+			want: -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FindInflectionPoint(tt.args.fx, tt.args.start, tt.args.end, tt.args.step); math.Abs(got-tt.want) > 0.01 {
+				t.Errorf("FindInflectionPoint() = %v, want %v", got, tt.want)
 			}
 		})
 	}

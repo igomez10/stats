@@ -192,14 +192,6 @@ func Integrate(from, to, step float64, fx func(float64) float64) float64 {
 	return res
 }
 
-func Derivate(x, step float64, fx func(float64) float64) func(float64) float64 {
-	return func(x float64) float64 {
-		// Derivative using the finite difference method
-		// f'(x) = (f(x + h) - f(x - h)) / (2 * h)
-		return (fx(x+step) - fx(x-step)) / (2 * step)
-	}
-}
-
 // IntegrateUntilValue returns the limit of integration until the accumulated value reaches or exceeds targetValue
 // THIS FUNCTION IS NOT A STANDARD INTEGRATION FUNCTION, IT DOES NOT RETURN THE AREA UNDER THE CURVE
 // INSTEAD, IT RETURNS THE ACCUMULATED VALUE OF THE INTEGRAL UNTIL IT REACHES OR EXCEEDS targetValue
@@ -218,4 +210,48 @@ func IntegrateUntilValue(from, toMaxValue, targetValue float64, step float64, fx
 		}
 	}
 	panic("Integral did not reach target value before max value")
+}
+
+// Derivate calculates the derivative of a function fx at a point x using the finite difference method
+// It returns a function that takes a float64 x and returns the derivative at that point
+// The derivative is calculated as:
+// f'(x) = (f(x + h) - f(x - h)) / (2 * h)
+// where h is the step size
+// This is a numerical approximation of the derivative
+func Derivate(x, step float64, fx func(float64) float64) func(float64) float64 {
+	return func(x float64) float64 {
+		// Derivative using the finite difference method
+		// f'(x) = (f(x + h) - f(x - h)) / (2 * h)
+		return (fx(x+step) - fx(x-step)) / (2 * step)
+	}
+}
+
+func FindInflectionPoint(fx func(float64) float64, start, end, step float64) float64 {
+	// find the inflection point where the derivative is zero
+	for x := start; x <= end; x += step {
+		derivative := Derivate(x, step, fx)
+
+		di := derivative(x)
+		if math.Abs(di) < step { // Check if the derivative is close to zero
+			return x // Return the x value where the inflection point is found
+		}
+	}
+	panic("No inflection point found in the given range")
+}
+
+// GetMaximumLikelihoodEstimation calculates the maximum likelihood estimation (MLE) for a given dataset
+// For a normal distribution, the MLE is the sample mean
+// This function assumes the data is normally distributed
+// It returns the mean of the data as the MLE
+// If the data is empty, it panics
+func GetMaximumLikelihoodEstimation(data []float64) float64 {
+	if len(data) == 0 {
+		panic("Data cannot be empty")
+	}
+
+	var sum float64
+	for _, value := range data {
+		sum += value
+	}
+	return sum / float64(len(data)) // Return the mean as the MLE for a normal distribution
 }
