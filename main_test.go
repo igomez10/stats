@@ -705,7 +705,7 @@ func TestDerivate(t *testing.T) {
 	}
 }
 
-func TestFindInflectionPoint(t *testing.T) {
+func TestFindCriticalPoint(t *testing.T) {
 	type args struct {
 		fx    func(float64) float64
 		start float64
@@ -783,17 +783,31 @@ func float64Ptr(i float64) *float64 {
 func TestGetMaximumLikelihoodEstimationGivenPoisson(t *testing.T) {
 	data := []float64{9, 7, 9, 15, 10, 13, 11, 7, 2, 12}
 
-	likelihoodfunction := func(lambda float64) float64 {
-		likelihood := 1.0
+	// We could use a likelihood function to find the MLE for Poisson distribution
+	// For Poisson distribution, the likelihood function is:
+	// L(lambda) = product((lambda^x * exp(-lambda)) / x!)
+	// BUT... since the values are so small, we will use the log-likelihood function instead
+	// This is because the product of many small numbers can lead to numerical underflow.
+	// The log-likelihood function is:
+	// likelihoodFunction := func(lambda float64) float64 {
+	// 	likelihood := 1.0
+	// 	for _, x := range data {
+	// 		likelihood *= (math.Pow(lambda, x) * math.Exp(-lambda)) / Factorial(x)
+	// 	}
+	// 	return likelihood
+	// }
+
+	logLikelihoodFunction := func(lambda float64) float64 {
+		logLikelihood := 0.0
 		for _, x := range data {
-			likelihood *= (math.Pow(lambda, x) * math.Exp(-lambda)) / Factorial(x)
+			logLikelihood += x*math.Log(lambda) - lambda - math.Log(Factorial(x))
 		}
-		return likelihood
+		return logLikelihood
 	}
 
 	// start at 0.1 because this is poisson distribution and lambda cannot be negative
 	start := GetMin(data)
 	end := GetMax(data)
-	inflectionPoint := FindCriticalPoint(likelihoodfunction, start, end, 0.0001)
-	t.Logf("Maximum Likelihood Estimation (MLE) for Poisson distribution: %.4f", *inflectionPoint)
+	criticalPoint := FindCriticalPoint(logLikelihoodFunction, start, end, 0.001)
+	t.Logf("Maximum Likelihood Estimation (MLE) for Poisson distribution: %.4f", *criticalPoint)
 }
