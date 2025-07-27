@@ -757,6 +757,16 @@ func TestFindCriticalPoint(t *testing.T) {
 			},
 			want: float64Ptr(-math.Pi / 2), // Inflection point at x = -π/2 for f(x) = sin(x)
 		},
+		{
+			name: "no critical point for linear function",
+			args: args{
+				fx:    func(x float64) float64 { return x }, // f(x) = 42
+				start: -10,
+				end:   10,
+				step:  0.001,
+			},
+			want: nil, // No critical point for a constant function
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

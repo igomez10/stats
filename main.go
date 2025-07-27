@@ -273,6 +273,7 @@ func GetMaximumLikelihoodEstimation(data []float64) float64 {
 	return sum / float64(len(data)) // Return the mean as the MLE for a normal distribution
 }
 
+// GetMin returns the minimum value in a slice of float64
 func GetMin(data []float64) float64 {
 	if len(data) == 0 {
 		panic("Data cannot be empty")
@@ -287,6 +288,7 @@ func GetMin(data []float64) float64 {
 	return min
 }
 
+// GetMax returns the maximum value in a slice of float64
 func GetMax(data []float64) float64 {
 	if len(data) == 0 {
 		panic("Data cannot be empty")
