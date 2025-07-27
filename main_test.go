@@ -797,17 +797,60 @@ func TestGetMaximumLikelihoodEstimationGivenPoisson(t *testing.T) {
 	// 	return likelihood
 	// }
 
-	logLikelihoodFunction := func(lambda float64) float64 {
-		logLikelihood := 0.0
-		for _, x := range data {
-			logLikelihood += x*math.Log(lambda) - lambda - math.Log(Factorial(x))
-		}
-		return logLikelihood
-	}
+	// define log-likelihood function for Poisson distribution
+	logLikelihoodFn := GetLogLikelihoodFunctionPoisson(data)
+	// find the critical point of the log-likelihood function (where derivative is 0)
 
-	// start at 0.1 because this is poisson distribution and lambda cannot be negative
+	// start at smallest value in data and end at largest value in data
+	// lambda should be in this range
 	start := GetMin(data)
 	end := GetMax(data)
-	criticalPoint := FindCriticalPoint(logLikelihoodFunction, start, end, 0.001)
+	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, 0.001)
 	t.Logf("Maximum Likelihood Estimation (MLE) for Poisson distribution: %.4f", *criticalPoint)
+}
+
+func TestGetMax(t *testing.T) {
+	type args struct {
+		data []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"Max of positive numbers", args{data: []float64{1, 2, 3, 4, 5}}, 5},
+		{"Max of negative numbers", args{data: []float64{-1, -2, -3, -4, -5}}, -1},
+		{"Max of mixed numbers", args{data: []float64{-1, 2, -3, 4, -5}}, 4},
+		{"Max of single element", args{data: []float64{42}}, 42},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetMax(tt.args.data); got != tt.want {
+				t.Errorf("GetMax() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetMin(t *testing.T) {
+	type args struct {
+		data []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"Min of positive numbers", args{data: []float64{1, 2, 3, 4, 5}}, 1},
+		{"Min of negative numbers", args{data: []float64{-1, -2, -3, -4, -5}}, -5},
+		{"Min of mixed numbers", args{data: []float64{-1, 2, -3, 4, -5}}, -5},
+		{"Min of single element", args{data: []float64{42}}, 42},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetMin(tt.args.data); got != tt.want {
+				t.Errorf("GetMin() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

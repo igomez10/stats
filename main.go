@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -298,4 +299,29 @@ func GetMax(data []float64) float64 {
 		}
 	}
 	return max
+}
+
+// FindMaximumLikelihoodPoisson find the lambda parameter for a Poisson distribution
+// given a dataset, it finds the value of lambda that maximizes the log-likelihood function
+func FindMaximumLikelihoodPoisson(data []float64) float64 {
+	start := GetMin(data)
+	end := GetMax(data)
+	logLikelihoodFn := GetLogLikelihoodFunctionPoisson(data)
+	// Find the critical point of the log-likelihood function (where derivative is 0)
+	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, 0.001)
+	if criticalPoint == nil {
+		fmt.Println("No critical point found")
+		return 0.0
+	}
+	return *criticalPoint
+}
+
+func GetLogLikelihoodFunctionPoisson(data []float64) func(float64) float64 {
+	return func(lambda float64) float64 {
+		logLikelihood := 0.0
+		for _, x := range data {
+			logLikelihood += x*math.Log(lambda) - lambda - math.Log(Factorial(x))
+		}
+		return logLikelihood
+	}
 }
