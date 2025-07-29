@@ -40,6 +40,21 @@ func Factorial(n float64) float64 {
 	return result
 }
 
+// Exp returns e**x, the base-e exponential of x.
+// Special cases are:
+// - If x is NaN, the result is NaN.
+// - If x is +Inf, the result is +Inf.
+// - If x is -Inf, the result is 0.
+func GetPoissonDistributionFunction(lambda float64) func(float64) float64 {
+	return func(k float64) float64 {
+		if k < 0 {
+			return 0
+		}
+		// Poisson PMF: P(X=k) = (e^(-λ) * λ^k) / k!
+		return math.Exp(-lambda) * math.Pow(lambda, k) / Factorial(k)
+	}
+}
+
 // NewPoissonPMF creates a Poisson PMF
 // Poisson is always PMF
 // lambda is the average rate of occurrence
@@ -51,7 +66,8 @@ func NewPoissonPMF(lambda float64, numEvents int) *PMF {
 	pmf := NewPMF()
 	for currentNumEvents := 0; currentNumEvents <= numEvents; currentNumEvents++ {
 		// Calculate Poisson probability: e^(-λ) * λ^k / k!
-		prob := math.Exp(-lambda) * math.Pow(lambda, float64(currentNumEvents)) / float64(Factorial(float64(currentNumEvents)))
+		// prob := math.Exp(-lambda) * math.Pow(lambda, float64(currentNumEvents)) / float64(Factorial(float64(currentNumEvents)))
+		prob := GetPoissonDistributionFunction(lambda)(float64(currentNumEvents))
 		pmf.Set(float64(currentNumEvents), prob)
 	}
 
@@ -251,17 +267,18 @@ func FindCriticalPoint(fx func(float64) float64, start, end, step float64) *floa
 			return &x
 		}
 
+		lastValue = firstDerivativeValue
 	}
 
 	return nil // No inflection point found in the given range
 }
 
-// GetMaximumLikelihoodEstimation calculates the maximum likelihood estimation (MLE) for a given dataset
+// GetMaximumLikelihoodNormal calculates the maximum likelihood estimation (MLE) for a given dataset
 // For a normal distribution, the MLE is the sample mean
 // This function assumes the data is normally distributed
 // It returns the mean of the data as the MLE
 // If the data is empty, it panics
-func GetMaximumLikelihoodEstimation(data []float64) float64 {
+func GetMaximumLikelihoodNormal(data []float64) float64 {
 	if len(data) == 0 {
 		panic("Data cannot be empty")
 	}
@@ -303,9 +320,9 @@ func GetMax(data []float64) float64 {
 	return max
 }
 
-// FindMaximumLikelihoodPoisson find the lambda parameter for a Poisson distribution
+// GetMaximumLikelihoodPoisson find the lambda parameter for a Poisson distribution
 // given a dataset, it finds the value of lambda that maximizes the log-likelihood function
-func FindMaximumLikelihoodPoisson(data []float64) float64 {
+func GetMaximumLikelihoodPoisson(data []float64) float64 {
 	start := GetMin(data)
 	end := GetMax(data)
 	logLikelihoodFn := GetLogLikelihoodFunctionPoisson(data)
@@ -320,10 +337,50 @@ func FindMaximumLikelihoodPoisson(data []float64) float64 {
 
 func GetLogLikelihoodFunctionPoisson(data []float64) func(float64) float64 {
 	return func(lambda float64) float64 {
-		logLikelihood := 0.0
+		res := 1.0
 		for _, x := range data {
-			logLikelihood += x*math.Log(lambda) - lambda - math.Log(Factorial(x))
+			res *= GetPoissonDistributionFunction(lambda)(x)
 		}
-		return logLikelihood
+		return math.Log(res)
 	}
+}
+
+func GetLogLikelihoodFunctionNormal(data []float64) func(float64, float64) float64 {
+	return func(mean, stdDev float64) float64 {
+		if stdDev <= 0 {
+			panic("Standard deviation must be positive")
+		}
+		res := 1.0
+		for _, x := range data {
+			res *= GetNormalDistributionFunction(mean, stdDev)(x)
+		}
+		return math.Log(res)
+	}
+}
+
+func GetLogLikelihoodFunctionExponential(data []float64) func(float64) float64 {
+	return func(beta float64) float64 {
+		res := 0.0
+		for _, x := range data {
+			res += math.Log(1.0 / beta * math.Exp(-x/beta))
+		}
+		return res
+	}
+}
+
+func GetMaximumLikelihoodExponential(data []float64) float64 {
+	if len(data) == 0 {
+		panic("Data cannot be empty")
+	}
+
+	// For exponential distribution, the MLE for lambda is the inverse of the sample mean
+	var sum float64
+	for _, value := range data {
+		sum += value
+	}
+	mean := sum / float64(len(data))
+	if mean == 0 {
+		panic("Mean cannot be zero for exponential distribution")
+	}
+	return 1 / mean // Return the MLE for lambda
 }
