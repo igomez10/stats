@@ -359,16 +359,16 @@ func GetLogLikelihoodFunctionNormal(data []float64) func(float64, float64) float
 }
 
 func GetLogLikelihoodFunctionExponential(data []float64) func(float64) float64 {
-	return func(beta float64) float64 {
+	return func(lambda float64) float64 {
 		res := 0.0
 		for _, x := range data {
-			res += math.Log(GetExponentialDistributionFunction(1 / beta)(x))
+			res += math.Log(GetExponentialDistributionFunction(lambda)(x))
 		}
 		return res
 	}
 }
 
-func GetMaximumLikelihoodExponential(data []float64) float64 {
+func GetMaximumLikelihoodExponentialDistribution(data []float64) float64 {
 	if len(data) == 0 {
 		panic("Data cannot be empty")
 	}

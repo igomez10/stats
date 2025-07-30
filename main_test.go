@@ -871,15 +871,15 @@ func TestGetMaximumLikelihoodExponential(t *testing.T) {
 	logLikelihoodFn := GetLogLikelihoodFunctionExponential(data)
 
 	// Find the critical point of the log-likelihood function (where derivative is 0)
-	start := 1.0
+	start := 0.001
 	end := 100.0
-	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, 0.0001)
+	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, 0.00001)
 	if criticalPoint == nil {
 		t.Fatal("Critical point not found")
 	}
 	t.Logf("Maximum Likelihood Estimation (MLE) for Exponential distribution: %.4f", *criticalPoint)
 
-	if math.Abs(*criticalPoint-3.712) > 0.001 {
-		t.Errorf("Expected MLE to be 3.712, got %.3f", *criticalPoint)
+	if math.Abs(*criticalPoint-0.269) > 0.001 {
+		t.Errorf("Expected MLE to be 0.269, got %.3f", *criticalPoint)
 	}
 }
