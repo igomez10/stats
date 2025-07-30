@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -322,19 +321,19 @@ func GetMax(data []float64) float64 {
 
 // GetMaximumLikelihoodPoisson find the lambda parameter for a Poisson distribution
 // given a dataset, it finds the value of lambda that maximizes the log-likelihood function
-func GetMaximumLikelihoodPoisson(data []float64) float64 {
-	start := GetMin(data)
-	end := GetMax(data)
+func GetMaximumLikelihoodPoisson(data []float64, start, end, step float64) float64 {
+	start = math.Max(GetMax(data), start) // Ensure start is positive to avoid division by zero
+	end = math.Min(GetMin(data), end)     // Ensure end is not less than the minimum data value
 	logLikelihoodFn := GetLogLikelihoodFunctionPoisson(data)
 	// Find the critical point of the log-likelihood function (where derivative is 0)
-	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, 0.001)
+	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, step)
 	if criticalPoint == nil {
-		fmt.Println("No critical point found")
-		return 0.0
+		panic("No critical point found for Poisson distribution")
 	}
 	return *criticalPoint
 }
 
+// GetLogLikelihoodFunctionPoisson is a wrapper function that returns a log-likelihood function for a Poisson distribution
 func GetLogLikelihoodFunctionPoisson(data []float64) func(float64) float64 {
 	return func(lambda float64) float64 {
 		res := 1.0
@@ -345,6 +344,7 @@ func GetLogLikelihoodFunctionPoisson(data []float64) func(float64) float64 {
 	}
 }
 
+// GetLogLikelihoodFunctionNormal is a wrapper function that returns a log-likelihood function for a normal distribution
 func GetLogLikelihoodFunctionNormal(data []float64) func(float64, float64) float64 {
 	return func(mean, stdDev float64) float64 {
 		if stdDev <= 0 {
@@ -358,6 +358,7 @@ func GetLogLikelihoodFunctionNormal(data []float64) func(float64, float64) float
 	}
 }
 
+// GetLogLikelihoodFunctionExponential is a wrapper function that returns a log-likelihood function for an exponential distribution
 func GetLogLikelihoodFunctionExponential(data []float64) func(float64) float64 {
 	return func(lambda float64) float64 {
 		res := 0.0
@@ -368,19 +369,18 @@ func GetLogLikelihoodFunctionExponential(data []float64) func(float64) float64 {
 	}
 }
 
-func GetMaximumLikelihoodExponentialDistribution(data []float64) float64 {
+// GetMaximumLikelihoodExponentialDistribution finds the MLE, the best estimate for the lambda parameter of an exponential distribution
+// since we use numerrical approximations, we need to find the critical point of the log-likelihood function setting a minimum and maximum range
+// for the lambda parameter and the step size for the search.
+// the data is a slice of float64 representing the observed values
+func GetMaximumLikelihoodExponentialDistribution(data []float64, start, end, step float64) float64 {
 	if len(data) == 0 {
 		panic("Data cannot be empty")
 	}
 
-	// For exponential distribution, the MLE for lambda is the inverse of the sample mean
-	var sum float64
-	for _, value := range data {
-		sum += value
+	criticalPoint := FindCriticalPoint(GetLogLikelihoodFunctionExponential(data), start, end, step)
+	if criticalPoint == nil {
+		panic("No critical point found for exponential distribution")
 	}
-	mean := sum / float64(len(data))
-	if mean == 0 {
-		panic("Mean cannot be zero for exponential distribution")
-	}
-	return 1 / mean // Return the MLE for lambda
+	return *criticalPoint
 }
