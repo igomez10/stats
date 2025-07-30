@@ -867,20 +867,19 @@ func TestGetMin(t *testing.T) {
 
 func TestGetMaximumLikelihoodExponential(t *testing.T) {
 	data := []float64{4.2, 3.1, 5.0, 2.8, 3.7, 6.4, 1.9, 2.6}
-
 	// Define the log-likelihood function for Exponential distribution
 	logLikelihoodFn := GetLogLikelihoodFunctionExponential(data)
 
 	// Find the critical point of the log-likelihood function (where derivative is 0)
 	start := 1.0
 	end := 100.0
-	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, 0.001)
+	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, 0.0001)
 	if criticalPoint == nil {
 		t.Fatal("Critical point not found")
 	}
 	t.Logf("Maximum Likelihood Estimation (MLE) for Exponential distribution: %.4f", *criticalPoint)
 
-	if math.Abs(*criticalPoint-3.711) > 0.001 {
-		t.Errorf("Expected MLE to be 3.711, got %.3f", *criticalPoint)
+	if math.Abs(*criticalPoint-3.712) > 0.001 {
+		t.Errorf("Expected MLE to be 3.712, got %.3f", *criticalPoint)
 	}
 }

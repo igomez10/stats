@@ -362,7 +362,7 @@ func GetLogLikelihoodFunctionExponential(data []float64) func(float64) float64 {
 	return func(beta float64) float64 {
 		res := 0.0
 		for _, x := range data {
-			res += math.Log(1.0 / beta * math.Exp(-x/beta))
+			res += math.Log(GetExponentialDistributionFunction(1 / beta)(x))
 		}
 		return res
 	}
