@@ -883,3 +883,16 @@ func TestGetMaximumLikelihoodExponential(t *testing.T) {
 		t.Errorf("Expected MLE to be 0.269, got %.3f", *criticalPoint)
 	}
 }
+
+func TestGetJointDistribution(t *testing.T) {
+	constantFn := func(x, y float64) float64 {
+		return x - y
+	}
+	joint := NewJointPDF(constantFn, 0, 1, 0, 1)
+
+	fmt.Println("Joint PDF at (0.5, 0.5):", joint.function(0.5, 0.5))
+
+	// find marginal distribution for x
+	marginalX := joint.GetMarginalX(0.01)
+	fmt.Println("Marginal PDF for X at 0.5:", marginalX(0.5))
+}

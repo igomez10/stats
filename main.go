@@ -208,6 +208,30 @@ func Integrate(from, to, step float64, fx func(float64) float64) float64 {
 	return res
 }
 
+type singleValueFunction func(float64) float64
+
+func (s singleValueFunction) Integrate(from, to, step float64) float64 {
+	return Integrate(from, to, step, s)
+}
+
+type multiValueFunction func(float64, float64) float64
+
+func (m multiValueFunction) IntegrateX(from, to, step float64, y float64) float64 {
+	var res float64 = 0
+	for x := from; x < to; x += step {
+		res += m(x, y) * step
+	}
+	return res
+}
+
+func (m multiValueFunction) IntegrateY(from, to, step float64, x float64) float64 {
+	var res float64 = 0
+	for y := from; y < to; y += step {
+		res += m(x, y) * step
+	}
+	return res
+}
+
 // IntegrateUntilValue returns the limit of integration until the accumulated value reaches or exceeds targetValue
 // THIS FUNCTION IS NOT A STANDARD INTEGRATION FUNCTION, IT DOES NOT RETURN THE AREA UNDER THE CURVE
 // INSTEAD, IT RETURNS THE ACCUMULATED VALUE OF THE INTEGRAL UNTIL IT REACHES OR EXCEEDS targetValue
@@ -383,4 +407,49 @@ func GetMaximumLikelihoodExponentialDistribution(data []float64, start, end, ste
 		panic("No critical point found for exponential distribution")
 	}
 	return *criticalPoint
+}
+
+type JointPDF struct {
+	function  func(x float64, y float64) float64
+	rangeMinX float64
+	rangeMaxX float64
+	rangeMinY float64
+	rangeMaxY float64
+}
+
+func (j *JointPDF) GetMarginalX(step float64) func(float64) float64 {
+	return func(x float64) float64 {
+		wrapper := func(y float64) float64 {
+			return j.function(x, y)
+		}
+		integral := Integrate(j.rangeMinY, j.rangeMaxY, step, wrapper)
+		return integral
+	}
+}
+
+func (j *JointPDF) GetMarginalY(step float64) func(float64) float64 {
+	return func(y float64) float64 {
+		wrapper := func(x float64) float64 {
+			return j.function(x, y)
+		}
+		integral := Integrate(j.rangeMinX, j.rangeMaxX, step, wrapper)
+		return integral
+	}
+}
+
+func NewJointPDF(function func(float64, float64) float64, minX, maxX, minY, maxY float64) *JointPDF {
+	if minX >= maxX || minY >= maxY {
+		panic("Invalid range: min must be less than max")
+	}
+	if function == nil {
+		panic("Function cannot be nil")
+	}
+
+	return &JointPDF{
+		function:  function,
+		rangeMinX: minX,
+		rangeMaxX: maxX,
+		rangeMinY: minY,
+		rangeMaxY: maxY,
+	}
 }
