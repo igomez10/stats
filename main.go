@@ -453,3 +453,56 @@ func NewJointPDF(function func(float64, float64) float64, minX, maxX, minY, maxY
 		rangeMaxY: maxY,
 	}
 }
+
+type JointPMF struct {
+	values map[[2]float64]float64
+}
+
+func NewJointPMF() *JointPMF {
+	return &JointPMF{
+		values: make(map[[2]float64]float64),
+	}
+}
+
+func (j *JointPMF) TotalSumProbabilities() float64 {
+	var total float64
+	for _, prob := range j.values {
+		total += prob
+	}
+	return total
+}
+
+func (j *JointPMF) Set(x, y, prob float64) {
+	if prob < 0 || prob > 1 {
+		panic("Probability must be between 0 and 1")
+	}
+
+	// validate that the sum of all probabilities does not exceed 1
+	if prob+j.TotalSumProbabilities()-1 > 0.01 {
+		panic("Total probability cannot exceed 1")
+	}
+
+	j.values[[2]float64{x, y}] = prob
+}
+
+func (j *JointPMF) Get(x, y float64) float64 {
+	return j.values[[2]float64{x, y}]
+}
+
+func (j *JointPMF) GetMarginalX() *PMF {
+	pmf := NewPMF()
+	for key, prob := range j.values {
+		valueSoFar := pmf.Get(key[0])
+		pmf.Set(key[0], valueSoFar+prob)
+	}
+	return pmf
+}
+
+func (j *JointPMF) GetMarginalY() *PMF {
+	pmf := NewPMF()
+	for key, prob := range j.values {
+		valueSoFar := pmf.Get(key[1])
+		pmf.Set(key[1], valueSoFar+prob)
+	}
+	return pmf
+}

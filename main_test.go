@@ -896,3 +896,164 @@ func TestGetJointDistribution(t *testing.T) {
 	marginalX := joint.GetMarginalX(0.01)
 	fmt.Println("Marginal PDF for X at 0.5:", marginalX(0.5))
 }
+
+func TestJointPMF_GetMarginalX(t *testing.T) {
+	type fields struct {
+		values map[[2]float64]float64
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   [][]float64
+	}{
+		{
+			name: "Single Value has 1 marginal",
+			fields: fields{
+				values: map[[2]float64]float64{
+					{0, 0}: 0,
+					{0, 1}: 1,
+				},
+			},
+			want: [][]float64{
+				{0, 1},
+			},
+		},
+		{
+			name: "Non-empty Joint PMF",
+			fields: fields{
+				values: map[[2]float64]float64{
+					{0, 0}: 0.1,
+					{0, 1}: 0.2,
+					{1, 0}: 0.3,
+					{1, 1}: 0.4,
+				},
+			},
+			want: [][]float64{
+				{0, 0.3},
+				{1, 0.7},
+			},
+		},
+		{
+			name: "Multiple Values with Marginal X",
+			fields: fields{
+				values: map[[2]float64]float64{
+					{0, 0}: 0.1,
+					{0, 1}: 0.2,
+					{1, 0}: 0.2,
+					{1, 1}: 0.4,
+					{2, 0}: 0.1,
+				},
+			},
+			want: [][]float64{
+				{0, 0.3},
+				{1, 0.6},
+				{2, 0.1},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			j := &JointPMF{
+				values: make(map[[2]float64]float64),
+			}
+			for k, v := range tt.fields.values {
+				j.Set(k[0], k[1], v)
+			}
+
+			// Test marginal distribution for specific values
+			if tt.name == "Empty Joint PMF" {
+				// Check marginal distribution for all x
+				if len(j.GetMarginalX().orderedValues) != len(tt.want) {
+					t.Errorf("Expected %d marginal values for X, got %d", len(tt.want), len(j.GetMarginalX().orderedValues))
+				}
+				for i := range j.GetMarginalX().orderedValues {
+					expected := tt.want[i][1]
+					actual := j.GetMarginalX().Get(j.GetMarginalX().orderedValues[i])
+					if math.Abs(expected-actual) > 0.01 {
+						t.Errorf("Expected marginal value for X at %f to be %f, got %f", j.GetMarginalX().orderedValues[i], expected, actual)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestJointPMF_GetMarginalY(t *testing.T) {
+	type fields struct {
+		values map[[2]float64]float64
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   [][]float64
+	}{
+		{
+			name: "Single Value has 1 marginal",
+			fields: fields{
+				values: map[[2]float64]float64{
+					{0, 0}: 0,
+					{0, 1}: 1,
+				},
+			},
+			want: [][]float64{
+				{1, 1},
+			},
+		},
+		{
+			name: "Non-empty Joint PMF",
+			fields: fields{
+				values: map[[2]float64]float64{
+					{0, 0}: 0.1,
+					{0, 1}: 0.2,
+					{1, 0}: 0.3,
+					{1, 1}: 0.4,
+				},
+			},
+			want: [][]float64{
+				{0, 0.4},
+				{1, 0.6},
+			},
+		},
+		{
+			name: "Multiple Values with Marginal X",
+			fields: fields{
+				values: map[[2]float64]float64{
+					{0, 0}: 0.1,
+					{0, 1}: 0.2,
+					{1, 0}: 0.2,
+					{1, 1}: 0.4,
+					{2, 0}: 0.1,
+				},
+			},
+			want: [][]float64{
+				{0, 0.4},
+				{1, 0.6},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			j := &JointPMF{
+				values: make(map[[2]float64]float64),
+			}
+			for k, v := range tt.fields.values {
+				j.Set(k[0], k[1], v)
+			}
+
+			// Test marginal distribution for specific values
+			if tt.name == "Empty Joint PMF" {
+				// Check marginal distribution for all x
+				if len(j.GetMarginalY().orderedValues) != len(tt.want) {
+					t.Errorf("Expected %d marginal values for X, got %d", len(tt.want), len(j.GetMarginalY().orderedValues))
+				}
+				for i := range j.GetMarginalY().orderedValues {
+					expected := tt.want[i][1]
+					actual := j.GetMarginalY().Get(j.GetMarginalY().orderedValues[i])
+					if math.Abs(expected-actual) > 0.01 {
+						t.Errorf("Expected marginal value for X at %f to be %f, got %f", j.GetMarginalY().orderedValues[i], expected, actual)
+					}
+				}
+			}
+		})
+	}
+}
