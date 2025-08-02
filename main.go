@@ -506,3 +506,28 @@ func (j *JointPMF) GetMarginalY() *PMF {
 	}
 	return pmf
 }
+
+func FindLocalMinimum(fn func(float64) float64, start, step float64) float64 {
+	// start at start
+	// compare with x+step and x-step
+	// go to smaller, evaluate again
+	// store visited values in map
+	// visit next until encounters values already visited
+	visited := map[float64]bool{}
+	cursor := start
+	for !visited[cursor] {
+		visited[cursor] = true
+		currentValue := fn(cursor)
+		nextValue := fn(cursor + step)
+		previousValue := fn(cursor - step)
+
+		if nextValue < currentValue {
+			cursor += step
+		}
+		if previousValue < currentValue {
+			cursor -= step
+		}
+		cursor = math.Round(cursor*1000) / 1000
+	}
+	return cursor
+}

@@ -1057,3 +1057,57 @@ func TestJointPMF_GetMarginalY(t *testing.T) {
 		})
 	}
 }
+
+func TestFindLocalMinimum(t *testing.T) {
+	type args struct {
+		fn    func(float64) float64
+		start float64
+		step  float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "x2",
+			args: args{
+				fn: func(x float64) float64 {
+					return x * x
+				},
+				start: -1000,
+				step:  0.1,
+			},
+			want: 0,
+		},
+		{
+			name: "x2 + 1",
+			args: args{
+				fn: func(x float64) float64 {
+					return x*x + 1
+				},
+				start: 1000,
+				step:  0.1,
+			},
+			want: 0,
+		},
+		{
+			name: "x2 + x",
+			args: args{
+				fn: func(x float64) float64 {
+					return x*x + x
+				},
+				start: 10000,
+				step:  0.1,
+			},
+			want: -0.5,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FindLocalMinimum(tt.args.fn, tt.args.start, tt.args.step); got != tt.want {
+				t.Errorf("FindLocalMinimum() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
