@@ -1,82 +1,68 @@
 # stats
 
-A Go library for statistical computations, probability distributions, and related mathematical functions.
+A Go package for working with probability distributions, statistical functions, and numerical methods.
 
 ## Features
 
-- Probability Mass Functions (PMF) and Probability Density Functions (PDF)
-- Binomial, Poisson, Normal, Exponential distributions
-- Confidence intervals for means and proportions
-- Z-score and T-score calculations
-- Numerical integration and differentiation
-- Marginal distributions for joint PDFs
-- Utility functions for statistics (sum, average, stdev, etc.)
+- Probability Mass Functions (PMF) for Binomial and Poisson distributions
+- Probability Density Functions (PDF) for Normal, Student's t, and Exponential distributions
+- Numerical integration and differentiation utilities
+- Maximum Likelihood Estimation (MLE) for Normal and Poisson distributions
+- Utility functions for combinations, factorials, normalization, and more
 
-## Exposed Methods
+## Main Functions
 
-### Distributions
+### Probability Distributions
 
-- **NewPMF**: Create and manipulate a probability mass function.
-- **NewBinomialPMF(n, p)**: Binomial distribution PMF for `n` trials and success probability `p`.
-- **NewPoissonPMF(lambda, maxNumEvents)**: Poisson distribution PMF for rate `lambda`.
-- **NewExponentialPDF(lambda, rangeMin, rangeMax)**: Exponential distribution PDF.
-- **NewNormalPDF(mean, stdDev, rangeMin, rangeMax)**: Normal (Gaussian) distribution PDF.
-
-### Probability and Statistics
-
-- **GetMeanConfidenceIntervalForNormalDistribution(sampleMean, sampleStdDev, sampleSize, confidenceLevel, from, to, step)**  
-  Calculate confidence interval for the mean.
-- **GetProportionConfidenceInterval(successProbability, sampleSize, confidenceLevel, from, to, step)**  
-  Confidence interval for a proportion.
-- **GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation, sampleSize)**  
-  Student's T statistic.
-- **GetZScore(sampleMean, populationMean, sampleStandardDeviation, sampleSize)**  
-  Z-score for hypothesis testing.
-- **GetTScore(degreesOfFreedom, confidenceLevel, from, to, step)**  
-  T-score for given degrees of freedom and confidence level.
-- **GetExponentialDistributionFunction(lambda)**  
-  Exponential CDF.
-
-### Numerical Methods
-
-- **Integrate(from, to, step, func)**  
-  Numerical integration using the supplied function.
-- **GetDerivativeAtX(fx, x, step)**  
-  Numerical derivative of a function at a specific point.
-- **FindCriticalPoint(fx, from, to, step)**  
-  Find points where the derivative is zero (local minima/maxima).
-
-### Joint and Marginal Distributions
-
-- **JointPDF.GetMarginalX(step)**  
-  Get the marginal distribution in X by integrating over Y.
-- **JointPDF.GetMarginalY(step)**  
-  Get the marginal distribution in Y by integrating over X.
+- `NewBinomialPMF(numberOfTrials int, probSuccess float64) *PMF`  
+  Create a binomial probability mass function.
+- `NewPoissonPMF(lambda float64, numEvents int) *PMF`  
+  Create a Poisson probability mass function.
+- `NewNormalPDF(mean, stdDev, rangeMin, rangeMax float64) *PDF`  
+  Create a normal probability density function.
+- `NewStudentTDistributionPDF(degreesOfFreedom, rangeMin, rangeMax float64) *PDF`  
+  Create a Student's t-distribution PDF.
+- `NewExponentialPDF(lambda, rangeMin, rangeMax float64) *PDF`  
+  Create an exponential probability density function.
 
 ### Utility Functions
 
-- **sum([]float64)**: Sum of array elements.
-- **average([]float64)**: Mean of array elements.
-- **stdev([]float64)**: Standard deviation.
-- **Normalize(x, mean, stdDev)**: Calculates z-score.
+- `Combination(totalItems, takenItems int) int`  
+  Compute the number of combinations (n choose k).
+- `Factorial(n int) int`  
+  Compute the factorial of n.
+- `Normalize(x, mean, stdDev float64) float64`  
+  Compute the z-score for a value.
+- `Integrate(from, to, step float64, fx func(float64) float64) float64`  
+  Numerically integrate a function over a range.
+- `Derivate(x, step float64, fx func(float64) float64) func(float64) float64`  
+  Return a function that computes the numerical derivative.
+- `IntegrateUntilValue(from, toMaxValue, targetValue, step float64, fx func(float64) float64) float64`  
+  Integrate until a target value is reached.
 
-## Usage
+### Maximum Likelihood Estimation (MLE)
 
-Import the package and use the available methods to perform statistical calculations or probability simulations.
+- `GetMaximumLikelihoodEstimation(data []float64) float64`  
+  Compute the MLE (mean) for a normal distribution.
+- `GetMaximumLikelihoodEstimationPoisson(data []float64) float64`  
+  Compute the MLE (mean) for the rate parameter (lambda) of a Poisson distribution.
+
+## Example Usage
 
 ```go
+// Binomial PMF
 pmf := NewBinomialPMF(10, 0.5)
-pmf.Print(os.Stdout)
 
-// Normal distribution example
-pdf := NewNormalPDF(0, 1, -5, 5)
-value := pdf.ValueAt(0)
+// Normal PDF
+pdf := NewNormalPDF(0, 1, -3, 3)
+
+// MLE for normal
+mean := GetMaximumLikelihoodEstimation([]float64{1, 2, 3, 4, 5})
+
+// MLE for Poisson
+lambda := GetMaximumLikelihoodEstimationPoisson([]float64{2, 3, 4, 2, 3})
 ```
 
-## Testing
+## License
 
-The repository includes a comprehensive test suite (`main_test.go`) that demonstrates the usage and expected output of all major methods.
-
----
-
-Feel free to open issues or contribute with improvements!
+MIT
