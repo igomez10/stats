@@ -1365,6 +1365,19 @@ func average(arr []float64) float64 {
 	return sum(arr) / float64(len(arr))
 }
 
+func stdev(arr []float64) float64 {
+	if len(arr) == 0 {
+		return 0
+	}
+	mean := average(arr)
+	variance := 0.0
+	for _, v := range arr {
+		variance += (v - mean) * (v - mean)
+	}
+	variance /= float64(len(arr) - 1) // Sample variance
+	return math.Sqrt(variance)
+}
+
 func squared(arr []float64) []float64 {
 	squared := make([]float64, len(arr))
 	for i, v := range arr {
@@ -1467,6 +1480,35 @@ func TestGetZScore(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetZScore(tt.args.sampleMean, tt.args.populationMean, tt.args.sampleStandardDeviation, tt.args.sampleSize); math.Abs(got-tt.want) > 0.01 {
 				t.Errorf("GetZScore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_stdev(t *testing.T) {
+	type args struct {
+		arr []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "Standard deviation of positive numbers",
+			args: args{arr: []float64{1, 2, 3, 4, 5}},
+			want: 1.5811, // Standard deviation of {1, 2, 3, 4, 5} is approximately 1.581
+		},
+		{
+			name: "Standard deviation of negative numbers",
+			args: args{arr: []float64{-1, -2, -3, -4, -5}},
+			want: 1.5811, // Standard deviation of {-1, -2, -3, -4, -5} is approximately 1.581
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := stdev(tt.args.arr); math.Abs(got-tt.want) > 0.01 {
+				t.Errorf("stdev() = %v, want %v", got, tt.want)
 			}
 		})
 	}
