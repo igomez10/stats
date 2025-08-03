@@ -1175,3 +1175,39 @@ func Test421(t *testing.T) {
 		t.Logf("Confidence level %.2f: [%.2f, %.2f]", confLevel, lower, upper)
 	}
 }
+
+func TestGetTScoreFromProbability(t *testing.T) {
+	type args struct {
+		confidenceLevel  float64
+		degreesOfFreedom float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "Degrees of Freedom 1, Confidence Level 0.9",
+			args: args{
+				confidenceLevel:  0.9,
+				degreesOfFreedom: 1,
+			},
+			want: 3.0787, // T-score for 90% confidence level with 1 degree of freedom
+		},
+		{
+			name: "Degrees of Freedom 5, Confidence Level 0.9",
+			args: args{
+				confidenceLevel:  0.9,
+				degreesOfFreedom: 5,
+			},
+			want: 1.4759, // T-score for 90% confidence level with 5 degrees of freedom
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetRightTailTScoreFromProbability(tt.args.confidenceLevel, tt.args.degreesOfFreedom, -1000, 1000, 0.001); math.Abs(got-tt.want) > 0.01 {
+				t.Errorf("GetRightTailTScoreFromProbability() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

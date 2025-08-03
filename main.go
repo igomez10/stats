@@ -554,14 +554,14 @@ func GetRightTailZScoreFromProbability(confidenceLevel, from, to, step float64) 
 	return IntegrateUntilValue(from, to, confidenceLevel, step, standardNormal)
 }
 
-func GetCentralZScoreFromProbability(confidenceLevel, from, to, step float64) float64 {
-	standardNormal := GetNormalDistributionFunction(0, 1)
-	return IntegrateUntilValue(0, to, confidenceLevel/2, step, standardNormal)
-}
-
 func GetStandardError(stdDev float64, sampleSize int) float64 {
 	if sampleSize <= 0 {
 		panic("Sample size must be greater than 0")
 	}
 	return stdDev / math.Sqrt(float64(sampleSize))
+}
+
+func GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step float64) float64 {
+	tDistribution := GetStudentTDistributionFunction(degreesOfFreedom)
+	return IntegrateUntilValue(from, to, confidenceLevel, step, tDistribution)
 }
