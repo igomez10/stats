@@ -610,3 +610,14 @@ func GetProportionConfidenceInterval(successProbability, sampleSize, confidenceL
 	lower := successProbability - marginOfError
 	return lower, upper
 }
+
+func GetTScore(degreesOfFreedom, confidenceLevel, from, to, step float64) float64 {
+	if degreesOfFreedom <= 0 {
+		panic("Degrees of freedom must be greater than 0")
+	}
+	if confidenceLevel <= 0 || confidenceLevel >= 1 {
+		panic("Confidence level must be between 0 and 1")
+	}
+
+	return GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step)
+}

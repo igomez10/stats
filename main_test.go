@@ -1280,3 +1280,59 @@ func GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation fl
 	tStatistic := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
 	return tStatistic
 }
+func TestGetTScore(t *testing.T) {
+	type args struct {
+		degreesOfFreedom float64
+		confidenceLevel  float64
+		from             float64
+		to               float64
+		step             float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "Degrees of Freedom 1, Confidence Level 0.9",
+			args: args{
+				degreesOfFreedom: 1,
+				confidenceLevel:  0.9,
+				from:             -1000,
+				to:               1000,
+				step:             0.001,
+			},
+			want: 3.0787, // T-score for 90% confidence level with 1 degree of freedom
+		},
+		{
+			name: "Degrees of Freedom 5, Confidence Level 0.9",
+			args: args{
+				degreesOfFreedom: 5,
+				confidenceLevel:  0.9,
+				from:             -1000,
+				to:               1000,
+				step:             0.001,
+			},
+			want: 1.4759, // T-score for 90% confidence level with 5 degrees of freedom
+		},
+		{
+			name: "Degrees of Freedom 9, Confidence Level 0.95",
+			args: args{
+				degreesOfFreedom: 9,
+				confidenceLevel:  0.95,
+				from:             -1000,
+				to:               1000,
+				step:             0.001,
+			},
+			want: 1.833, // T-score for 95% confidence level with 9 degrees of freedom
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetTScore(tt.args.degreesOfFreedom, tt.args.confidenceLevel, tt.args.from, tt.args.to, tt.args.step); math.Abs(got-tt.want) > 0.01 {
+				t.Errorf("GetTScore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
