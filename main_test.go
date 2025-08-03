@@ -1262,3 +1262,21 @@ func TestSolve4220(t *testing.T) {
 			confidenceLevel, lower, upper, 0.504, 0.696)
 	}
 }
+
+func TestGetStudentTStatistic(t *testing.T) {
+	t.Log("=== Get Student's T Statistic ===")
+	// Example parameters for Student's T distribution
+	sampleMean := 4.7
+	populationMean := 5.0
+	sampleStandardDeviation := 1.2
+	sampleSize := 15
+
+	// Get the t-statistic for the given degrees of freedom and confidence level
+	tStatistic := GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation, sampleSize)
+	t.Logf("T-statistic: %.4f", tStatistic)
+}
+
+func GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation float64, sampleSize int) float64 {
+	tStatistic := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
+	return tStatistic
+}
