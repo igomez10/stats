@@ -1335,6 +1335,40 @@ func TestSampleExercise(t *testing.T) {
 	}
 }
 
+func TestSolve466(t *testing.T) {
+	// 300 mg 284 279 289 292 287 295 285 279 306 298
+	// 600 mg 298 307 297 279 291 335 299 300 306 291
+	arr300 := []float64{284, 279, 289, 292, 287, 295, 285, 279, 306, 298}
+	arr600 := []float64{298, 307, 297, 279, 291, 335, 299, 300, 306, 291}
+
+	n := float64(len(arr300) + len(arr600))
+	mean300 := average(arr300)
+	mean600 := average(arr600)
+	stdDev300 := stdev(arr300)
+	stdDev600 := stdev(arr600)
+
+	// h0 := "mean300 = mean600"
+	// h1 := "mean300 != mean600"
+	t.Logf("Sample mean for 300 mg: %.2f", mean300)
+	t.Logf("Sample mean for 600 mg: %.2f", mean600)
+	t.Logf("Sample standard deviation for 300 mg: %.2f", stdDev300)
+	t.Logf("Sample standard deviation for 600 mg: %.2f", stdDev600)
+
+	stdErr := math.Sqrt(stdDev600 * stdDev300)
+	tStatistic := GetStudentTStatistic(mean300-mean600, 0, stdErr, int(n))
+	t.Logf("T-statistic: %.4f", tStatistic)
+	// Get the critical t-value for a two-tailed test with alpha = 0.05
+	alpha := 0.05
+	halphAlpha := alpha / 2
+	criticalT := GetTScore(n-2, 1-halphAlpha, -1000, 1000, 0.001)
+	t.Logf("Critical T-value for alpha/2 = %.2f: %.4f", halphAlpha, criticalT)
+
+	if tStatistic > criticalT || tStatistic < -criticalT {
+		t.Log("Reject H0: mean300 != mean600")
+	} else {
+		t.Error("Failed to reject H0: mean300 = mean600")
+	}
+}
 
 func TestGetStudentTStatistic(t *testing.T) {
 	t.Log("=== Get Student's T Statistic ===")
