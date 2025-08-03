@@ -532,18 +532,20 @@ func FindLocalMinimum(fn func(float64) float64, start, step float64) float64 {
 	return cursor
 }
 
-func GetConfidenceIntervalForNormalDistribution(mean, stdDev, confidenceLevel float64) (float64, float64) {
+func GetConfidenceIntervalForNormalDistributionWithZscore(mean, stdDev, confidenceLevel, from, to, step float64) (float64, float64) {
 	if confidenceLevel <= 0 || confidenceLevel >= 1 {
 		panic("Confidence level must be between 0 and 1")
 	}
 
-	z := GetRightTailZScoreFromProbability(confidenceLevel, -10, 10, 0.01)
+	z := GetRightTailZScoreFromProbability(confidenceLevel, from, to, step)
 	if z == 0 {
 		panic("Z-score cannot be zero")
 	}
 	marginOfError := z * stdDev
+	lower := mean - marginOfError
+	upper := mean + marginOfError
 
-	return mean - marginOfError, mean + marginOfError
+	return lower, upper
 }
 
 // GetRightTailZScoreFromProbability returns the z-score for a left tail of a normal distribution
@@ -564,4 +566,27 @@ func GetStandardError(stdDev float64, sampleSize int) float64 {
 func GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step float64) float64 {
 	tDistribution := GetStudentTDistributionFunction(degreesOfFreedom)
 	return IntegrateUntilValue(from, to, confidenceLevel, step, tDistribution)
+}
+
+// GetMeanConfidenceIntervalForNormalDistribution calculates the confidence interval for a normal distribution
+// given a sample mean, sample standard deviation, sample size, confidence level, and range for integration
+func GetMeanConfidenceIntervalForNormalDistribution(sampleMean, sampleStdDev float64, sampleSize int, confidenceLevel, from, to, step float64) (float64, float64) {
+	alpha := (1 - confidenceLevel) / 2
+
+	// score could be a z-score or t-score depending on the sample size
+	var score float64
+	if sampleSize > 30 {
+		// if sample size is greater than 30, we can use the z-score
+		score = -GetRightTailZScoreFromProbability(alpha, from, to, step)
+	} else {
+		// if sample size is less than or equal to 30, we use the t-score
+		degreesOfFreedom := float64(sampleSize - 1)
+		score = -GetRightTailTScoreFromProbability(alpha, degreesOfFreedom, from, to, step)
+	}
+
+	marginOfError := score * GetStandardError(sampleStdDev, sampleSize)
+	lowerBound := sampleMean - marginOfError
+	upperBound := sampleMean + marginOfError
+
+	return lowerBound, upperBound
 }
