@@ -41,8 +41,8 @@ A Go library for statistical computations, probability distributions, and relate
 
 - **Integrate(from, to, step, func)**  
   Numerical integration using the supplied function.
-- **Derivate(fx, step)**  
-  Numerical derivative of a function.
+- **GetDerivativeAtX(fx, x, step)**  
+  Numerical derivative of a function at a specific point.
 - **FindCriticalPoint(fx, from, to, step)**  
   Find points where the derivative is zero (local minima/maxima).
 
