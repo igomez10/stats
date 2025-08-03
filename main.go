@@ -570,6 +570,7 @@ func GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, 
 
 // GetMeanConfidenceIntervalForNormalDistribution calculates the confidence interval for a normal distribution
 // given a sample mean, sample standard deviation, sample size, confidence level, and range for integration
+// Internally, it will use the z-score for large samples (n > 30) or t-score for small samples (n <= 30)
 func GetMeanConfidenceIntervalForNormalDistribution(sampleMean, sampleStdDev float64, sampleSize int, confidenceLevel, from, to, step float64) (float64, float64) {
 	alpha := (1 - confidenceLevel) / 2
 
@@ -589,4 +590,23 @@ func GetMeanConfidenceIntervalForNormalDistribution(sampleMean, sampleStdDev flo
 	upperBound := sampleMean + marginOfError
 
 	return lowerBound, upperBound
+}
+
+// GetProportionConfidenceInterval calculates the confidence interval for a proportion
+// given the success probability, sample size, confidence level, and range for integration
+func GetProportionConfidenceInterval(successProbability, sampleSize, confidenceLevel, from, to, step float64) (float64, float64) {
+	alpha := (1 - confidenceLevel) / 2
+	zScore := -GetRightTailZScoreFromProbability(alpha, from, to, step)
+
+	// Calculate the standard error
+	// SE = sqrt((p * (1 - p)) / n)
+	standardError := math.Sqrt((successProbability * (1 - successProbability)) / sampleSize)
+
+	// Calculate the margin of error
+	marginOfError := zScore * standardError
+
+	// Return the confidence interval
+	upper := successProbability + marginOfError
+	lower := successProbability - marginOfError
+	return lower, upper
 }

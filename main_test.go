@@ -1248,3 +1248,17 @@ func TestSolve427(t *testing.T) {
 			confidenceLevel, lower, upper, 3.68, 5.72)
 	}
 }
+
+func TestSolve4220(t *testing.T) {
+	// 4.2.20. When 100 tacks were thrown on a table, 60 of them landed point up. Obtain a 95% confidence interval for the probability that a tack of this type lands point up. Assume independence.
+
+	n := 100.0 // number of trials
+	x := 60.0  // number of successes
+	p := x / n // sample proportion
+	confidenceLevel := 0.95
+	lower, upper := GetProportionConfidenceInterval(p, n, confidenceLevel, -100.0, 100.0, 0.001)
+	if math.Abs(lower-0.504) > 0.01 || math.Abs(upper-0.696) > 0.01 {
+		t.Errorf("Confidence level %f : got [ %f, %f ], want [ %f, %f ]",
+			confidenceLevel, lower, upper, 0.504, 0.696)
+	}
+}
