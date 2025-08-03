@@ -1155,8 +1155,6 @@ func TestGetRightTailZScore(t *testing.T) {
 func Test421(t *testing.T) {
 	// 4.2.1. Let the observed value of the mean X and of the sample variance of a random sample of size 20 from a distribution that is N(M, 02) be 81.2 and 26.5, respectively.
 	// Find respectively 90%, 95% and 99% confidence intervals for M. Note how the lengths of the confidence intervals increase as the confidence increases.
-
-	t.Log("=== 4.2.1 Exercise ===")
 	mean := 81.2
 	variance := 26.5
 	sampleSize := 20
@@ -1166,14 +1164,57 @@ func Test421(t *testing.T) {
 	step := 0.001
 	from := -10.0
 	to := 10.0
-	for _, confLevel := range confidenceLevels {
-		alpha := (1 - confLevel) / 2
-		zScore := -GetRightTailZScoreFromProbability(alpha, from, to, step)
-		marginOfError := zScore * GetStandardError(stdDev, int(sampleSize))
-		lower := mean - marginOfError
-		upper := mean + marginOfError
-		t.Logf("Confidence level %.2f: [%.2f, %.2f]", confLevel, lower, upper)
+	expected := [][]float64{
+		{79.31, 83.09}, // Expected lower and upper bounds for 90% confidence level
+		{78.94, 83.46}, // Expected lower and upper bounds for 95% confidence level
+		{78.24, 84.16}, // Expected lower and upper bounds for 99% confidence level
 	}
+	for i, confLevel := range confidenceLevels {
+		t.Run(fmt.Sprintf("Confidence level %.2f", confLevel), func(t *testing.T) {
+			alpha := (1 - confLevel) / 2
+			zScore := -GetRightTailZScoreFromProbability(alpha, from, to, step)
+			marginOfError := zScore * GetStandardError(stdDev, int(sampleSize))
+			lower := mean - marginOfError
+			upper := mean + marginOfError
+
+			if math.Abs(lower-expected[i][0]) > 0.01 || math.Abs(upper-expected[i][1]) > 0.01 {
+				t.Errorf("Confidence level %.2f: got [%.2f, %.2f], want [%.2f, %.2f]",
+					confLevel, lower, upper, expected[i][0], expected[i][1])
+			}
+		})
+	}
+}
+
+func Test421WithTtest(t *testing.T) {
+	// 4.2.1. Let the observed value of the mean X and of the sample variance of a random sample of size 20 from a distribution that is N(M, 02) be 81.2 and 26.5, respectively.
+	// Find respectively 90%, 95% and 99% confidence intervals for M using T-distribution.
+	mean := 81.2
+	variance := 26.5
+	sampleSize := 20
+	stdDev := math.Sqrt(variance)
+	degreesOfFreedom := float64(sampleSize - 1)
+
+	// Calculate the margin of error for each confidence level
+	confidenceLevels := []float64{0.90, 0.95, 0.99}
+	expected := [][]float64{
+		{79.21, 83.19}, // Expected lower and upper bounds for 90% confidence level
+		{78.79, 83.61}, // Expected lower and upper bounds for 95% confidence level
+		{77.90, 84.50}, // Expected lower and upper bounds for 99% confidence level
+	}
+	for i, confLevel := range confidenceLevels {
+		t.Run(fmt.Sprintf("Confidence level %.2f", confLevel), func(t *testing.T) {
+			alpha := (1 - confLevel) / 2
+			tScore := -GetRightTailTScoreFromProbability(alpha, degreesOfFreedom, -1000, 1000, 0.001)
+			marginOfError := tScore * GetStandardError(stdDev, int(sampleSize))
+			lower := mean - marginOfError
+			upper := mean + marginOfError
+			if math.Abs(lower-expected[i][0]) > 0.01 || math.Abs(upper-expected[i][1]) > 0.01 {
+				t.Errorf("Confidence level %.2f: got [%.2f, %.2f], want [%.2f, %.2f]",
+					confLevel, lower, upper, expected[i][0], expected[i][1])
+			}
+		})
+	}
+
 }
 
 func TestGetTScoreFromProbability(t *testing.T) {
