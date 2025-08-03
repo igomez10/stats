@@ -580,7 +580,7 @@ func TestGetExponentialDistributionFunction(t *testing.T) {
 	}
 }
 
-func TestDerivate(t *testing.T) {
+func TestGetDerivativeAtX(t *testing.T) {
 	type args struct {
 		step float64
 		fx   func(float64) float64
@@ -698,7 +698,7 @@ func TestDerivate(t *testing.T) {
 				got := GetDerivativeAtX(x, tt.args.step, tt.args.fx)
 				want := tt.want(x)
 				if math.Abs(got-want) > 0.01 { //&& (got/want)-1 > 0.01 {
-					t.Errorf("Derivate(%v) = %v, want %v, diff %v", x, got, want, math.Abs(got-want))
+					t.Errorf("GetDerivativeAtX(%v) = %v, want %v, diff %v", x, got, want, math.Abs(got-want))
 				}
 			}
 		})
