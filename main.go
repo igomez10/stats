@@ -621,3 +621,13 @@ func GetTScore(degreesOfFreedom, confidenceLevel, from, to, step float64) float6
 
 	return GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step)
 }
+
+func GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation float64, sampleSize int) float64 {
+	tStatistic := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
+	return tStatistic
+}
+
+func GetZScore(sampleMean, populationMean, sampleStandardDeviation float64, sampleSize int) float64 {
+	zScore := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
+	return zScore
+}

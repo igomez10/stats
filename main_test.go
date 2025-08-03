@@ -1262,6 +1262,79 @@ func TestSolve4220(t *testing.T) {
 			confidenceLevel, lower, upper, 0.504, 0.696)
 	}
 }
+func TestSolve468(t *testing.T) {
+	// a.
+
+	// h0 p= 0.14
+	// h1 p > 0.14
+	p := 0.14
+	// pSample := 0.18 //104.0 / 590.0
+	pSample := 108 / 590.0 // Sample proportion from the problem statement
+	t.Log("Sample proportion p:", pSample)
+	// b. define critical region with alpha = 0.01
+	alpha := 0.01
+	zscore := GetRightTailZScoreFromProbability(1-alpha, -1000, 1000, 0.001)
+	t.Log("Critical Z-score for alpha = 0.01:", zscore)
+
+	// c. // Calculate the Z-score for the sample proportion
+	z := (pSample - p) / (math.Sqrt(pSample * (1 - pSample) / 590.0))
+	t.Log("Z-score for p = 0.18:", z)
+
+	if z > zscore {
+		t.Log("Reject H0: p > 0.14")
+	} else {
+		t.Log("Fail to reject H0: p <= 0.14")
+	}
+
+	// d. Calculate the p-value
+	pValue := 1 - Integrate(-1000, z, 0.001, GetNormalDistributionFunction(0, 1))
+	t.Log("P-value:", pValue)
+
+	if pValue < alpha {
+		t.Log("Reject H0 because p-value < alpha")
+	} else {
+		t.Log("Fail to reject H0: p <= 0.14")
+	}
+	t.Log("=== Solve 4.6.8 ===")
+}
+
+func TestSampleExercise(t *testing.T) {
+	n := 10.0
+	meanEstimated := 7.1
+	stdDev := 0.12
+	alpha := 0.1
+
+	// h0 : mean = 7
+	// h1 : mean != 7
+
+	tStatistic := GetStudentTStatistic(meanEstimated, 7, stdDev, int(n))
+	t.Logf("T-statistic: %.4f", tStatistic)
+
+	halphAlpha := alpha / 2
+	criticalT := GetTScore(n, 1-halphAlpha, -1000, 1000, 0.001)
+	t.Log("Critical T-value for alpha/2 =", halphAlpha, ":", criticalT)
+
+	if tStatistic > criticalT || tStatistic < -criticalT {
+		t.Log("Reject H0: mean != 7")
+	} else {
+		t.Error("Failed to reject H0: mean = 7")
+	}
+
+	// now lets increase the sample size to 30
+	n = 36.0
+	zScore := GetZScore(meanEstimated, 7, stdDev, int(n))
+	t.Logf("Z-score: %.4f", zScore)
+
+	criticalZ := GetRightTailZScoreFromProbability(halphAlpha, -1000, 1000, 0.001)
+	t.Log("Critical Z-value for alpha/2 =", halphAlpha, ":", criticalZ)
+
+	if zScore > criticalZ {
+		t.Log("Reject H0: mean != 7")
+	} else {
+		t.Error("Failed to reject H0: mean = 7")
+	}
+}
+
 
 func TestGetStudentTStatistic(t *testing.T) {
 	t.Log("=== Get Student's T Statistic ===")
@@ -1276,10 +1349,30 @@ func TestGetStudentTStatistic(t *testing.T) {
 	t.Logf("T-statistic: %.4f", tStatistic)
 }
 
-func GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation float64, sampleSize int) float64 {
-	tStatistic := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
-	return tStatistic
+
+func sum(arr []float64) float64 {
+	sum := 0.0
+	for _, v := range arr {
+		sum += v
+	}
+	return sum
 }
+
+func average(arr []float64) float64 {
+	if len(arr) == 0 {
+		return 0
+	}
+	return sum(arr) / float64(len(arr))
+}
+
+func squared(arr []float64) []float64 {
+	squared := make([]float64, len(arr))
+	for i, v := range arr {
+		squared[i] = v * v
+	}
+	return squared
+}
+
 func TestGetTScore(t *testing.T) {
 	type args struct {
 		degreesOfFreedom float64
@@ -1332,6 +1425,48 @@ func TestGetTScore(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetTScore(tt.args.degreesOfFreedom, tt.args.confidenceLevel, tt.args.from, tt.args.to, tt.args.step); math.Abs(got-tt.want) > 0.01 {
 				t.Errorf("GetTScore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetZScore(t *testing.T) {
+	type args struct {
+		sampleMean              float64
+		populationMean          float64
+		sampleStandardDeviation float64
+		sampleSize              int
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "Z-score for sample mean greater than population mean",
+			args: args{
+				sampleMean:              105.0,
+				populationMean:          100.0,
+				sampleStandardDeviation: 15.0,
+				sampleSize:              30,
+			},
+			want: 1.8257, // Z-score = (105 - 100)
+		},
+		{
+			name: "Z-score for sample mean less than population mean",
+			args: args{
+				sampleMean:              95.0,
+				populationMean:          100.0,
+				sampleStandardDeviation: 15.0,
+				sampleSize:              30,
+			},
+			want: -1.8257, // Z-score = (95 - 100)
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetZScore(tt.args.sampleMean, tt.args.populationMean, tt.args.sampleStandardDeviation, tt.args.sampleSize); math.Abs(got-tt.want) > 0.01 {
+				t.Errorf("GetZScore() = %v, want %v", got, tt.want)
 			}
 		})
 	}
