@@ -1111,3 +1111,67 @@ func TestFindLocalMinimum(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRightTailZScore(t *testing.T) {
+	type args struct {
+		confidenceLevel float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "90% confidence level",
+			args: args{
+				confidenceLevel: 0.90,
+			},
+			want: 1.2816, // Z-score for 90% confidence level
+		},
+		{
+			name: "95% confidence level",
+			args: args{
+				confidenceLevel: 0.95,
+			},
+			want: 1.6449, // Z-score for 95% confidence level
+		},
+		{
+			name: "99% confidence level",
+			args: args{
+				confidenceLevel: 0.99,
+			},
+			want: 2.3263, // Z-score for 99% confidence level
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetRightTailZScoreFromProbability(tt.args.confidenceLevel, -100, 100, 0.001); math.Abs(got-tt.want) > 0.01 {
+				t.Errorf("GetRightTailZScore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test421(t *testing.T) {
+	// 4.2.1. Let the observed value of the mean X and of the sample variance of a random sample of size 20 from a distribution that is N(M, 02) be 81.2 and 26.5, respectively.
+	// Find respectively 90%, 95% and 99% confidence intervals for M. Note how the lengths of the confidence intervals increase as the confidence increases.
+
+	t.Log("=== 4.2.1 Exercise ===")
+	mean := 81.2
+	variance := 26.5
+	sampleSize := 20.0
+	stdDev := math.Sqrt(variance)
+	// Calculate the margin of error for each confidence level
+	confidenceLevels := []float64{0.90, 0.95, 0.99}
+	step := 0.001
+	from := -10.0
+	to := 10.0
+	for _, confLevel := range confidenceLevels {
+		probability := (1 - confLevel) / 2
+		zScore := -GetRightTailZScoreFromProbability(probability, from, to, step)
+		marginOfError := zScore * (stdDev / math.Sqrt(sampleSize))
+		lower := mean - marginOfError
+		upper := mean + marginOfError
+		t.Logf("Confidence level %.2f: [%.2f, %.2f]", confLevel, lower, upper)
+	}
+}

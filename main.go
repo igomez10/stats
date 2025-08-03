@@ -531,3 +531,30 @@ func FindLocalMinimum(fn func(float64) float64, start, step float64) float64 {
 	}
 	return cursor
 }
+
+func GetConfidenceIntervalForNormalDistribution(mean, stdDev, confidenceLevel float64) (float64, float64) {
+	if confidenceLevel <= 0 || confidenceLevel >= 1 {
+		panic("Confidence level must be between 0 and 1")
+	}
+
+	z := GetRightTailZScoreFromProbability(confidenceLevel, -10, 10, 0.01)
+	if z == 0 {
+		panic("Z-score cannot be zero")
+	}
+	marginOfError := z * stdDev
+
+	return mean - marginOfError, mean + marginOfError
+}
+
+// GetRightTailZScoreFromProbability returns the z-score for a left tail of a normal distribution
+// to get this value we integrate the normal distribution function from -Inf until the cdf reaches the confidence level
+// since we do numerical integration, we need to specify a range for the integration
+func GetRightTailZScoreFromProbability(confidenceLevel, from, to, step float64) float64 {
+	standardNormal := GetNormalDistributionFunction(0, 1)
+	return IntegrateUntilValue(from, to, confidenceLevel, step, standardNormal)
+}
+
+func GetCentralZScoreFromProbability(confidenceLevel, from, to, step float64) float64 {
+	standardNormal := GetNormalDistributionFunction(0, 1)
+	return IntegrateUntilValue(0, to, confidenceLevel/2, step, standardNormal)
+}
