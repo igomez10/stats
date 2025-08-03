@@ -1159,7 +1159,7 @@ func Test421(t *testing.T) {
 	t.Log("=== 4.2.1 Exercise ===")
 	mean := 81.2
 	variance := 26.5
-	sampleSize := 20.0
+	sampleSize := 20
 	stdDev := math.Sqrt(variance)
 	// Calculate the margin of error for each confidence level
 	confidenceLevels := []float64{0.90, 0.95, 0.99}
@@ -1167,9 +1167,9 @@ func Test421(t *testing.T) {
 	from := -10.0
 	to := 10.0
 	for _, confLevel := range confidenceLevels {
-		probability := (1 - confLevel) / 2
-		zScore := -GetRightTailZScoreFromProbability(probability, from, to, step)
-		marginOfError := zScore * (stdDev / math.Sqrt(sampleSize))
+		alpha := (1 - confLevel) / 2
+		zScore := -GetRightTailZScoreFromProbability(alpha, from, to, step)
+		marginOfError := zScore * GetStandardError(stdDev, int(sampleSize))
 		lower := mean - marginOfError
 		upper := mean + marginOfError
 		t.Logf("Confidence level %.2f: [%.2f, %.2f]", confLevel, lower, upper)
