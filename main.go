@@ -249,7 +249,7 @@ func IntegrateUntilValue(from, toMaxValue, targetValue float64, step float64, fx
 			return x
 		}
 	}
-	panic("Integral did not reach target value before max value")
+	panic("Integral did not reach target value before maximum integration limit")
 }
 
 // GetDerivativeAtX calculates the derivative of a function fx at a point x using the finite difference method
@@ -349,7 +349,6 @@ func GetMaximumLikelihoodPoisson(data []float64, start, end, step float64) float
 	start = math.Max(GetMax(data), start) // Ensure start is positive to avoid division by zero
 	end = math.Min(GetMin(data), end)     // Ensure end is not less than the minimum data value
 	logLikelihoodFn := GetLogLikelihoodFunctionPoisson(data)
-	// Find the critical point of the log-likelihood function (where derivative is 0)
 	criticalPoint := FindCriticalPoint(logLikelihoodFn, start, end, step)
 	if criticalPoint == nil {
 		panic("No critical point found for Poisson distribution")
