@@ -53,3 +53,70 @@ func FitSimpleLR(x, y []float64) (Model, error) {
 func (m Model) Predict(x float64) float64 {
 	return m.B0 + m.B1*x
 }
+
+// SSX is the sum of squares of x
+func GetSSX(x []float64) float64 {
+	// meanX is the mean of x
+	meanX := mean(x)
+	ssx := 0.0
+	for _, xi := range x {
+		diffXi := xi - meanX
+		ssx += diffXi * diffXi
+	}
+	return ssx
+}
+
+// helpers
+func sum(a []float64) float64 {
+	s := 0.0
+	for _, v := range a {
+		s += v
+	}
+	return s
+}
+
+// dot is the dot product of two slices
+func dot(a, b []float64) float64 {
+	s := 0.0
+	for i := range a {
+		s += a[i] * b[i]
+	}
+	return s
+}
+
+// sumSquares is the sum of squares of a slice
+func sumSquares(a []float64) float64 {
+	s := 0.0
+	for _, v := range a {
+		s += v * v
+	}
+	return s
+}
+
+// mean is the average of a slice
+func mean(a []float64) float64 {
+	if len(a) == 0 {
+		return 0
+	}
+	return sum(a) / float64(len(a))
+}
+
+// sampleVar is the sample variance of a slice
+func sampleVar(a []float64) float64 {
+	n := float64(len(a))
+	if n < 2 {
+		return 0
+	}
+	m := mean(a)
+	ss := 0.0
+	for _, v := range a {
+		d := v - m
+		ss += d * d
+	}
+	return ss / (n - 1)
+}
+
+// norm2 is the Euclidean norm (L2 norm) of a slice
+func norm2(a []float64) float64 {
+	return math.Sqrt(sumSquares(a))
+}
