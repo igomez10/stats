@@ -1383,7 +1383,6 @@ func TestGetStudentTStatistic(t *testing.T) {
 	t.Logf("T-statistic: %.4f", tStatistic)
 }
 
-
 func sum(arr []float64) float64 {
 	sum := 0.0
 	for _, v := range arr {
@@ -1546,4 +1545,80 @@ func Test_stdev(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSolve465(t *testing.T) {
+	// 4.6.5. A random sample of size 100 from a normal distribution N(0, 1) yields a sample mean of 0.2 and a sample standard deviation of 1.5.
+	// Find a 95% confidence interval for the population mean.
+	self := []float64{16.20, 16.78, 17.38, 17.59, 17.37, 17.49, 18.18, 18.16, 18.36, 18.53, 15.92, 16.58, 17.57, 16.75, 17.28, 17.32, 17.51, 17.58, 18.26, 17.87}
+	rival := []float64{15.95, 16.15, 17.05, 16.99, 17.34, 17.53, 17.34, 17.51, 18.10, 18.19, 16.04, 16.80, 17.24, 16.81, 17.11, 17.22, 17.33, 17.82, 18.19, 17.88}
+
+	fmt.Printf("Self average: %.4f\n", average(self))
+	fmt.Printf("Rival average: %.4f\n", average(rival))
+
+	diff := make([]float64, len(self))
+	for i := range self {
+		diff[i] = rival[i] - self[i]
+	}
+	t.Logf("Differences: %v", diff)
+	fmt.Printf("Average of differences: %.4f\n", average(diff))
+	stdDevDiff := stdev(diff)
+	fmt.Printf("Standard deviation of differences: %.4f\n", stdDevDiff)
+	fmt.Println("Sample size:", len(diff))
+
+	tStatistic := GetStudentTStatistic(average(diff), 0, stdev(diff), len(diff))
+	fmt.Printf("T-statistic: %.4f\n", tStatistic)
+
+	// get p-value
+	pValue := Integrate(-1000, tStatistic, 0.001, GetStudentTDistributionFunction(float64(len(diff)-1)))
+	fmt.Printf("P-value: %.4f\n", pValue)
+
+	// obtain a point estimate with a 95% confidence interval
+	confidenceLevel := 0.95
+	lower, upper := GetMeanConfidenceIntervalForNormalDistribution(
+		average(diff),
+		stdDevDiff,
+		len(diff),
+		confidenceLevel,
+		-100.0,
+		100.0,
+		0.001,
+	)
+	fmt.Printf("95%% Confidence Interval for the mean difference: [%.4f, %.4f]\n", lower, upper)
+}
+
+func TestExample1(t *testing.T) {
+	//  A coin-operated soft-drink machine was designed to discharge on the average 7 ounces
+	// of beverage per cup. In a test of the machine, ten cupfuls of beverage were drawn from
+	// the machine and measured. The mean and standard deviation of the ten measurements
+	// were 7.1 ounces and .12 ounce, respectively. Do these data present suﬀicient evidence to
+	// indicate that the mean discharge differs from 7 ounces? Use 𝛼 = 0.1
+
+	mean := 7.1
+	populationMean := 7.0
+	stdDev := 0.12
+	sampleSize := 10
+	alpha := 0.1
+	tStatistic := GetStudentTStatistic(mean, populationMean, stdDev, sampleSize)
+	t.Logf("T-statistic: %.4f", tStatistic)
+	halphAlpha := alpha / 2
+	criticalT := GetTScore(float64(sampleSize-1), 1-halphAlpha, -1000, 1000, 0.001)
+	t.Logf("Critical T-value for alpha/2 = %.2f: %.4f", halphAlpha, criticalT)
+	if tStatistic > criticalT || tStatistic < -criticalT {
+		t.Log("Reject H0: mean != 7")
+	} else {
+		t.Error("Failed to reject H0: mean = 7")
+	}
+	// now lets increase the sample size to 30
+	sampleSize = 36
+	zScore := GetZScore(mean, populationMean, stdDev, sampleSize)
+	t.Logf("Z-score: %.4f", zScore)
+	criticalZ := GetRightTailZScoreFromProbability(halphAlpha, -1000, 1000, 0.001)
+	t.Logf("Critical Z-value for alpha/2 = %.2f: %.4f", halphAlpha, criticalZ)
+	if zScore > criticalZ {
+		t.Log("Reject H0: mean != 7")
+	} else {
+		t.Error("Failed to reject H0: mean = 7")
+	}
+	t.Log("=== Example 1 ===")
 }
