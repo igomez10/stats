@@ -1,6 +1,9 @@
 package linearregression
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type Model struct {
 	B0 float64 // intercept
