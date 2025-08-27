@@ -6,49 +6,55 @@ import (
 	"testing"
 )
 
-type SimpleLR struct {
+type Model struct {
 	B0 float64 // intercept
 	B1 float64 // slope
 }
 
-func (m SimpleLR) GetIntercept() float64 {
+func (m Model) GetIntercept() float64 {
 	return m.B0
 }
 
-func (m SimpleLR) GetSlope() float64 {
+func (m Model) GetSlope() float64 {
 	return m.B1
 }
 
-func FitSimpleLR(x, y []float64) (SimpleLR, error) {
+func FitSimpleLR(x, y []float64) (Model, error) {
 	if len(x) != len(y) || len(x) == 0 {
-		return SimpleLR{}, fmt.Errorf("x and y must have same nonzero length")
+		return Model{}, fmt.Errorf("x and y must have same nonzero length")
 	}
-	n := float64(len(x))
+	sampleSize := float64(len(x))
 
-	var sx, sy float64
+	// lets find sumX and sumY
+	var sumX, sumY float64
 	for i := range x {
-		sx += x[i]
-		sy += y[i]
+		sumX += x[i]
+		sumY += y[i]
 	}
-	xbar := sx / n
-	ybar := sy / n
+	meanX := sumX / sampleSize
+	meanY := sumY / sampleSize
 
-	var sxx, sxy float64
+	// Lets find sumOfSquaredDiffX and sumOfSquaredDiffXY
+	var sumOfSquaredDiffX, sumOfSquaredDiffXY float64
 	for i := range x {
-		dx := x[i] - xbar
-		dy := y[i] - ybar
-		sxx += dx * dx
-		sxy += dx * dy
+		diffXi := x[i] - meanX
+		diffYi := y[i] - meanY
+		sumOfSquaredDiffX += diffXi * diffXi
+		sumOfSquaredDiffXY += diffXi * diffYi
 	}
-	if sxx == 0 {
-		return SimpleLR{}, fmt.Errorf("zero variance in x")
+	if sumOfSquaredDiffX == 0 {
+		return Model{}, fmt.Errorf("zero variance in x")
 	}
-	b1 := sxy / sxx
-	b0 := ybar - b1*xbar
-	return SimpleLR{B0: b0, B1: b1}, nil
+
+	// find b1
+	slopeCoefficient := sumOfSquaredDiffXY / sumOfSquaredDiffX
+	// find b0
+	intercept := meanY - slopeCoefficient*meanX
+
+	return Model{B0: intercept, B1: slopeCoefficient}, nil
 }
 
-func (m SimpleLR) Predict(x float64) float64 {
+func (m Model) Predict(x float64) float64 {
 	return m.B0 + m.B1*x
 }
 
