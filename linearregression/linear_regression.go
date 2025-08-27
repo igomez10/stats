@@ -70,6 +70,20 @@ func GetSSX(x []float64) float64 {
 	return ssx
 }
 
+// GetSSXY is the sum of products of deviations of x and y
+// ∑(xi - x̄)(yi - ȳ)
+func GetSSXY(x, y []float64) float64 {
+	meanX := mean(x)
+	meanY := mean(y)
+	ssxy := 0.0
+	for i := range x {
+		diffXi := x[i] - meanX
+		diffYi := y[i] - meanY
+		ssxy += diffXi * diffYi
+	}
+	return ssxy
+}
+
 // helpers
 func sum(a []float64) float64 {
 	s := 0.0
