@@ -53,11 +53,12 @@ func FitSimpleLR(x, y []float64) (Model, error) {
 	return Model{B0: intercept, B1: slopeCoefficient}, nil
 }
 
-func (m Model) Predict(x float64) float64 {
-	return m.B0 + m.B1*x
+func (m Model) Predict(xInput float64) float64 {
+	return m.B0 + m.B1*xInput
 }
 
 // SSX is the sum of squares of x
+// ∑(xi - x̄)²
 func GetSSX(x []float64) float64 {
 	// meanX is the mean of x
 	meanX := mean(x)
