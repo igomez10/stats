@@ -176,6 +176,12 @@ func GetSumSquaresRegression(x, y []float64) float64 {
 	return sum
 }
 
+var commonNotation = map[string]string{
+	"SST": "Total Sum of Squares",
+	"SSR": "Sum of Squares Regression",
+	"SSE": "Sum of Squares Error",
+}
+
 func GetSSR(x, y []float64) float64 {
 	return GetSumSquaresRegression(x, y)
 }
@@ -193,7 +199,7 @@ func GetSSE(x, y []float64) float64 {
 }
 
 // GetSumSquaresError Measures the unexplained variability by the regression
-// The difference between our model and the actual values
+// The difference between our predicted and the actual values
 func GetSumSquaresError(x, y []float64) float64 {
 	sum := 0.0
 	model, err := FitSimpleLR(x, y)

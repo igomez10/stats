@@ -154,6 +154,8 @@ func Test_mean(t *testing.T) {
 }
 
 func TestExplainSSTInTermsOfSSRandSSE(t *testing.T) {
+	// we want to prove that SST = SSR + SSE
+	// basically total_variability = explained_variability + unexplained_variability
 	type testcase struct {
 		x   []float64
 		y   []float64
