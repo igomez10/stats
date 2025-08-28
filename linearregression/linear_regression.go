@@ -138,3 +138,76 @@ func sampleVar(a []float64) float64 {
 func norm2(a []float64) float64 {
 	return math.Sqrt(sumSquares(a))
 }
+
+// aliased notations for Sum Squares Total
+func GetSST(x, y []float64) float64 {
+	return GetSumSquaresTotal(x, y)
+}
+func GetTSS(x, y []float64) float64 {
+	return GetSumSquaresTotal(x, y)
+}
+
+// GetSumSquaresTotal Measures the total variability of the dataset
+func GetSumSquaresTotal(x, y []float64) float64 {
+	res := 0.0
+	meanY := mean(y)
+	for i := range y {
+		errI := y[i] - meanY
+		res += errI * errI
+	}
+	return res
+}
+
+// GetSumSquaresRegression Measures the explained variability by your line
+func GetSumSquaresRegression(x, y []float64) float64 {
+	sum := 0.0
+	meanY := mean(y)
+	model, err := FitSimpleLR(x, y)
+	if err != nil {
+		panic(err)
+	}
+
+	for i := range y {
+		predictedYi := model.Predict(x[i])
+		errI := predictedYi - meanY
+		sum += errI * errI
+	}
+
+	return sum
+}
+
+func GetSSR(x, y []float64) float64 {
+	return GetSumSquaresRegression(x, y)
+}
+
+func GetESS(x, y []float64) float64 {
+	return GetSumSquaresRegression(x, y)
+}
+
+func GetRSS(x, y []float64) float64 {
+	return GetSumSquaresError(x, y)
+}
+
+func GetSSE(x, y []float64) float64 {
+	return GetSumSquaresError(x, y)
+}
+
+// GetSumSquaresError Measures the unexplained variability by the regression
+// The difference between our model and the actual values
+func GetSumSquaresError(x, y []float64) float64 {
+	sum := 0.0
+	model, err := FitSimpleLR(x, y)
+	if err != nil {
+		panic(err)
+	}
+
+	for i := range y {
+		predictedYi := model.Predict(x[i])
+		actualYi := y[i]
+
+		errI := predictedYi - actualYi
+		sum += errI * errI
+	}
+
+	return sum
+}

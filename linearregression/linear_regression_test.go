@@ -153,3 +153,76 @@ func Test_mean(t *testing.T) {
 	}
 }
 
+func TestExplainSSTInTermsOfSSRandSSE(t *testing.T) {
+	type testcase struct {
+		x   []float64
+		y   []float64
+		sst float64
+		ssr float64
+		sse float64
+	}
+	tests := []testcase{
+		{
+			x:   []float64{1, 2, 3, 4, 5},
+			y:   []float64{2, 3, 5, 4, 6},
+			sst: 10.0,
+			ssr: 8.10,
+			sse: 1.90,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("SST: %v, SSR: %v, SSE: %v", tt.sst, tt.ssr, tt.sse), func(t *testing.T) {
+			if got := GetSSE(tt.x, tt.y); got-tt.sse > 1e-5 {
+				t.Errorf("GetSSE() = %v, want %v", got, tt.sse)
+			}
+
+			if got := GetSSR(tt.x, tt.y); got-tt.ssr > 1e-5 {
+				t.Errorf("GetSSR() = %v, want %v", got, tt.ssr)
+			}
+
+			if got := GetSST(tt.x, tt.y); got-tt.sst > 1e-5 {
+				t.Errorf("GetSST() = %v, want %v", got, tt.sst)
+			}
+
+			if GetSST(tt.x, tt.y)-(GetSSR(tt.x, tt.y)+GetSSE(tt.x, tt.y)) > 1e-5 {
+				t.Errorf("SST = %v, SSR + SSE = %v", GetSST(tt.x, tt.y), GetSSR(tt.x, tt.y)+GetSSE(tt.x, tt.y))
+			}
+		})
+	}
+}
+
+func TestGetSumSquaresRegression(t *testing.T) {
+	type args struct {
+		x []float64
+		y []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "case1",
+			args: args{
+				x: []float64{1, 2, 3},
+				y: []float64{2, 4, 6},
+			},
+			want: 8.0,
+		},
+		{
+			name: "case2",
+			args: args{
+				x: []float64{1, 2, 3, 4, 5},
+				y: []float64{2, 3, 5, 4, 6},
+			},
+			want: 8.10,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetSumSquaresRegression(tt.args.x, tt.args.y); got-tt.want > 1e-9 {
+				t.Errorf("GetSumSquaresRegression() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
