@@ -77,8 +77,8 @@ func GetSSXY(x, y []float64) float64 {
 	meanY := mean(y)
 	ssxy := 0.0
 	for i := range x {
-		diffXi := x[i] - meanX
-		diffYi := y[i] - meanY
+		diffXi := x[i] - meanX // xi - x̄
+		diffYi := y[i] - meanY // yi - ȳ
 		ssxy += diffXi * diffYi
 	}
 	return ssxy
