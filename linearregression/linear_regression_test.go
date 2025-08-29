@@ -249,17 +249,7 @@ func TestGetSumSquaresRegression_Quick(t *testing.T) {
 			}
 			xs[i] = v
 		}
-		// ensure variance in x
-		allSame := true
-		for _, v := range xs {
-			if v != xs[0] {
-				allSame = false
-				break
-			}
-		}
-		if allSame {
-			xs[0] = xs[0] + 1
-		}
+
 		// create a linear y from x (valid case)
 		y := make([]float64, len(xs))
 		for i, xv := range xs {
@@ -279,6 +269,84 @@ func TestGetSumSquaresRegression_Quick(t *testing.T) {
 		return false
 	}
 	if err := quick.Check(f, &quick.Config{}); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestExplainSSTInTermsOfSSRandSSE_Quick(t *testing.T) {
+	// Proof that SST = SSR + SSE
+	f := func(x, y []int) bool {
+		if len(x) != len(y) {
+			return true
+		}
+		if len(x) == 0 {
+			return true
+		}
+
+		for i := range x {
+			if x[i] > math.MaxInt32 || x[i] < -math.MaxInt32 {
+				x[i] = x[i] % 100
+
+			}
+		}
+		// check if all x are same
+		allSame := true
+		for i := 1; i < len(x); i++ {
+			if x[i] != x[0] {
+				allSame = false
+				break
+			}
+		}
+		if allSame {
+			return true // avoid zero variance
+		}
+
+		for i := range y {
+			if y[i] > math.MaxInt32 || y[i] < -math.MaxInt32 {
+				y[i] = y[i] % 100
+			}
+		}
+
+		// check if all y are same
+		allSame = true
+		for i := 1; i < len(y); i++ {
+			if y[i] != y[0] {
+				allSame = false
+				break
+			}
+		}
+		if allSame {
+			return true
+		}
+
+		xfloats := make([]float64, len(x))
+		for i := range x {
+			xfloats[i] = float64(x[i])
+		}
+		yfloats := make([]float64, len(y))
+		for i := range y {
+			yfloats[i] = float64(y[i])
+		}
+
+		sse := GetSSE(xfloats, yfloats)
+		ssr := GetSSR(xfloats, yfloats)
+		sst := GetSST(xfloats, yfloats)
+
+		if math.IsNaN(sse) || math.IsNaN(ssr) {
+			return false
+		}
+
+		result := sst - (ssr + sse)
+		if result > 1e-9 {
+			return false
+		}
+
+		return true
+	}
+
+	if err := quick.Check(f, &quick.Config{
+		MaxCount: 1000000,
+	}); err != nil {
 		t.Error(err)
 	}
 }
