@@ -3,8 +3,10 @@ package linearregression
 import (
 	"fmt"
 	"log"
+	"math"
 	"reflect"
 	"testing"
+	"testing/quick"
 )
 
 func TestExampleSimpleLinearRegression(t *testing.T) {
@@ -226,5 +228,57 @@ func TestGetSumSquaresRegression(t *testing.T) {
 				t.Errorf("GetSumSquaresRegression() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// Property-based simulation: SSR(x, y) is non-negative for valid inputs
+func TestGetSumSquaresRegression_Quick(t *testing.T) {
+	// Property: SSR(x, y) is non-negative for valid inputs
+	f := func(x []float64) bool {
+		if len(x) < 2 {
+			return true // vacuously true for too-small inputs
+		}
+		// sanitize x to avoid NaN/Inf
+		xs := make([]float64, len(x))
+		for i, v := range x {
+			if math.IsNaN(v) || math.IsInf(v, 0) {
+				v = float64(i)
+			}
+			if x[i] > 1e9 || x[i] < -1e9 {
+				return true
+			}
+			xs[i] = v
+		}
+		// ensure variance in x
+		allSame := true
+		for _, v := range xs {
+			if v != xs[0] {
+				allSame = false
+				break
+			}
+		}
+		if allSame {
+			xs[0] = xs[0] + 1
+		}
+		// create a linear y from x (valid case)
+		y := make([]float64, len(xs))
+		for i, xv := range xs {
+			y[i] = 1.5*xv + 2.0
+			if math.IsInf(y[i], 0) {
+				return true
+			}
+			if y[i] > 1e9 || y[i] < -1e9 {
+				return true
+			}
+		}
+		got := GetSumSquaresRegression(xs, y)
+		if !math.IsNaN(got) && !math.IsInf(got, 0) && got >= 1e-5 {
+			return true
+		}
+
+		return false
+	}
+	if err := quick.Check(f, &quick.Config{}); err != nil {
+		t.Error(err)
 	}
 }
