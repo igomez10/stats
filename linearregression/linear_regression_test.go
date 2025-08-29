@@ -274,7 +274,7 @@ func TestGetSumSquaresRegression_Quick(t *testing.T) {
 }
 
 func TestExplainSSTInTermsOfSSRandSSE_Quick(t *testing.T) {
-	// Proof that SST = SSR + SSE
+	// Check that SST = SSR + SSE
 	f := func(x, y []int) bool {
 		if len(x) != len(y) {
 			return true
