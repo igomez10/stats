@@ -40,6 +40,7 @@ func CreateSLRModel(x, y []float64) (Model, error) {
 	return Model{B0: intercept, B1: slopeCoefficient}, nil
 }
 
+// Predict will predict y at x
 func (m Model) Predict(xInput float64) float64 {
 	return m.B0 + m.B1*xInput
 }
