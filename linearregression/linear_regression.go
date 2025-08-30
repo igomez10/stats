@@ -18,20 +18,14 @@ func (m Model) GetSlope() float64 {
 	return m.B1
 }
 
-func FitSimpleLR(x, y []float64) (Model, error) {
+func CreateSLRModel(x, y []float64) (Model, error) {
 	if len(x) != len(y) || len(x) == 0 {
 		return Model{}, fmt.Errorf("x and y must have same nonzero length")
 	}
-	sampleSize := float64(len(x))
 
 	// lets find sumX and sumY
-	var sumX, sumY float64
-	for i := range x {
-		sumX += x[i]
-		sumY += y[i]
-	}
-	meanX := sumX / sampleSize
-	meanY := sumY / sampleSize
+	meanX := mean(x)
+	meanY := mean(y)
 
 	// Lets find sumOfSquaredDiffX and sumOfSquaredDiffXY
 	var sumOfSquaredDiffX, sumOfSquaredDiffXY float64
@@ -162,7 +156,7 @@ func GetSumSquaresTotal(x, y []float64) float64 {
 func GetSumSquaresRegression(x, y []float64) float64 {
 	sum := 0.0
 	meanY := mean(y)
-	model, err := FitSimpleLR(x, y)
+	model, err := CreateSLRModel(x, y)
 	if err != nil {
 		panic(err)
 	}
@@ -202,7 +196,7 @@ func GetSSE(x, y []float64) float64 {
 // The difference between our predicted and the actual values
 func GetSumSquaresError(x, y []float64) float64 {
 	sum := 0.0
-	model, err := FitSimpleLR(x, y)
+	model, err := CreateSLRModel(x, y)
 	if err != nil {
 		panic(err)
 	}

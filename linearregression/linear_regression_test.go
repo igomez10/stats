@@ -14,7 +14,7 @@ func TestExampleSimpleLinearRegression(t *testing.T) {
 	x := []float64{1, 2, 3, 4, 5}
 	y := []float64{2.1, 2.9, 3.7, 4.1, 5.2}
 
-	model, err := FitSimpleLR(x, y)
+	model, err := CreateSLRModel(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestFitSimpleLR(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FitSimpleLR(tt.args.x, tt.args.y)
+			got, err := CreateSLRModel(tt.args.x, tt.args.y)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FitSimpleLR() error = %v, wantErr %v", err, tt.wantErr)
 				return
