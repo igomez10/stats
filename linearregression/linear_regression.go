@@ -48,14 +48,15 @@ func (m Model) Predict(xInput float64) float64 {
 // SSX is the sum of squares of x
 // ∑(xi - x̄)²
 func GetSSX(x []float64) float64 {
-	// meanX is the mean of x
 	meanX := mean(x)
-	ssx := 0.0
+	sumSoFar := 0.0
+
 	for _, xi := range x {
 		diffXi := xi - meanX
-		ssx += diffXi * diffXi
+		sumSoFar += diffXi * diffXi
 	}
-	return ssx
+
+	return sumSoFar
 }
 
 // GetSSXY is the sum of products of deviations of x and y
@@ -63,13 +64,15 @@ func GetSSX(x []float64) float64 {
 func GetSSXY(x, y []float64) float64 {
 	meanX := mean(x)
 	meanY := mean(y)
-	ssxy := 0.0
+	sumSoFar := 0.0
+
 	for i := range x {
 		diffXi := x[i] - meanX // xi - x̄
 		diffYi := y[i] - meanY // yi - ȳ
-		ssxy += diffXi * diffYi
+		sumSoFar += diffXi * diffYi
 	}
-	return ssxy
+
+	return sumSoFar
 }
 
 // helpers
