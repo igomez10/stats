@@ -23,24 +23,17 @@ func CreateSLRModel(x, y []float64) (Model, error) {
 		return Model{}, fmt.Errorf("x and y must have same nonzero length")
 	}
 
-	// lets find sumX and sumY
 	meanX := mean(x)
 	meanY := mean(y)
 
-	// Lets find sumOfSquaredDiffX and sumOfSquaredDiffXY
-	var sumOfSquaredDiffX, sumOfSquaredDiffXY float64
-	for i := range x {
-		diffXi := x[i] - meanX
-		diffYi := y[i] - meanY
-		sumOfSquaredDiffX += diffXi * diffXi
-		sumOfSquaredDiffXY += diffXi * diffYi
-	}
-	if sumOfSquaredDiffX == 0 {
+	ssx := GetSSX(x)
+	if ssx == 0 {
 		return Model{}, fmt.Errorf("zero variance in x")
 	}
+	ssxy := GetSSXY(x, y)
 
 	// find b1
-	slopeCoefficient := sumOfSquaredDiffXY / sumOfSquaredDiffX
+	slopeCoefficient := ssxy / ssx
 	// find b0
 	intercept := meanY - slopeCoefficient*meanX
 
