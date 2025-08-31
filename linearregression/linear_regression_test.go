@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"reflect"
+	"stats/pkg"
 	"testing"
 	"testing/quick"
 )
@@ -14,7 +15,7 @@ func TestExampleSimpleLinearRegression(t *testing.T) {
 	x := []float64{1, 2, 3, 4, 5}
 	y := []float64{2.1, 2.9, 3.7, 4.1, 5.2}
 
-	model, err := CreateSLRModel(x, y)
+	model, err := CreateSLRModelWithOLS(x, y)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,7 +96,7 @@ func TestFitSimpleLR(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CreateSLRModel(tt.args.x, tt.args.y)
+			got, err := CreateSLRModelWithOLS(tt.args.x, tt.args.y)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FitSimpleLR() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -360,7 +361,7 @@ func TestGetSlopeFromSSXYAndSSX(t *testing.T) {
 				t.Errorf("GetSlopeFromSSXYAndSSX() = %v, want %v", got, tt.want)
 			}
 
-			model, err := CreateSLRModel(tt.args.x, tt.args.y)
+			model, err := CreateSLRModelWithOLS(tt.args.x, tt.args.y)
 			if err != nil {
 				t.Errorf("CreateSLRModel() error = %v", err)
 				return
@@ -403,7 +404,7 @@ func TestGetSlopeFromSSXYAndSSX_Quick(t *testing.T) {
 
 		// Calculate slope
 		slope := GetSlopeFromSSXYAndSSX(x, y)
-		model, err := CreateSLRModel(x, y)
+		model, err := CreateSLRModelWithOLS(x, y)
 		if err != nil {
 			return false
 		}
@@ -413,6 +414,121 @@ func TestGetSlopeFromSSXYAndSSX_Quick(t *testing.T) {
 		}
 
 		if model.GetSlope() != slope {
+			return false
+		}
+
+		return true
+	}
+
+	if err := quick.Check(f, &quick.Config{
+		MaxCount: 1000,
+	}); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestGetInterceptFromSlopeAndMeans(t *testing.T) {
+	type args struct {
+		slope float64
+		meanX float64
+		meanY float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "case1",
+			args: args{
+				slope: 2.0,
+				meanX: 2.0,
+				meanY: 4.0,
+			},
+			want: 0.0,
+		},
+		{
+			name: "case2",
+			args: args{
+				slope: 0.9,
+				meanX: 3.0,
+				meanY: 4.0,
+			},
+			want: 1.3,
+		},
+		{
+			name: "case3",
+			args: args{
+				slope: 1.0,
+				meanX: 1.0,
+				meanY: 1.0,
+			},
+			want: 0.0,
+		},
+		{
+			name: "case4",
+			args: args{
+				slope: 1.5,
+				meanX: 2.0,
+				meanY: 3.0,
+			},
+			want: 2.0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetInterceptFromSlopeAndMeans(tt.args.slope, tt.args.meanX, tt.args.meanY); got-tt.want > 1e-9 {
+				t.Errorf("GetInterceptFromSlopeAndMeans() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetInterceptFromSlopeAndMeans_Quick(t *testing.T) {
+	// Property: Intercept is well-defined for valid inputs
+	f := func(x, y []float64) bool {
+		if len(x) > 1000 {
+			x = x[:1000]
+		}
+		if len(x) > len(y) {
+			x = x[:len(y)]
+		} else {
+			y = y[:len(x)]
+		}
+		if len(x) < 2 {
+			return true
+		}
+
+		// Check for NaN/Inf values
+		for i := range x {
+			if math.IsNaN(x[i]) || math.IsInf(x[i], 0) {
+				return false
+			}
+			x[i] = math.Mod(x[i], math.MaxInt16)
+		}
+		for i := range y {
+			if math.IsNaN(y[i]) || math.IsInf(y[i], 0) {
+				return false
+			}
+			y[i] = math.Mod(y[i], math.MaxInt16)
+		}
+
+		// Calculate slope
+		model, err := CreateSLRModelWithOLS(x, y)
+		if err != nil {
+			return false
+		}
+
+		if math.IsNaN(model.GetSlope()) || math.IsInf(model.GetSlope(), 0) {
+			return false
+		}
+
+		intercept := GetInterceptFromSlopeAndMeans(model.GetSlope(), pkg.GetMean(x), pkg.GetMean(y))
+		if math.IsNaN(intercept) || math.IsInf(intercept, 0) {
+			return false
+		}
+
+		if model.GetIntercept() != intercept {
 			return false
 		}
 

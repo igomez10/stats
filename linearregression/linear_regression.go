@@ -19,7 +19,8 @@ func (m Model) GetSlope() float64 {
 	return m.B1
 }
 
-func CreateSLRModel(x, y []float64) (Model, error) {
+// CreateSLRModelWithOLS creates a simple linear regression model using ordinary least squares
+func CreateSLRModelWithOLS(x, y []float64) (Model, error) {
 	if len(x) != len(y) || len(x) == 0 {
 		return Model{}, fmt.Errorf("x and y must have same nonzero length")
 	}
@@ -33,12 +34,17 @@ func CreateSLRModel(x, y []float64) (Model, error) {
 	}
 	ssxy := GetSSXY(x, y)
 
+	// Find b0 and b1 by the method of least squares
 	// find b1
 	slopeCoefficient := ssxy / ssx
 	// find b0
 	intercept := meanY - slopeCoefficient*meanX
 
 	return Model{B0: intercept, B1: slopeCoefficient}, nil
+}
+
+func CreateSLRModelWithMLE(x, y []float64) (Model, error) {
+	panic("Not implemented")
 }
 
 // Predict will predict y at x
@@ -113,7 +119,7 @@ func GetSumSquaresTotal(x, y []float64) float64 {
 func GetSumSquaresRegression(x, y []float64) float64 {
 	sum := 0.0
 	meanY := pkg.GetMean(y)
-	model, err := CreateSLRModel(x, y)
+	model, err := CreateSLRModelWithOLS(x, y)
 	if err != nil {
 		panic(err)
 	}
@@ -153,7 +159,7 @@ func GetSSE(x, y []float64) float64 {
 // The difference between our predicted and the actual values
 func GetSumSquaresError(x, y []float64) float64 {
 	sum := 0.0
-	model, err := CreateSLRModel(x, y)
+	model, err := CreateSLRModelWithOLS(x, y)
 	if err != nil {
 		panic(err)
 	}
@@ -176,8 +182,15 @@ func norm2(a []float64) float64 {
 
 // GetSlopeFromSSXYAndSSX calculates the slope from the sum of squares
 // Slope can be thought as a relation between the covariance of x,y and the variance of x
+// This follows the method of least squares
 func GetSlopeFromSSXYAndSSX(x, y []float64) float64 {
 	ssx := GetSSX(x)
 	ssxy := GetSSXY(x, y)
 	return ssxy / ssx
+}
+
+// GetInterceptFromSlopeAndMeans calculates the intercept from the slope and means
+// This follows the method of least squares
+func GetInterceptFromSlopeAndMeans(slope float64, meanX, meanY float64) float64 {
+	return meanY - slope*meanX // B0 = ȳ - B1*x̄
 }
