@@ -1622,3 +1622,29 @@ func TestExample1(t *testing.T) {
 	}
 	t.Log("=== Example 1 ===")
 }
+
+func TestGetCovariance(t *testing.T) {
+	type args struct {
+		x []float64
+		y []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"case 1", args{[]float64{1, 2, 3}, []float64{4, 5, 6}}, 1.0},
+		{"case 2", args{[]float64{1, 2, 3}, []float64{1, 2, 3}}, 1.0},
+		{"case 3", args{[]float64{1, 2, 3}, []float64{7, 8, 9}}, 1.0},
+		{"case 4", args{[]float64{1, 2, 3}, []float64{10, 11, 12}}, 1.0},
+		{"case 5", args{[]float64{1, 2, 3}, []float64{2, 4, 10}}, 4.0},
+		{"case 6", args{[]float64{1, 2, 3}, []float64{2, 7, 12}}, 5.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetCovariance(tt.args.x, tt.args.y); got != tt.want {
+				t.Errorf("GetCovariance() = %f, want %f", got, tt.want)
+			}
+		})
+	}
+}

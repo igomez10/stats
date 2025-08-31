@@ -630,3 +630,30 @@ func GetZScore(sampleMean, populationMean, sampleStandardDeviation float64, samp
 	zScore := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
 	return zScore
 }
+
+func GetMean(data []float64) float64 {
+	if len(data) == 0 {
+		panic("Data slice is empty")
+	}
+	sum := 0.0
+	for _, value := range data {
+		sum += value
+	}
+	return sum / float64(len(data))
+}
+
+func GetCovariance(x, y []float64) float64 {
+	if len(x) != len(y) {
+		panic("Vectors must be of the same length")
+	}
+
+	meanX := GetMean(x)
+	meanY := GetMean(y)
+
+	c := 0.0
+	for i := range x {
+		c += (x[i] - meanX) * (y[i] - meanY)
+	}
+	covariance := c / float64(len(x)-1) // sample covariance
+	return covariance
+}

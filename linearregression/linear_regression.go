@@ -3,6 +3,7 @@ package linearregression
 import (
 	"fmt"
 	"math"
+	"stats/pkg"
 )
 
 type Model struct {
@@ -23,8 +24,8 @@ func CreateSLRModel(x, y []float64) (Model, error) {
 		return Model{}, fmt.Errorf("x and y must have same nonzero length")
 	}
 
-	meanX := mean(x)
-	meanY := mean(y)
+	meanX := pkg.GetMean(x)
+	meanY := pkg.GetMean(y)
 
 	ssx := GetSSX(x)
 	if ssx == 0 {
@@ -48,7 +49,7 @@ func (m Model) Predict(xInput float64) float64 {
 // SSX is the sum of squares of x
 // ∑(xi - x̄)²
 func GetSSX(x []float64) float64 {
-	meanX := mean(x)
+	meanX := pkg.GetMean(x)
 	sumSoFar := 0.0
 
 	for _, xi := range x {
@@ -62,8 +63,8 @@ func GetSSX(x []float64) float64 {
 // GetSSXY is the sum of products of deviations of x and y
 // ∑(xi - x̄)(yi - ȳ)
 func GetSSXY(x, y []float64) float64 {
-	meanX := mean(x)
-	meanY := mean(y)
+	meanX := pkg.GetMean(x)
+	meanY := pkg.GetMean(y)
 	sumSoFar := 0.0
 
 	for i := range x {
@@ -76,22 +77,6 @@ func GetSSXY(x, y []float64) float64 {
 }
 
 // helpers
-func sum(a []float64) float64 {
-	s := 0.0
-	for _, v := range a {
-		s += v
-	}
-	return s
-}
-
-// dot is the dot product of two slices
-func dot(a, b []float64) float64 {
-	s := 0.0
-	for i := range a {
-		s += a[i] * b[i]
-	}
-	return s
-}
 
 // sumSquares is the sum of squares of a slice
 func sumSquares(a []float64) float64 {
@@ -100,34 +85,6 @@ func sumSquares(a []float64) float64 {
 		s += v * v
 	}
 	return s
-}
-
-// mean is the average of a slice
-func mean(a []float64) float64 {
-	if len(a) == 0 {
-		return 0
-	}
-	return sum(a) / float64(len(a))
-}
-
-// sampleVar is the sample variance of a slice
-func sampleVar(a []float64) float64 {
-	n := float64(len(a))
-	if n < 2 {
-		return 0
-	}
-	m := mean(a)
-	ss := 0.0
-	for _, v := range a {
-		d := v - m
-		ss += d * d
-	}
-	return ss / (n - 1)
-}
-
-// norm2 is the Euclidean norm (L2 norm) of a slice
-func norm2(a []float64) float64 {
-	return math.Sqrt(sumSquares(a))
 }
 
 // aliased notations for Sum Squares Total
@@ -141,7 +98,7 @@ func GetTSS(x, y []float64) float64 {
 // GetSumSquaresTotal Measures the total variability of the dataset
 func GetSumSquaresTotal(x, y []float64) float64 {
 	res := 0.0
-	meanY := mean(y)
+	meanY := pkg.GetMean(y)
 	for i := range y {
 		errI := y[i] - meanY
 		res += errI * errI
@@ -152,7 +109,7 @@ func GetSumSquaresTotal(x, y []float64) float64 {
 // GetSumSquaresRegression Measures the explained variability by your line
 func GetSumSquaresRegression(x, y []float64) float64 {
 	sum := 0.0
-	meanY := mean(y)
+	meanY := pkg.GetMean(y)
 	model, err := CreateSLRModel(x, y)
 	if err != nil {
 		panic(err)
@@ -207,4 +164,9 @@ func GetSumSquaresError(x, y []float64) float64 {
 	}
 
 	return sum
+}
+
+// norm2 is the Euclidean norm (L2 norm) of a slice
+func norm2(a []float64) float64 {
+	return math.Sqrt(sumSquares(a))
 }
