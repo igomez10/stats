@@ -326,3 +326,102 @@ func TestExplainSSTInTermsOfSSRandSSE_Quick(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestGetSlopeFromSSXYAndSSX(t *testing.T) {
+	type args struct {
+		x []float64
+		y []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "case1",
+			args: args{
+				x: []float64{1, 2, 3},
+				y: []float64{2, 4, 6},
+			},
+			want: 2.0,
+		},
+		{
+			name: "case2",
+			args: args{
+				x: []float64{1, 2, 3, 4, 5},
+				y: []float64{2, 3, 5, 4, 6},
+			},
+			want: 0.9,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetSlopeFromSSXYAndSSX(tt.args.x, tt.args.y); got-tt.want > 1e-9 {
+				t.Errorf("GetSlopeFromSSXYAndSSX() = %v, want %v", got, tt.want)
+			}
+
+			model, err := CreateSLRModel(tt.args.x, tt.args.y)
+			if err != nil {
+				t.Errorf("CreateSLRModel() error = %v", err)
+				return
+			}
+			if got := model.GetSlope(); got-tt.want > 1e-9 {
+				t.Errorf("GetSlope() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetSlopeFromSSXYAndSSX_Quick(t *testing.T) {
+	// Property: Slope is well-defined for valid inputs
+	f := func(x, y []float64) bool {
+		if len(x) > 1000 {
+			x = x[:1000]
+		}
+		if len(x) > len(y) {
+			x = x[:len(y)]
+		} else {
+			y = y[:len(x)]
+		}
+		if len(x) < 2 {
+			return true
+		}
+
+		// Check for NaN/Inf values
+		for i := range x {
+			if math.IsNaN(x[i]) || math.IsInf(x[i], 0) {
+				return false
+			}
+			x[i] = math.Mod(x[i], math.MaxInt16)
+		}
+		for i := range y {
+			if math.IsNaN(y[i]) || math.IsInf(y[i], 0) {
+				return false
+			}
+			y[i] = math.Mod(y[i], math.MaxInt16)
+		}
+
+		// Calculate slope
+		slope := GetSlopeFromSSXYAndSSX(x, y)
+		model, err := CreateSLRModel(x, y)
+		if err != nil {
+			return false
+		}
+
+		if math.IsNaN(model.GetSlope()) || math.IsInf(model.GetSlope(), 0) {
+			return false
+		}
+
+		if model.GetSlope() != slope {
+			return false
+		}
+
+		return true
+	}
+
+	if err := quick.Check(f, &quick.Config{
+		MaxCount: 1000,
+	}); err != nil {
+		t.Error(err)
+	}
+}

@@ -629,7 +629,7 @@ func GetZScore(sampleMean, populationMean, sampleStandardDeviation float64, samp
 }
 
 // GetCovariance calculates the covariance between two variables
-// This is also just ssxy divided by n-1
+// This is also just SSXY divided by n-1
 func GetCovariance(x, y []float64) float64 {
 	if len(x) != len(y) {
 		panic("Vectors must be of the same length")
