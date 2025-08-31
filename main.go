@@ -2,6 +2,7 @@ package stats
 
 import (
 	"math"
+	"stats/pkg"
 )
 
 // Combination calculates the number of combinations of n items taken r at a time
@@ -631,29 +632,54 @@ func GetZScore(sampleMean, populationMean, sampleStandardDeviation float64, samp
 	return zScore
 }
 
-func GetMean(data []float64) float64 {
-	if len(data) == 0 {
-		panic("Data slice is empty")
-	}
-	sum := 0.0
-	for _, value := range data {
-		sum += value
-	}
-	return sum / float64(len(data))
-}
-
+// GetCovariance calculates the covariance between two variables
+// This is also just ssxy divided by n-1
 func GetCovariance(x, y []float64) float64 {
 	if len(x) != len(y) {
 		panic("Vectors must be of the same length")
 	}
 
-	meanX := GetMean(x)
-	meanY := GetMean(y)
+	meanX := pkg.GetMean(x)
+	meanY := pkg.GetMean(y)
 
 	c := 0.0
 	for i := range x {
-		c += (x[i] - meanX) * (y[i] - meanY)
+		diffX := x[i] - meanX
+		diffY := y[i] - meanY
+		c += diffX * diffY
 	}
 	covariance := c / float64(len(x)-1) // sample covariance
 	return covariance
+}
+
+// GetVariance calculates the variance of a sample
+// This is also just the SSX divided by n
+func GetVariance(x []float64) float64 {
+	if len(x) == 0 {
+		panic("Vector must not be empty")
+	}
+
+	mean := pkg.GetMean(x)
+	c := 0.0
+	for i := range x {
+		c += (x[i] - mean) * (x[i] - mean)
+	}
+	variance := c / float64(len(x)-1) // sample variance
+	return variance
+}
+
+func GetCorrelation(x, y []float64) float64 {
+	if len(x) != len(y) {
+		panic("Vectors must be of the same length")
+	}
+
+	covariance := GetCovariance(x, y)
+	stdDevX := math.Sqrt(GetVariance(x))
+	stdDevY := math.Sqrt(GetVariance(y))
+
+	if stdDevX == 0 || stdDevY == 0 {
+		return 0
+	}
+
+	return covariance / (stdDevX * stdDevY)
 }

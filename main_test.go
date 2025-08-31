@@ -1648,3 +1648,55 @@ func TestGetCovariance(t *testing.T) {
 		})
 	}
 }
+
+func TestGetVariance(t *testing.T) {
+	type args struct {
+		x []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"case 1", args{[]float64{1, 2, 3}}, 1.0},
+		{"case 2", args{[]float64{1, 2, 3, 4}}, 1.67},
+		{"case 3", args{[]float64{1, 1, 1}}, 0.0},
+		{"case 4", args{[]float64{1, 2, 3, 4, 5}}, 3.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetVariance(tt.args.x); got-tt.want > 1e-9 {
+				t.Errorf("GetVariance() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetCorrelation(t *testing.T) {
+	type args struct {
+		x []float64
+		y []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"case 1", args{[]float64{1, 2, 3}, []float64{4, 5, 6}}, 1.0},
+		{"case 2", args{[]float64{1, 2, 3}, []float64{1, 2, 3}}, 1.0},
+		{"case 3", args{[]float64{1, 2, 3}, []float64{7, 8, 9}}, 1.0},
+		{"case 4", args{[]float64{1, 2, 3}, []float64{10, 11, 12}}, 1.0},
+		{"case 5", args{[]float64{1, 2, 3}, []float64{2, 4, 10}}, 0.9607689228},
+		{"case 6", args{[]float64{1, 2, 3}, []float64{2, 7, 12}}, 5.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetCorrelation(tt.args.x, tt.args.y)
+			diff := got - tt.want
+			threshold := 1e-9
+			if diff > threshold {
+				t.Errorf("GetCorrelation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

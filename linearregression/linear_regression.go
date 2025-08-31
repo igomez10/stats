@@ -62,7 +62,12 @@ func GetSSX(x []float64) float64 {
 
 // GetSSXY is the sum of products of deviations of x and y
 // ∑(xi - x̄)(yi - ȳ)
+// This is also just the covariance multiplied by n-1
 func GetSSXY(x, y []float64) float64 {
+	if len(x) != len(y) {
+		panic("Incompatible slice lengths")
+	}
+
 	meanX := pkg.GetMean(x)
 	meanY := pkg.GetMean(y)
 	sumSoFar := 0.0
@@ -75,8 +80,6 @@ func GetSSXY(x, y []float64) float64 {
 
 	return sumSoFar
 }
-
-// helpers
 
 // sumSquares is the sum of squares of a slice
 func sumSquares(a []float64) float64 {
