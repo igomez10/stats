@@ -307,11 +307,7 @@ func GetMaximumLikelihoodNormal(data []float64) float64 {
 		panic("Data cannot be empty")
 	}
 
-	var sum float64
-	for _, value := range data {
-		sum += value
-	}
-	return sum / float64(len(data)) // Return the mean as the MLE for a normal distribution
+	return pkg.GetMean(data)
 }
 
 // GetMin returns the minimum value in a slice of float64
