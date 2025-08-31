@@ -668,6 +668,8 @@ func GetVariance(x []float64) float64 {
 	return variance
 }
 
+// GetCorrelation calculates the correlation between two variables
+// This is also just the covariance divided by the product of the standard deviations
 func GetCorrelation(x, y []float64) float64 {
 	if len(x) != len(y) {
 		panic("Vectors must be of the same length")
