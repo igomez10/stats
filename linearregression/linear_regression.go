@@ -43,6 +43,26 @@ func CreateSLRModelWithOLS(x, y []float64) (Model, error) {
 	return Model{B0: intercept, B1: slopeCoefficient}, nil
 }
 
+func GetLogLikelihoodFunctionLinearRegression(x, y []float64) func(b0, b1, sigma2 float64) float64 {
+	return func(b0, b1, sigma2 float64) float64 {
+		if sigma2 <= 0 {
+			return math.Inf(-1)
+		}
+
+		c := 0.0
+		c += float64((-len(x) / 2) * int(math.Log(2*math.Pi)))
+		c += float64((-len(x) / 2) * int(math.Log(sigma2)))
+		counter := 0.0
+		for i := range x {
+			counter += math.Pow(y[i]-b0-b1*x[i], 2.0)
+		}
+		c += float64(-1/(2*sigma2)) * counter
+
+		return c
+	}
+}
+
+// CreateSLRModelWithMLE creates a simple linear regression model using maximum likelihood estimation
 func CreateSLRModelWithMLE(x, y []float64) (Model, error) {
 	panic("Not implemented")
 }
