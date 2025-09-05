@@ -1,11 +1,14 @@
 package linearregression
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"math"
+	"os"
 	"reflect"
 	"stats/pkg"
+	"strconv"
 	"testing"
 	"testing/quick"
 )
@@ -539,5 +542,102 @@ func TestGetInterceptFromSlopeAndMeans_Quick(t *testing.T) {
 		MaxCount: 1000,
 	}); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestTomatoMeterCorrelation(t *testing.T) {
+	// load csv
+	f, err := os.Open("./test_fixtures/movie_ratings.csv")
+	if err != nil {
+		t.Fatalf("failed to open csv file: %v", err)
+	}
+	defer f.Close()
+
+	reader := csv.NewReader(f)
+	// Read the CSV data
+	records, err := reader.ReadAll()
+	if err != nil {
+		t.Fatalf("failed to read csv file: %v", err)
+	}
+
+	type MovieRecord struct {
+		ID                string `json:"id,omitempty" csv:"id"`
+		Title             string `json:"title,omitempty" csv:"title"`
+		TomatoMeterRating *int   `json:"tomatometer_rating,omitempty" csv:"tomatometer_rating,omitempty"`
+		AudienceRating    *int   `json:"audience_rating,omitempty" csv:"audience_rating,omitempty"`
+	}
+
+	res := []MovieRecord{}
+
+	// Process the records
+	seen := map[string]bool{}
+	for i := 1; i < len(records); i++ { // skip header
+		record := records[i]
+		if seen[record[1]] {
+			continue
+		} else {
+			seen[record[1]] = true
+		}
+		var tom, aud *int
+		if record[2] == "NA" {
+			continue
+		}
+
+		tom_rating, err := strconv.Atoi(record[2])
+		if err != nil {
+			t.Fatalf("failed to convert tomatometer rating: %v", err)
+		}
+		tom = &tom_rating
+		if record[3] == "NA" {
+			continue
+		}
+
+		aud_rating, err := strconv.Atoi(record[3])
+		if err != nil {
+			t.Fatalf("failed to convert audience rating: %v", err)
+		}
+		aud = &aud_rating
+
+		movie := MovieRecord{
+			ID:                record[0],
+			Title:             record[1],
+			TomatoMeterRating: tom,
+			AudienceRating:    aud,
+		}
+
+		res = append(res, movie)
+		// Do something with the movie record
+	}
+
+	if len(res) != 197 {
+		t.Error("unexpected length", len(res))
+	}
+
+	xTomatoRating := []float64{}
+	for i := range res {
+		xTomatoRating = append(xTomatoRating, float64(*res[i].TomatoMeterRating))
+	}
+
+	yAudienceRating := []float64{}
+	for i := range res {
+		yAudienceRating = append(yAudienceRating, float64(*res[i].AudienceRating))
+	}
+
+	model, err := CreateSLRModelWithOLS(xTomatoRating, yAudienceRating)
+	if err != nil {
+		t.Errorf("unexpected error")
+	}
+
+	if model.B0-34.5089 > 0.01 {
+		t.Error("unexpected b0", model.B0)
+	}
+
+	if model.B1-0.4461 > 0.01 {
+		t.Error("unexpected b1", model.B1)
+	}
+
+	// lets predict with a tomato rating of 88
+	if model.Predict(88.0)-73.762 > 0.01 {
+		t.Error("unexpected prediction")
 	}
 }
