@@ -552,11 +552,16 @@ func GetRightTailZScoreFromProbability(confidenceLevel, from, to, step float64) 
 	return IntegrateUntilValue(from, to, confidenceLevel, step, standardNormal)
 }
 
-func GetStandardError(stdDev float64, sampleSize int) float64 {
-	if sampleSize <= 0 {
-		panic("Sample size must be greater than 0")
+// GetStandardErrorEmpirical calculates the standard error of a statistic this can be
+// the mean, proportion, or regression coefficient
+// In theory we could use the notation Var(estimator) / n but since we typically
+// only have one sample, we cannot get the variance of the estimator, we only have
+// one value per estimator
+func GetStandardErrorEmpirical(estimator float64, sampleSize int) float64 {
+	if sampleSize <= 1 {
+		panic("Sample size must be greater than 1")
 	}
-	return stdDev / math.Sqrt(float64(sampleSize))
+	return estimator / math.Sqrt(float64(sampleSize))
 }
 
 func GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step float64) float64 {
@@ -581,7 +586,7 @@ func GetMeanConfidenceIntervalForNormalDistribution(sampleMean, sampleStdDev flo
 		score = -GetRightTailTScoreFromProbability(alpha, degreesOfFreedom, from, to, step)
 	}
 
-	marginOfError := score * GetStandardError(sampleStdDev, sampleSize)
+	marginOfError := score * GetStandardErrorEmpirical(sampleStdDev, sampleSize)
 	lowerBound := sampleMean - marginOfError
 	upperBound := sampleMean + marginOfError
 
@@ -596,7 +601,8 @@ func GetProportionConfidenceInterval(successProbability, sampleSize, confidenceL
 
 	// Calculate the standard error
 	// SE = sqrt((p * (1 - p)) / n)
-	standardError := math.Sqrt((successProbability * (1 - successProbability)) / sampleSize)
+	x := successProbability * (1 - successProbability)
+	standardError := math.Sqrt(x / sampleSize)
 
 	// Calculate the margin of error
 	marginOfError := zScore * standardError

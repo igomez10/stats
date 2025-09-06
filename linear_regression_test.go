@@ -545,6 +545,7 @@ func TestGetInterceptFromSlopeAndMeans_Quick(t *testing.T) {
 	}
 }
 
+// Reimplementing SLR in python but in go
 func TestTomatoMeterCorrelation(t *testing.T) {
 	// load csv
 	f, err := os.Open("test_fixtures/movie_ratings.csv")
@@ -609,7 +610,8 @@ func TestTomatoMeterCorrelation(t *testing.T) {
 		// Do something with the movie record
 	}
 
-	if len(res) != 197 {
+	expectedFilteredMovieLength := 197
+	if len(res) != expectedFilteredMovieLength {
 		t.Error("unexpected length", len(res))
 	}
 
@@ -628,16 +630,20 @@ func TestTomatoMeterCorrelation(t *testing.T) {
 		t.Errorf("unexpected error")
 	}
 
-	if model.B0-34.5089 > 0.01 {
+	expectedB0 := 34.5089
+	if model.B0-expectedB0 > 0.01 {
 		t.Error("unexpected b0", model.B0)
 	}
 
-	if model.B1-0.4461 > 0.01 {
+	expectedB1 := 0.4461
+	if model.B1-expectedB1 > 0.01 {
 		t.Error("unexpected b1", model.B1)
 	}
 
 	// lets predict with a tomato rating of 88
-	if model.Predict(88.0)-73.762 > 0.01 {
+	expectedTomatoRating := 73.762
+	givenTomatoRating := 88.0
+	if model.Predict(givenTomatoRating)-expectedTomatoRating > 0.01 {
 		t.Error("unexpected prediction")
 	}
 
