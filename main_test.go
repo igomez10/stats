@@ -1702,3 +1702,27 @@ func TestGetCorrelation(t *testing.T) {
 		})
 	}
 }
+
+func TestGetProbabilityFromZScore(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		zScore float64
+		want   float64
+	}{
+		{name: "case 1", zScore: 0, want: 0.5},
+		{name: "case 2", zScore: 1.96, want: 0.975},
+		{name: "case 3", zScore: -1, want: 0.158},
+		{name: "case 4", zScore: 2, want: 0.977},
+		{name: "case 5", zScore: -2, want: 0.022},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetProbabilityFromZScore(tt.zScore)
+			// TODO: update the condition below to compare got with tt.want.
+			if math.Abs(got-tt.want) > 1e-3 {
+				t.Errorf("GetProbabilityFromZScore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

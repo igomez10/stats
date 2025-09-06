@@ -687,3 +687,12 @@ func GetCorrelation(x, y []float64) float64 {
 
 	return covariance / (stdDevX * stdDevY)
 }
+
+// GetProbabilityFromZScore calculates the probability associated with a z-score
+// This can be used as a z score table to retrieve values by zscore.
+// If you want the zscore use GetZScoreFromProbability
+func GetProbabilityFromZScore(zScore float64) float64 {
+	// Use the cumulative distribution function (CDF) of the standard normal distribution
+	// to find the probability associated with the z-score
+	return Integrate(-100, zScore, 0.001, GetNormalDistributionFunction(0, 1))
+}
