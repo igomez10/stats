@@ -1726,3 +1726,77 @@ func TestGetProbabilityFromZScore(t *testing.T) {
 		})
 	}
 }
+
+func TestGetPValueFromZScore(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		zScore   float64
+		testType HypothesisTest
+		want     float64
+	}{
+		{
+			name:     "case 1",
+			zScore:   1.65,
+			testType: RightTailed,
+			want:     0.0495,
+		},
+		{
+			name:     "case 2",
+			zScore:   1.65,
+			testType: LeftTailed,
+			want:     0.9505,
+		},
+		{
+			name:     "case 3",
+			zScore:   1.65,
+			testType: TwoTailed,
+			want:     0.099,
+		},
+		{
+			name:     "case 4",
+			zScore:   0,
+			testType: RightTailed,
+			want:     0.5,
+		},
+		{
+			name:     "case 5",
+			zScore:   0,
+			testType: TwoTailed,
+			want:     1.0,
+		},
+		{
+			name:     "case 6",
+			zScore:   2.33,
+			testType: RightTailed,
+			want:     0.0099,
+		},
+		{
+			name:     "case 7",
+			zScore:   2.33,
+			testType: TwoTailed,
+			want:     0.0198,
+		},
+		{
+			name:     "case 8",
+			zScore:   -1.96,
+			testType: LeftTailed,
+			want:     0.025,
+		},
+		{
+			name:     "case 9",
+			zScore:   -1.96,
+			testType: TwoTailed,
+			want:     0.05,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetPValueFromZScore(tt.zScore, tt.testType)
+			// TODO: update the condition below to compare got with tt.want.
+			if math.Abs(got-tt.want) > 1e-3 {
+				t.Errorf("GetPValueFromZScore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

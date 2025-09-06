@@ -696,3 +696,26 @@ func GetProbabilityFromZScore(zScore float64) float64 {
 	// to find the probability associated with the z-score
 	return Integrate(-100, zScore, 0.001, GetNormalDistributionFunction(0, 1))
 }
+
+type HypothesisTest int
+
+const (
+	TwoTailed   HypothesisTest = 0
+	LeftTailed  HypothesisTest = 1
+	RightTailed HypothesisTest = 2
+)
+
+func GetPValueFromZScore(zScore float64, testType HypothesisTest) float64 {
+	// Use the cumulative distribution function (CDF) of the standard normal distribution
+	// to find the p-value associated with the z-score
+	switch testType {
+	case LeftTailed:
+		return GetProbabilityFromZScore(zScore)
+	case TwoTailed:
+		return 2 * (1 - GetProbabilityFromZScore(math.Abs(zScore)))
+	case RightTailed:
+		return 1 - GetProbabilityFromZScore(zScore)
+	default:
+		return 0
+	}
+}
