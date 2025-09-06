@@ -1,4 +1,4 @@
-package linearregression
+package stats
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package linearregression
+package stats
 
 import (
 	"encoding/csv"
@@ -547,7 +547,7 @@ func TestGetInterceptFromSlopeAndMeans_Quick(t *testing.T) {
 
 func TestTomatoMeterCorrelation(t *testing.T) {
 	// load csv
-	f, err := os.Open("./test_fixtures/movie_ratings.csv")
+	f, err := os.Open("test_fixtures/movie_ratings.csv")
 	if err != nil {
 		t.Fatalf("failed to open csv file: %v", err)
 	}
@@ -640,4 +640,12 @@ func TestTomatoMeterCorrelation(t *testing.T) {
 	if model.Predict(88.0)-73.762 > 0.01 {
 		t.Error("unexpected prediction")
 	}
+
+	cov := GetCovariance(xTomatoRating, yAudienceRating)
+	t.Log("covariance", cov)
+	corr := GetCorrelation(xTomatoRating, yAudienceRating)
+	t.Log("correlation", corr)
+
+	varB_hat_1 := GetVariance(yAudienceRating) / sumSquares(xTomatoRating)
+	t.Log("varB_hat_1", varB_hat_1)
 }
