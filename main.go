@@ -253,7 +253,7 @@ func IntegrateUntilValue(from, toMaxValue, targetValue float64, step float64, fx
 	panic("Integral did not reach target value before maximum integration limit")
 }
 
-// GetDerivativeAtX calculates the derivative of a function fx at a point x using the finite difference method
+// GetDerivativeAtX derives / calculates the derivative of a function fx at a point x using the finite difference method
 // It returns a function that takes a float64 x and returns the derivative at that point
 // The derivative is calculated as:
 // f'(x) = (f(x + h) - f(x - h)) / (2 * h)

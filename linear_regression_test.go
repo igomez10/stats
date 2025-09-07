@@ -655,3 +655,47 @@ func TestTomatoMeterCorrelation(t *testing.T) {
 	varB_hat_1 := GetVariance(yAudienceRating) / sumSquares(xTomatoRating)
 	t.Log("varB_hat_1", varB_hat_1)
 }
+
+func GetError(B0, B1, x, yGot float64) float64 {
+	yExpected := B0 + B1*x
+	return math.Abs(yExpected-yGot) * math.Abs(yExpected-yGot)
+}
+
+func GetTotalError(B0, B1 float64, xs, ys []float64) float64 {
+	cumulativeError := 0.0
+	for i := range xs {
+		cumulativeError += GetError(B0, B1, xs[i], ys[i])
+	}
+	return cumulativeError
+}
+
+func TestBuildLinearRegressionModelManually(t *testing.T) {
+	x := []float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 10}
+	y := []float64{5, 4, 6, 5, 8, 7, 7, 8, 8, 9}
+	model, err := CreateSLRModelWithOLS(x, y)
+	if err != nil {
+		t.Error("unexpected error", err)
+	}
+
+	// now do the regression by hand
+	var cPointB1 *float64
+	b0DependentFunction := func(b0 float64) float64 {
+		b1DependentFunction := func(b1 float64) float64 {
+			return GetTotalError(b0, b1, x, y)
+		}
+		cPointB1 = FindCriticalPoint(b1DependentFunction, -1.01, 1.01, 0.001)
+		return GetTotalError(b0, *cPointB1, x, y)
+	}
+	cPointB0 := FindCriticalPoint(b0DependentFunction, GetMin(y), GetMax(y), 0.001)
+
+	if math.Abs(*cPointB0-model.B0) > 0.001 {
+		t.Log("Critical point B0 Manual", *cPointB0)
+		t.Log("Critical point B0 Model", model.B0)
+	}
+
+	if math.Abs(*cPointB1-model.B1) > 0.001 {
+		t.Log("Critical point B1 Manual", *cPointB1)
+		t.Log("Critical point B1 Model", model.B1)
+	}
+
+}

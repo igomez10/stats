@@ -39,3 +39,29 @@ func sampleVar(a []float64) float64 {
 	}
 	return ss / (n - 1)
 }
+
+func GetMin(a []float64) float64 {
+	if len(a) == 0 {
+		return 0
+	}
+	min := a[0]
+	for _, v := range a {
+		if v < min {
+			min = v
+		}
+	}
+	return min
+}
+
+func GetMax(a []float64) float64 {
+	if len(a) == 0 {
+		return 0
+	}
+	max := a[0]
+	for _, v := range a {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
