@@ -705,6 +705,15 @@ const (
 	RightTailed HypothesisTest = 2
 )
 
+// GetPValueFromZScore returns the p-value corresponding to a z-score in a given test.
+// The p-value (probability value) is the probability of observing a test statistic
+// at least as extreme as the one obtained, assuming the null hypothesis (H0) is true.
+//
+// Interpretation:
+//   - A small p-value means such an extreme result would be unlikely under H0,
+//     providing evidence against H0.
+//   - A large p-value means such a result is quite likely under H0,
+//     so the data provide little or no evidence against H0.
 func GetPValueFromZScore(zScore float64, testType HypothesisTest) float64 {
 	// Use the cumulative distribution function (CDF) of the standard normal distribution
 	// to find the p-value associated with the z-score

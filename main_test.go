@@ -1719,7 +1719,6 @@ func TestGetProbabilityFromZScore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := GetProbabilityFromZScore(tt.zScore)
-			// TODO: update the condition below to compare got with tt.want.
 			if math.Abs(got-tt.want) > 1e-3 {
 				t.Errorf("GetProbabilityFromZScore() = %v, want %v", got, tt.want)
 			}
@@ -1793,7 +1792,6 @@ func TestGetPValueFromZScore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := GetPValueFromZScore(tt.zScore, tt.testType)
-			// TODO: update the condition below to compare got with tt.want.
 			if math.Abs(got-tt.want) > 1e-3 {
 				t.Errorf("GetPValueFromZScore() = %v, want %v", got, tt.want)
 			}
