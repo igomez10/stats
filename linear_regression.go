@@ -195,6 +195,18 @@ func GetSumSquaresError(x, y []float64) float64 {
 	return sum
 }
 
+// GetMSE is the mean squared error
+func GetMSE(x, y []float64) float64 {
+	return GetSumSquaresError(x, y) / (float64(len(y)) - 2)
+}
+
+// GetStandardErrorB1 returns the standard error for the slope
+func GetStandardErrorB1(x, y []float64) float64 {
+	mse := GetMSE(x, y)
+	ssx := GetSSX(x)
+	return math.Sqrt(mse / ssx)
+}
+
 // norm2 is the Euclidean norm (L2 norm) of a slice
 func norm2(a []float64) float64 {
 	return math.Sqrt(sumSquares(a))
