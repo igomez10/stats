@@ -701,7 +701,6 @@ func TestBuildLinearRegressionModelManually(t *testing.T) {
 }
 
 func TestQuiz1Manually(t *testing.T) {
-
 	t.Run("1.b", func(t *testing.T) {
 		// For the simple linear regression model, the larger the quantity
 		// ∑ni=1(xi−x_mean)^2 is, the smaller the standard error of the least squares
