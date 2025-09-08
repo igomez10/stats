@@ -699,3 +699,23 @@ func TestBuildLinearRegressionModelManually(t *testing.T) {
 	}
 
 }
+
+func TestQuiz1Manually(t *testing.T) {
+
+	t.Run("1.b", func(t *testing.T) {
+		// For the simple linear regression model, the larger the quantity
+		// ∑ni=1(xi−x_mean)^2 is, the smaller the standard error of the least squares
+		// slope estimator tends to be.
+		x := []float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 10}
+		y := []float64{5, 4, 6, 5, 8, 7, 7, 8, 8, 9}
+		standardErrorB1 := GetStandardErrorB1(x, y)
+
+		x[0] = 999999999
+		standardErrorB1New := GetStandardErrorB1(x, y)
+
+		// We expect the standard error to be smaller because SSX is now bigger
+		if standardErrorB1New >= standardErrorB1 {
+			t.Error("unexpected standard error", standardErrorB1, standardErrorB1New)
+		}
+	})
+}
