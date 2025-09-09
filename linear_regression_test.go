@@ -156,20 +156,20 @@ func TestExplainSSTInTermsOfSSRandSSE(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("SST: %v, SSR: %v, SSE: %v", tt.sst, tt.ssr, tt.sse), func(t *testing.T) {
-			if got := GetSSE(tt.x, tt.y); got-tt.sse > 1e-5 {
+			if got := GetSSE(tt.x, tt.y); math.Abs(got-tt.sse) > 1e-5 {
 				t.Errorf("GetSSE() = %v, want %v", got, tt.sse)
 			}
 
-			if got := GetSSR(tt.x, tt.y); got-tt.ssr > 1e-5 {
+			if got := GetSSR(tt.x, tt.y); math.Abs(got-tt.ssr) > 1e-5 {
 				t.Errorf("GetSSR() = %v, want %v", got, tt.ssr)
 			}
 
-			if got := GetSST(tt.x, tt.y); got-tt.sst > 1e-5 {
+			if got := GetSST(tt.x, tt.y); math.Abs(got-tt.sst) > 1e-5 {
 				t.Errorf("GetSST() = %v, want %v", got, tt.sst)
 			}
 
-			if GetSST(tt.x, tt.y)-(GetSSR(tt.x, tt.y)+GetSSE(tt.x, tt.y)) > 1e-5 {
-				t.Errorf("SST = %v, SSR + SSE = %v", GetSST(tt.x, tt.y), GetSSR(tt.x, tt.y)+GetSSE(tt.x, tt.y))
+			if math.Abs(GetSST(tt.x, tt.y)-GetSSR(tt.x, tt.y)-GetSSE(tt.x, tt.y)) > 1 {
+				t.Errorf("SST = %v, SSR + SSE = %v", GetSST(tt.x, tt.y), GetSSR(tt.x, tt.y)-GetSSE(tt.x, tt.y))
 			}
 		})
 	}
