@@ -19,6 +19,15 @@ func (m Model) GetSlope() float64 {
 	return m.B1
 }
 
+// GetCoefficientDetermination returns the R2 of the model
+// This will tell us how much variance is explained by the model.
+// We can use this to judge if our model is good or not
+func GetCoefficientDetermination(x, y []float64) float64 {
+	sse := GetSSE(x, y)
+	sst := GetSST(x, y)
+	return 1 - (sse / sst)
+}
+
 // CreateSLRModelWithOLS creates a simple linear regression model using ordinary least squares
 func CreateSLRModelWithOLS(x, y []float64) (Model, error) {
 	if len(x) != len(y) || len(x) == 0 {

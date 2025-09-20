@@ -718,3 +718,40 @@ func TestQuiz1Manually(t *testing.T) {
 		}
 	})
 }
+
+func TestModel_GetCoefficientDetermination(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for receiver constructor.
+		x    []float64
+		y    []float64
+		want float64
+	}{
+		{
+			name: "perfect model, should be good r2",
+			x:    []float64{1, 2, 3, 4},
+			y:    []float64{1, 2, 3, 4},
+			want: 1,
+		},
+		{
+			name: "one outlier, still not bad",
+			x:    []float64{1, 2, 3, 4},
+			y:    []float64{1, 2, 3, 10},
+			want: 0.783,
+		},
+		{
+			name: "random, very bad",
+			x:    []float64{1, 2, 3, 4},
+			y:    []float64{1e10, -1e10, -1e10, 1e10},
+			want: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetCoefficientDetermination(tt.x, tt.y)
+			if math.Abs(got-tt.want) > 1e-3 {
+				t.Errorf("GetCoefficientDetermination() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
