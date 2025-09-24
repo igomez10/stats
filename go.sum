@@ -22,6 +22,10 @@ github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f h1:Y/CXytFA4m6
 github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f/go.mod h1:vw97MGsxSvLiUE2X8qFplwetxpGLQrlU1Q9AUEIzCaM=
 github.com/go-echarts/go-echarts/v2 v2.6.1 h1:UjyovbU7sbALakMYaoFsSKimT1Sm3kHCJcJSu6U5JoU=
 github.com/go-echarts/go-echarts/v2 v2.6.1/go.mod h1:56YlvzhW/a+du15f3S2qUGNDfKnFOeJSThBIrVFHDtI=
+github.com/igomez10/linearalgebra v0.0.0-20250914185740-a93380e40ca3 h1:CfRroIYERV1Jn5GVI5xvEqt83M1HjCPEtkV/UeIopXo=
+github.com/igomez10/linearalgebra v0.0.0-20250914185740-a93380e40ca3/go.mod h1:wEtL9XiPY+03ZL9b2+qgX4lfwbmNf15bHUKS8X7JJPA=
+github.com/igomez10/linearalgebra v0.0.0-20250924103847-c2856c9543eb h1:RJvgXgTLVLni85m4nOKZAN9ZO7S47ols3j1n8Y9DoG0=
+github.com/igomez10/linearalgebra v0.0.0-20250924103847-c2856c9543eb/go.mod h1:wEtL9XiPY+03ZL9b2+qgX4lfwbmNf15bHUKS8X7JJPA=
 github.com/lrstanley/bubblezone v1.0.0 h1:bIpUaBilD42rAQwlg/4u5aTqVAt6DSRKYZuSdmkr8UA=
 github.com/lrstanley/bubblezone v1.0.0/go.mod h1:kcTekA8HE/0Ll2bWzqHlhA2c513KDNLW7uDfDP4Mly8=
 github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69Aj6K7nkY=

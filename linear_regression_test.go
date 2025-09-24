@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"testing"
 	"testing/quick"
+
+	"github.com/igomez10/linearalgebra"
 )
 
 func TestExampleSimpleLinearRegression(t *testing.T) {
@@ -753,5 +755,39 @@ func TestModel_GetCoefficientDetermination(t *testing.T) {
 				t.Errorf("GetCoefficientDetermination() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestMultipleLinearRegression(t *testing.T) {
+	X := [][]float64{
+		{2100, 4, 5},
+		{1600, 3, 15},
+		{2400, 4, 2},
+		{1410, 2, 30},
+		{3000, 5, 8},
+		{1850, 3, 12},
+	}
+
+	// betas is (Xt * X)^-1 * Xt * y
+	designMatrix := GetDesignMatrix(X)
+	Xt := linearalgebra.CopyMatrix(designMatrix)
+	Xt = linearalgebra.TransposeMatrix(Xt)
+
+	xCopy := linearalgebra.CopyMatrix(designMatrix)
+
+	XtX := linearalgebra.DotProduct(Xt, xCopy)
+	XtXInv := linearalgebra.GetInverseMatrixByDeterminant(XtX)
+
+	Xt_2 := linearalgebra.CopyMatrix(designMatrix)
+	Xt_2 = linearalgebra.TransposeMatrix(Xt_2)
+
+	XtX_Inv_Xt := linearalgebra.DotProduct(XtXInv, Xt_2)
+	Y := [][]float64{{420}, {310}, {460}, {210}, {560}, {340}}
+	result := linearalgebra.DotProduct(XtX_Inv_Xt, Y)
+	expected := []float64{27.3114924, 0.10495301, 46.31520567, -1.85704885}
+	for i, v := range result {
+		if math.Abs(v[0]-expected[i]) > 0.0001 {
+			t.Errorf("MultipleLinearRegression() = %v, want %v", v[0], expected[i])
+		}
 	}
 }
