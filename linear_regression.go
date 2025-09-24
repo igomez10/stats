@@ -235,3 +235,27 @@ func GetSlopeFromSSXYAndSSX(x, y []float64) float64 {
 func GetInterceptFromSlopeAndMeans(slope float64, meanX, meanY float64) float64 {
 	return meanY - slope*meanX // B0 = ȳ - B1*x̄
 }
+
+// GetDesignMatrix creates the design matrix for multiple linear regression
+// The design matrix includes a column of ones for the intercept term
+// Each row corresponds to an observation, and each column corresponds to a feature
+// For example, if we have observations = [[x11, x12], [x21, x22]], the design matrix will be:
+// [
+//
+//	[1, x11, x12],
+//	[1, x21, x22],
+//	[1, x31, x32]
+//
+// The first column of ones allows us to estimate the intercept term in the regression model.
+// ]
+func GetDesignMatrix(observations [][]float64) [][]float64 {
+	designMatrix := make([][]float64, len(observations))
+	for i := range observations {
+		designMatrix[i] = make([]float64, len(observations[0])+1)
+		designMatrix[i][0] = 1 // intercept term
+		for j := range observations[i] {
+			designMatrix[i][j+1] = observations[i][j]
+		}
+	}
+	return designMatrix
+}
