@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"stats/pkg"
 	"testing"
 
 	"github.com/NimbleMarkets/ntcharts/barchart"
@@ -1797,4 +1798,45 @@ func TestGetPValueFromZScore(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPredictionInterval(t *testing.T) {
+	// 	•	Dataset (n = 8):
+	// •	x: [10, 12, 15, 20, 25, 30, 35, 40]
+	// •	y: [17.2, 19.1, 22.9, 30.5, 38.2, 43.0, 52.3, 58.7]
+	// •	Target point: x_0 = 32
+	x := []float64{10, 12, 15, 20, 25, 30, 35, 40}
+	y := []float64{17.2, 19.1, 22.9, 30.5, 38.2, 43.0, 52.3, 58.7}
+	// x0 := 32.0
+
+	// Calculate confidence interval
+	stdevY := math.Sqrt(GetVariance(y))
+	t.Log("Standard Deviation Y: ", stdevY)
+	meanY := pkg.GetMean(y)
+	t.Log("Mean Y: ", meanY)
+	lowerY, upperY := GetMeanConfidenceIntervalForNormalDistribution(
+		meanY,
+		stdevY,
+		len(y),
+		0.95,
+		-100,
+		100,
+		0.01,
+	)
+	t.Log("Confidence Interval Y: [", lowerY, ", ", upperY, "]")
+
+	meanX := pkg.GetMean(x)
+	t.Log("Mean X: ", meanX)
+	stdevX := math.Sqrt(GetVariance(x))
+	t.Log("Standard Deviation X: ", stdevX)
+	lowerX, upperX := GetMeanConfidenceIntervalForNormalDistribution(
+		meanX,
+		stdevX,
+		len(x),
+		0.95,
+		-100,
+		100,
+		0.01,
+	)
+	t.Log("Confidence Interval X: [", lowerX, ", ", upperX, "]")
 }

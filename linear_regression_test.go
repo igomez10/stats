@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"testing"
 	"testing/quick"
-
-	"github.com/igomez10/linearalgebra"
 )
 
 func TestExampleSimpleLinearRegression(t *testing.T) {
@@ -759,35 +757,61 @@ func TestModel_GetCoefficientDetermination(t *testing.T) {
 }
 
 func TestMultipleLinearRegression(t *testing.T) {
-	X := [][]float64{
-		{2100, 4, 5},
-		{1600, 3, 15},
-		{2400, 4, 2},
-		{1410, 2, 30},
-		{3000, 5, 8},
-		{1850, 3, 12},
+	type args struct {
+		X [][]float64
+		Y []float64
 	}
 
-	// betas is (Xt * X)^-1 * Xt * y
-	designMatrix := GetDesignMatrix(X)
-	Xt := linearalgebra.CopyMatrix(designMatrix)
-	Xt = linearalgebra.TransposeMatrix(Xt)
+	tests := []struct {
+		name      string
+		args      args
+		want      MultiLinearModel
+		tolerance float64
+	}{
+		{
+			name: "house-prices-3-features",
+			args: args{
+				X: [][]float64{
+					{2100, 4, 5},
+					{1600, 3, 15},
+					{2400, 4, 2},
+					{1410, 2, 30},
+					{3000, 5, 8},
+					{1850, 3, 12},
+				},
+				Y: []float64{420, 310, 460, 210, 560, 340},
+			},
+			want: MultiLinearModel{Betas: [][]float64{
+				{27.3114924},
+				{0.10495301},
+				{46.31520567},
+				{-1.85704885},
+			}},
+			tolerance: 1e-4,
+		},
+	}
 
-	xCopy := linearalgebra.CopyMatrix(designMatrix)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CreateLRModelWithOLS(tt.args.X, tt.args.Y)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
 
-	XtX := linearalgebra.DotProduct(Xt, xCopy)
-	XtXInv := linearalgebra.GetInverseMatrixByDeterminant(XtX)
+			if len(got.Betas) != len(tt.want.Betas) {
+				t.Fatalf("Betas length mismatch: got %d, want %d", len(got.Betas), len(tt.want.Betas))
+			}
 
-	Xt_2 := linearalgebra.CopyMatrix(designMatrix)
-	Xt_2 = linearalgebra.TransposeMatrix(Xt_2)
-
-	XtX_Inv_Xt := linearalgebra.DotProduct(XtXInv, Xt_2)
-	Y := [][]float64{{420}, {310}, {460}, {210}, {560}, {340}}
-	result := linearalgebra.DotProduct(XtX_Inv_Xt, Y)
-	expected := []float64{27.3114924, 0.10495301, 46.31520567, -1.85704885}
-	for i, v := range result {
-		if math.Abs(v[0]-expected[i]) > 0.0001 {
-			t.Errorf("MultipleLinearRegression() = %v, want %v", v[0], expected[i])
-		}
+			for i := range tt.want.Betas {
+				if len(got.Betas[i]) != len(tt.want.Betas[i]) {
+					t.Fatalf("Beta vector %d length mismatch: got %d, want %d", i, len(got.Betas[i]), len(tt.want.Betas[i]))
+				}
+				for j := range tt.want.Betas[i] {
+					if math.Abs(got.Betas[i][j]-tt.want.Betas[i][j]) > tt.tolerance {
+						t.Errorf("beta[%d][%d] = %v, want %v (tol=%v)", i, j, got.Betas[i][j], tt.want.Betas[i][j], tt.tolerance)
+					}
+				}
+			}
+		})
 	}
 }

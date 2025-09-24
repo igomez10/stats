@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"stats/pkg"
+
+	"github.com/igomez10/linearalgebra"
 )
 
 type Model struct {
@@ -209,6 +211,10 @@ func GetMSE(x, y []float64) float64 {
 	return GetSumSquaresError(x, y) / (float64(len(y)) - 2)
 }
 
+func GetVarianceB1(x, y []float64) float64 {
+	return GetVariance(x) / GetSSX(x)
+}
+
 // GetStandardErrorB1 returns the standard error for the slope
 func GetStandardErrorB1(x, y []float64) float64 {
 	mse := GetMSE(x, y)
@@ -258,4 +264,39 @@ func GetDesignMatrix(observations [][]float64) [][]float64 {
 		}
 	}
 	return designMatrix
+}
+
+type MultiLinearModel struct {
+	Betas [][]float64
+}
+
+// CreateLRModelWithOLS creates a multi linear regression model using ordinary least squares
+func CreateLRModelWithOLS(observations [][]float64, actualOutput []float64) (MultiLinearModel, error) {
+	for i := range observations {
+		if len(observations[i]) != len(observations[0]) {
+			return MultiLinearModel{}, fmt.Errorf("unexpected length in observation")
+		}
+	}
+
+	designMatrix := GetDesignMatrix(observations)
+
+	Xt := linearalgebra.CopyMatrix(designMatrix)
+	Xt = linearalgebra.TransposeMatrix(Xt)
+
+	xCopy := linearalgebra.CopyMatrix(designMatrix)
+
+	XtX := linearalgebra.DotProduct(Xt, xCopy)
+	XtXInv := linearalgebra.GetInverseMatrixByDeterminant(XtX)
+
+	Xt2 := linearalgebra.CopyMatrix(designMatrix)
+	Xt2 = linearalgebra.TransposeMatrix(Xt2)
+
+	XtX_Inv_Xt := linearalgebra.DotProduct(XtXInv, Xt2)
+	Y := make([][]float64, len(actualOutput))
+	for i := range actualOutput {
+		Y[i] = []float64{actualOutput[i]}
+	}
+	result := linearalgebra.DotProduct(XtX_Inv_Xt, Y)
+
+	return MultiLinearModel{Betas: result}, nil
 }
