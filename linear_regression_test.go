@@ -789,6 +789,48 @@ func TestMultipleLinearRegression(t *testing.T) {
 			}},
 			tolerance: 1e-4,
 		},
+		{
+			name: "simple-1-feature",
+			args: args{
+				X: [][]float64{
+					{1},
+					{2},
+					{3},
+					{4},
+					{5},
+					{6},
+					{7},
+					{8},
+					{9},
+					{10},
+				},
+				Y: []float64{2.3, 2.5, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0},
+			},
+			want: MultiLinearModel{Betas: [][]float64{
+				{1.54},
+				{0.4291},
+			}},
+			tolerance: 1e-4,
+		},
+		{
+			name: "two-features",
+			args: args{
+				X: [][]float64{
+					{0, 5},
+					{3, 4},
+					{3, 4},
+					{3, 2},
+					{5, 1},
+				},
+				Y: []float64{2, 3, 4, 5, 6},
+			},
+			want: MultiLinearModel{Betas: [][]float64{
+				{5.6114},
+				{0.2370},
+				{-0.7109},
+			}},
+			tolerance: 1e-4,
+		},
 	}
 
 	for _, tt := range tests {

@@ -698,7 +698,7 @@ func TestGetDerivativeAtX(t *testing.T) {
 				x := math.Round(i*100) / 100 // Round to avoid floating point precision issues
 				got := GetDerivativeAtX(x, tt.args.step, tt.args.fx)
 				want := tt.want(x)
-				if math.Abs(got-want) > 0.01 { //&& (got/want)-1 > 0.01 {
+				if math.Abs(got-want) > 0.01 {
 					t.Errorf("GetDerivativeAtX(%v) = %v, want %v, diff %v", x, got, want, math.Abs(got-want))
 				}
 			}

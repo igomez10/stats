@@ -264,6 +264,10 @@ func GetDerivativeAtX(x, step float64, fx func(float64) float64) float64 {
 }
 
 // FindCriticalPoint finds the inflection point by finding the point where
+// the first derivative changes sign (from positive to negative or negative to positive)
+// It returns a pointer to the critical point if found, otherwise it returns nil
+// The function fx is the function for which we want to find the critical point
+// The search is performed in the range [start, end] with a given step size
 func FindCriticalPoint(fx func(float64) float64, start, end, step float64) *float64 {
 	firstDerivative := func(x float64) float64 {
 		return GetDerivativeAtX(x, step, fx)
