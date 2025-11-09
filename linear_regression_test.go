@@ -877,7 +877,6 @@ func TestMultipleLinearRegression(t *testing.T) {
 	}
 }
 
-
 func TestMultiLinearModel_GetMSE(t *testing.T) {
 	tests := []struct {
 		name         string // description of this test case
@@ -979,6 +978,71 @@ func TestMultiLinearModel_Predict(t *testing.T) {
 			got := m.Predict(tt.xInput)
 			if got-tt.want > 1e-9 {
 				t.Errorf("Predict() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCreateLRModelWithRidge(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		observations [][]float64
+		actualOutput []float64
+		lambda       float64
+		want         MultiLinearModel
+		wantErr      bool
+	}{
+		{
+			name: "simple-1-feature",
+			observations: [][]float64{
+				{1, 4},
+				{3, 8},
+				{5, 6},
+			},
+			actualOutput: []float64{2, 3, 4},
+			lambda:       1,
+			want:         MultiLinearModel{Betas: []float64{0.625, 0.125}},
+			wantErr:      false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			// normalize observations
+			normalizedObservations := make([][]float64, len(tt.observations))
+			for i := range tt.observations[0] {
+				col := make([]float64, len(tt.observations))
+				for j := range tt.observations {
+					col[j] = tt.observations[j][i]
+				}
+				mean := pkg.GetMean(col)
+				std := math.Sqrt(pkg.GetVariance(col))
+				for j := range tt.observations {
+					if normalizedObservations[j] == nil {
+						normalizedObservations[j] = make([]float64, len(tt.observations[0]))
+					}
+					normalizedObservations[j][i] = (tt.observations[j][i] - mean) / std
+				}
+			}
+
+			got, gotErr := CreateLRModelWithRidge(normalizedObservations, tt.actualOutput, tt.lambda)
+			if gotErr != nil {
+				if !tt.wantErr {
+					t.Errorf("CreateLRModelWithRidge() failed: %v", gotErr)
+				}
+				return
+			}
+			if tt.wantErr {
+				t.Fatal("CreateLRModelWithRidge() succeeded unexpectedly")
+			}
+			if len(got.Betas) != len(tt.want.Betas) {
+				t.Fatalf("Betas length mismatch: got %d, want %d", len(got.Betas), len(tt.want.Betas))
+			}
+			for i := range tt.want.Betas {
+				if math.Abs(got.Betas[i]-tt.want.Betas[i]) > 1e-3 {
+					t.Errorf("beta[%d] = %v, want %v", i, got.Betas[i], tt.want.Betas[i])
+				}
 			}
 		})
 	}

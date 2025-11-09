@@ -329,3 +329,54 @@ func CreateLRModelWithOLS(observations [][]float64, actualOutput []float64) (Mul
 
 	return MultiLinearModel{Betas: betas}, nil
 }
+
+func CreateLRModelWithRidge(observations [][]float64, actualOutput []float64, lambda float64) (MultiLinearModel, error) {
+	for i := range observations {
+		if len(observations[i]) != len(observations[0]) {
+			return MultiLinearModel{}, fmt.Errorf("unexpected length in observation")
+		}
+	}
+
+	// verify observations are normalized
+	for i := range observations[0] {
+		col := make([]float64, len(observations))
+		for j := range observations {
+			col[j] = observations[j][i]
+		}
+		meanCol := pkg.GetMean(col)
+		stdDevCol := math.Sqrt(pkg.GetVariance(col))
+		if math.Abs(meanCol) > 1e-6 || math.Abs(stdDevCol-1) > 1e-6 {
+			return MultiLinearModel{}, fmt.Errorf("observations must be normalized for ridge regression")
+		}
+	}
+
+	Xt := linearalgebra.CopyMatrix(observations)
+	Xt = linearalgebra.TransposeMatrix(Xt)
+
+	xCopy := linearalgebra.CopyMatrix(observations)
+
+	XtX := linearalgebra.DotProduct(Xt, xCopy)
+
+	// Add lambda*I to XtX
+	for i := range XtX {
+		XtX[i][i] += lambda
+	}
+	XtXInv := linearalgebra.GetInverseMatrixByDeterminant(XtX)
+
+	Xt2 := linearalgebra.CopyMatrix(observations)
+	Xt2 = linearalgebra.TransposeMatrix(Xt2)
+
+	XtX_Inv_Xt := linearalgebra.DotProduct(XtXInv, Xt2)
+	Y := make([][]float64, len(actualOutput))
+	for i := range actualOutput {
+		Y[i] = []float64{actualOutput[i]}
+	}
+	result := linearalgebra.DotProduct(XtX_Inv_Xt, Y)
+
+	betas := make([]float64, len(result))
+	for i := range result {
+		betas[i] = result[i][0]
+	}
+
+	return MultiLinearModel{Betas: betas}, nil
+}

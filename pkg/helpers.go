@@ -73,5 +73,5 @@ func GetVariance(a []float64) float64 {
 		diff := v - mean
 		varianceSum += diff * diff
 	}
-	return varianceSum / float64(len(a))
+	return varianceSum / float64(len(a)-1)
 }
