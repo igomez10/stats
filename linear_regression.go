@@ -8,16 +8,32 @@ import (
 	"github.com/igomez10/linearalgebra"
 )
 
-type Model struct {
+type InferenceModel interface {
+	Predict(xInput []float64) float64
+}
+
+func (m MultiLinearModel) Predict(xInput []float64) float64 {
+	if len(xInput)+1 != len(m.Betas) {
+		panic("Incompatible input length")
+	}
+
+	prediction := m.Betas[0] // intercept
+	for j := range xInput {
+		prediction += m.Betas[j+1] * xInput[j]
+	}
+	return prediction
+}
+
+type SimpleModel struct {
 	B0 float64 // intercept
 	B1 float64 // slope
 }
 
-func (m Model) GetIntercept() float64 {
+func (m SimpleModel) GetIntercept() float64 {
 	return m.B0
 }
 
-func (m Model) GetSlope() float64 {
+func (m SimpleModel) GetSlope() float64 {
 	return m.B1
 }
 
@@ -26,24 +42,24 @@ func (m Model) GetSlope() float64 {
 // We can use this to judge if our model is good or not
 func GetCoefficientDetermination(x, y []float64) float64 {
 	sse := GetSSE(x, y)
-	sst := GetSST(x, y)
+	sst := GetSSTSimple(x, y)
 	return 1 - (sse / sst)
 }
 
 // CreateSLRModelWithOLS creates a simple linear regression model using ordinary least squares
-func CreateSLRModelWithOLS(x, y []float64) (Model, error) {
+func CreateSLRModelWithOLS(x, y []float64) (SimpleModel, error) {
 	if len(x) != len(y) || len(x) == 0 {
-		return Model{}, fmt.Errorf("x and y must have same nonzero length")
+		return SimpleModel{}, fmt.Errorf("x and y must have same nonzero length")
 	}
 
 	meanX := pkg.GetMean(x)
 	meanY := pkg.GetMean(y)
 
-	ssx := GetSSX(x)
+	ssx := GetSSXSimple(x)
 	if ssx == 0 {
-		return Model{}, fmt.Errorf("zero variance in x")
+		return SimpleModel{}, fmt.Errorf("zero variance in x")
 	}
-	ssxy := GetSSXY(x, y)
+	ssxy := GetSSXYSimple(x, y)
 
 	// Find b0 and b1 by the method of least squares
 	// find b1
@@ -51,7 +67,7 @@ func CreateSLRModelWithOLS(x, y []float64) (Model, error) {
 	// find b0
 	intercept := meanY - slopeCoefficient*meanX
 
-	return Model{B0: intercept, B1: slopeCoefficient}, nil
+	return SimpleModel{B0: intercept, B1: slopeCoefficient}, nil
 }
 
 func GetLogLikelihoodFunctionLinearRegression(x, y []float64) func(b0, b1, sigma2 float64) float64 {
@@ -73,19 +89,15 @@ func GetLogLikelihoodFunctionLinearRegression(x, y []float64) func(b0, b1, sigma
 	}
 }
 
-// CreateSLRModelWithMLE creates a simple linear regression model using maximum likelihood estimation
-func CreateSLRModelWithMLE(x, y []float64) (Model, error) {
-	panic("Not implemented")
-}
-
 // Predict will predict y at x
-func (m Model) Predict(xInput float64) float64 {
+func (m SimpleModel) Predict(xInput float64) float64 {
+
 	return m.B0 + m.B1*xInput
 }
 
 // SSX is the sum of squares of x
 // ∑(xi - x̄)²
-func GetSSX(x []float64) float64 {
+func GetSSXSimple(x []float64) float64 {
 	meanX := pkg.GetMean(x)
 	sumSoFar := 0.0
 
@@ -97,10 +109,10 @@ func GetSSX(x []float64) float64 {
 	return sumSoFar
 }
 
-// GetSSXY is the sum of products of deviations of x and y
+// GetSSXYSimple is the sum of products of deviations of x and y
 // ∑(xi - x̄)(yi - ȳ)
 // This is also just the covariance multiplied by n-1
-func GetSSXY(x, y []float64) float64 {
+func GetSSXYSimple(x, y []float64) float64 {
 	if len(x) != len(y) {
 		panic("Incompatible slice lengths")
 	}
@@ -128,15 +140,15 @@ func sumSquares(a []float64) float64 {
 }
 
 // aliased notations for Sum Squares Total
-func GetSST(x, y []float64) float64 {
-	return GetSumSquaresTotal(x, y)
+func GetSSTSimple(x, y []float64) float64 {
+	return GetSumSquaresTotalSimple(x, y)
 }
-func GetTSS(x, y []float64) float64 {
-	return GetSumSquaresTotal(x, y)
+func GetTSSSimple(x, y []float64) float64 {
+	return GetSumSquaresTotalSimple(x, y)
 }
 
-// GetSumSquaresTotal Measures the total variability of the dataset
-func GetSumSquaresTotal(x, y []float64) float64 {
+// GetSumSquaresTotalSimple Measures the total variability of the dataset
+func GetSumSquaresTotalSimple(x, y []float64) float64 {
 	res := 0.0
 	meanY := pkg.GetMean(y)
 	for i := range y {
@@ -146,8 +158,8 @@ func GetSumSquaresTotal(x, y []float64) float64 {
 	return res
 }
 
-// GetSumSquaresRegression Measures the explained variability by your line
-func GetSumSquaresRegression(x, y []float64) float64 {
+// GetSumSquaresRegressionSimple Measures the explained variability by your line
+func GetSumSquaresRegressionSimple(x, y []float64) float64 {
 	sum := 0.0
 	meanY := pkg.GetMean(y)
 	model, err := CreateSLRModelWithOLS(x, y)
@@ -171,24 +183,24 @@ var commonNotation = map[string]string{
 }
 
 func GetSSR(x, y []float64) float64 {
-	return GetSumSquaresRegression(x, y)
+	return GetSumSquaresRegressionSimple(x, y)
 }
 
 func GetESS(x, y []float64) float64 {
-	return GetSumSquaresRegression(x, y)
+	return GetSumSquaresRegressionSimple(x, y)
 }
 
 func GetRSS(x, y []float64) float64 {
-	return GetSumSquaresError(x, y)
+	return GetSumSquaresErrorSimple(x, y)
 }
 
 func GetSSE(x, y []float64) float64 {
-	return GetSumSquaresError(x, y)
+	return GetSumSquaresErrorSimple(x, y)
 }
 
-// GetSumSquaresError Measures the unexplained variability by the regression
+// GetSumSquaresErrorSimple Measures the unexplained variability by the regression
 // The difference between our predicted and the actual values
-func GetSumSquaresError(x, y []float64) float64 {
+func GetSumSquaresErrorSimple(x []float64, y []float64) float64 {
 	sum := 0.0
 	model, err := CreateSLRModelWithOLS(x, y)
 	if err != nil {
@@ -208,17 +220,17 @@ func GetSumSquaresError(x, y []float64) float64 {
 
 // GetMSE is the mean squared error
 func GetMSE(x, y []float64) float64 {
-	return GetSumSquaresError(x, y) / (float64(len(y)) - 2)
+	return GetSumSquaresErrorSimple(x, y) / (float64(len(y)) - 2)
 }
 
 func GetVarianceB1(x, y []float64) float64 {
-	return GetVariance(x) / GetSSX(x)
+	return GetVariance(x) / GetSSXSimple(x)
 }
 
 // GetStandardErrorB1 returns the standard error for the slope
 func GetStandardErrorB1(x, y []float64) float64 {
 	mse := GetMSE(x, y)
-	ssx := GetSSX(x)
+	ssx := GetSSXSimple(x)
 	return math.Sqrt(mse / ssx)
 }
 
@@ -231,8 +243,8 @@ func norm2(a []float64) float64 {
 // Slope can be thought as a relation between the covariance of x,y and the variance of x
 // This follows the method of least squares
 func GetSlopeFromSSXYAndSSX(x, y []float64) float64 {
-	ssx := GetSSX(x)
-	ssxy := GetSSXY(x, y)
+	ssx := GetSSXSimple(x)
+	ssxy := GetSSXYSimple(x, y)
 	return ssxy / ssx
 }
 

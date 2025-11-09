@@ -32,13 +32,13 @@ func TestModel_Predict(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		m    Model
+		m    SimpleModel
 		args args
 		want float64
 	}{
-		{"case 1", Model{B0: 1, B1: 2}, args{3}, 7},
-		{"case 2", Model{B0: 0, B1: 1}, args{5}, 5},
-		{"case 3", Model{B0: -1, B1: 1}, args{0}, -1},
+		{"case 1", SimpleModel{B0: 1, B1: 2}, args{3}, 7},
+		{"case 2", SimpleModel{B0: 0, B1: 1}, args{5}, 5},
+		{"case 3", SimpleModel{B0: -1, B1: 1}, args{0}, -1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -57,7 +57,7 @@ func TestFitSimpleLR(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    Model
+		want    SimpleModel
 		wantErr bool
 	}{
 		{
@@ -66,7 +66,7 @@ func TestFitSimpleLR(t *testing.T) {
 				x: []float64{1, 2, 3, 4, 5},
 				y: []float64{1, 2, 3, 4, 5},
 			},
-			want:    Model{B0: 0, B1: 1},
+			want:    SimpleModel{B0: 0, B1: 1},
 			wantErr: false,
 		},
 		{
@@ -75,7 +75,7 @@ func TestFitSimpleLR(t *testing.T) {
 				x: []float64{1, 2, 3},
 				y: []float64{1, 2, 3, 4, 5},
 			},
-			want:    Model{},
+			want:    SimpleModel{},
 			wantErr: true,
 		},
 		{
@@ -84,7 +84,7 @@ func TestFitSimpleLR(t *testing.T) {
 				x: []float64{1, 1, 1, 1, 1},
 				y: []float64{1, 2, 3, 4, 5},
 			},
-			want:    Model{},
+			want:    SimpleModel{},
 			wantErr: true,
 		},
 		{
@@ -93,7 +93,7 @@ func TestFitSimpleLR(t *testing.T) {
 				x: []float64{1, 2, 3, 4, 5},
 				y: []float64{2, 4, 6, 8, 10},
 			},
-			want:    Model{B0: 0, B1: 2},
+			want:    SimpleModel{B0: 0, B1: 2},
 			wantErr: false,
 		},
 	}
@@ -128,7 +128,7 @@ func TestGetSSX(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSSX(tt.args.x); got != tt.want {
+			if got := GetSSXSimple(tt.args.x); got != tt.want {
 				t.Errorf("GetSSX() = %v, want %v", got, tt.want)
 			}
 		})
@@ -164,12 +164,12 @@ func TestExplainSSTInTermsOfSSRandSSE(t *testing.T) {
 				t.Errorf("GetSSR() = %v, want %v", got, tt.ssr)
 			}
 
-			if got := GetSST(tt.x, tt.y); math.Abs(got-tt.sst) > 1e-5 {
+			if got := GetSSTSimple(tt.x, tt.y); math.Abs(got-tt.sst) > 1e-5 {
 				t.Errorf("GetSST() = %v, want %v", got, tt.sst)
 			}
 
-			if math.Abs(GetSST(tt.x, tt.y)-GetSSR(tt.x, tt.y)-GetSSE(tt.x, tt.y)) > 1 {
-				t.Errorf("SST = %v, SSR + SSE = %v", GetSST(tt.x, tt.y), GetSSR(tt.x, tt.y)-GetSSE(tt.x, tt.y))
+			if math.Abs(GetSSTSimple(tt.x, tt.y)-GetSSR(tt.x, tt.y)-GetSSE(tt.x, tt.y)) > 1 {
+				t.Errorf("SST = %v, SSR + SSE = %v", GetSSTSimple(tt.x, tt.y), GetSSR(tt.x, tt.y)-GetSSE(tt.x, tt.y))
 			}
 		})
 	}
@@ -204,7 +204,7 @@ func TestGetSumSquaresRegression(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSumSquaresRegression(tt.args.x, tt.args.y); got-tt.want > 1e-9 {
+			if got := GetSumSquaresRegressionSimple(tt.args.x, tt.args.y); got-tt.want > 1e-9 {
 				t.Errorf("GetSumSquaresRegression() = %v, want %v", got, tt.want)
 			}
 		})
@@ -241,7 +241,7 @@ func TestGetSumSquaresRegression_Quick(t *testing.T) {
 				return true
 			}
 		}
-		got := GetSumSquaresRegression(xs, y)
+		got := GetSumSquaresRegressionSimple(xs, y)
 		if !math.IsNaN(got) && !math.IsInf(got, 0) && got >= 1e-5 {
 			return true
 		}
@@ -310,7 +310,7 @@ func TestExplainSSTInTermsOfSSRandSSE_Quick(t *testing.T) {
 
 		sse := GetSSE(xfloats, yfloats)
 		ssr := GetSSR(xfloats, yfloats)
-		sst := GetSST(xfloats, yfloats)
+		sst := GetSSTSimple(xfloats, yfloats)
 
 		if math.IsNaN(sse) || math.IsNaN(ssr) {
 			return false
