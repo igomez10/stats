@@ -206,8 +206,8 @@ func GetSumSquaresErrorSimple(x []float64, y []float64) float64 {
 	return sum
 }
 
-// GetMSE is the mean squared error
-func GetMSE(x, y []float64) float64 {
+// GetMSESimple is the mean squared error
+func GetMSESimple(x, y []float64) float64 {
 	return GetSumSquaresErrorSimple(x, y) / (float64(len(y)) - 2)
 }
 
@@ -217,7 +217,7 @@ func GetVarianceB1(x, y []float64) float64 {
 
 // GetStandardErrorB1 returns the standard error for the slope
 func GetStandardErrorB1(x, y []float64) float64 {
-	mse := GetMSE(x, y)
+	mse := GetMSESimple(x, y)
 	ssx := GetSSXSimple(x)
 	return math.Sqrt(mse / ssx)
 }
