@@ -17,11 +17,9 @@ func (m MultiLinearModel) Predict(xInput []float64) float64 {
 		panic("Incompatible input length")
 	}
 
-	prediction := m.Betas[0] // intercept
-	for j := range xInput {
-		prediction += m.Betas[j+1] * xInput[j]
-	}
-	return prediction
+	betasNoIntercept := m.Betas[1:]
+	yHat := linearalgebra.DotProduct([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
+	return yHat[0][0] + m.Betas[0]
 }
 
 type SimpleModel struct {

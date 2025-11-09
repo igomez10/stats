@@ -877,7 +877,51 @@ func TestMultipleLinearRegression(t *testing.T) {
 	}
 }
 
-				}
+
+func TestMultiLinearModel_Predict(t *testing.T) {
+	tests := []struct {
+		name   string // description of this test case
+		xInput []float64
+		betas  []float64
+		want   float64
+	}{
+		{
+			name:   "simple-1-feature",
+			xInput: []float64{4},
+			betas:  []float64{0, 1},
+			want:   4,
+		},
+		{
+			name:   "two-features",
+			xInput: []float64{3, 4},
+			betas:  []float64{0, 1, 2},
+			want:   11,
+		},
+		{
+			name:   "three-features",
+			xInput: []float64{10, 0, 9},
+			betas:  []float64{0, 1, 2, 3},
+			want:   37,
+		},
+		{
+			name:   "four-features",
+			xInput: []float64{1, 2, 3, 4},
+			betas:  []float64{0, 1, 2, 3, 4},
+			want:   40,
+		},
+		{
+			name:   "with-intercept",
+			xInput: []float64{5, 10},
+			betas:  []float64{2, 3, 4},
+			want:   2 + 3*5 + 4*10,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := MultiLinearModel{Betas: tt.betas}
+			got := m.Predict(tt.xInput)
+			if got-tt.want > 1e-9 {
+				t.Errorf("Predict() = %v, want %v", got, tt.want)
 			}
 		})
 	}
