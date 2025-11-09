@@ -279,6 +279,24 @@ func GetDesignMatrix(observations [][]float64) [][]float64 {
 type MultiLinearModel struct {
 	Betas []float64
 }
+// GetMSE computes the Mean Squared Error of the multi linear regression model
+// against the provided observations and actual outputs
+func (m MultiLinearModel) GetMSE(x [][]float64, y []float64) float64 {
+	if len(x) != len(y) {
+		panic("Incompatible lengths between observations and actual output")
+	}
+
+	sumSquaresError := 0.0
+	for i := range y {
+		yiHat := m.Predict(x[i])
+		errI := yiHat - y[i]
+		sumSquaresError += errI * errI
+	}
+
+	mse := sumSquaresError / float64(len(y)-len(m.Betas))
+
+	return mse
+}
 
 // CreateLRModelWithOLS creates a multi linear regression model using ordinary least squares
 func CreateLRModelWithOLS(observations [][]float64, actualOutput []float64) (MultiLinearModel, error) {

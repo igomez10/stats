@@ -878,6 +878,63 @@ func TestMultipleLinearRegression(t *testing.T) {
 }
 
 
+func TestMultiLinearModel_GetMSE(t *testing.T) {
+	tests := []struct {
+		name         string // description of this test case
+		betas        []float64
+		observations [][]float64
+		actualOutput []float64
+		want         float64
+	}{
+		{
+			name:  "simple-1-feature",
+			betas: []float64{0, 1},
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			actualOutput: []float64{1, 2, 3, 4},
+			want:         0,
+		},
+		{
+			name:  "one outlier",
+			betas: []float64{0, 1},
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			actualOutput: []float64{1, 2, 3, 10},
+			want:         18,
+		},
+		{
+			name:  "beta non 0",
+			betas: []float64{6, 15},
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			actualOutput: []float64{21, 36, 51, 66},
+			want:         0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := MultiLinearModel{Betas: tt.betas}
+			got := m.GetMSE(tt.observations, tt.actualOutput)
+			if got-tt.want > 1e-9 {
+				t.Errorf("GetMSE() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestMultiLinearModel_Predict(t *testing.T) {
 	tests := []struct {
 		name   string // description of this test case
