@@ -222,11 +222,6 @@ func GetStandardErrorB1(x, y []float64) float64 {
 	return math.Sqrt(mse / ssx)
 }
 
-// norm2 is the Euclidean norm (L2 norm) of a slice
-func norm2(a []float64) float64 {
-	return math.Sqrt(sumSquares(a))
-}
-
 // GetSlopeFromSSXYAndSSX calculates the slope from the sum of squares
 // Slope can be thought as a relation between the covariance of x,y and the variance of x
 // This follows the method of least squares

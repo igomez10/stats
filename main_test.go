@@ -1414,14 +1414,6 @@ func stdev(arr []float64) float64 {
 	return math.Sqrt(variance)
 }
 
-func squared(arr []float64) []float64 {
-	squared := make([]float64, len(arr))
-	for i, v := range arr {
-		squared[i] = v * v
-	}
-	return squared
-}
-
 func TestGetTScore(t *testing.T) {
 	type args struct {
 		degreesOfFreedom float64
