@@ -12,16 +12,6 @@ type InferenceModel interface {
 	Predict(xInput []float64) float64
 }
 
-func (m MultiLinearModel) Predict(xInput []float64) float64 {
-	if len(xInput)+1 != len(m.Betas) {
-		panic("Incompatible input length")
-	}
-
-	betasNoIntercept := m.Betas[1:]
-	yHat := linearalgebra.DotProduct([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
-	return yHat[0][0] + m.Betas[0]
-}
-
 type SimpleModel struct {
 	B0 float64 // intercept
 	B1 float64 // slope
@@ -279,6 +269,17 @@ func GetDesignMatrix(observations [][]float64) [][]float64 {
 type MultiLinearModel struct {
 	Betas []float64
 }
+
+func (m MultiLinearModel) Predict(xInput []float64) float64 {
+	if len(xInput)+1 != len(m.Betas) {
+		panic("Incompatible input length")
+	}
+
+	betasNoIntercept := m.Betas[1:]
+	yHat := linearalgebra.DotProduct([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
+	return yHat[0][0] + m.Betas[0]
+}
+
 // GetMSE computes the Mean Squared Error of the multi linear regression model
 // against the provided observations and actual outputs
 func (m MultiLinearModel) GetMSE(x [][]float64, y []float64) float64 {
