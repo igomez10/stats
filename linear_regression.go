@@ -334,5 +334,3 @@ func CreateLRModelWithOLS(observations [][]float64, actualOutput []float64) (Mul
 
 	return MultiLinearModel{Betas: betas}, nil
 }
-
-}
