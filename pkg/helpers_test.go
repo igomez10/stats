@@ -27,3 +27,26 @@ func Test_mean(t *testing.T) {
 		})
 	}
 }
+
+func TestGetVariance(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		a    []float64
+		want float64
+	}{
+		{"case1", []float64{1, 2, 3}, 0.6666666666666666},
+		{"case2", []float64{4, 5, 6}, 0.6666666666666666},
+		{"case3", []float64{7, 8, 9}, 0.6666666666666666},
+		{"case4", []float64{10, 11, 12}, 0.6666666666666666},
+		{"case5", []float64{1, 100}, 2450.25},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetVariance(tt.a)
+			if math.Abs(got-tt.want) > 1e-9 {
+				t.Errorf("GetVariance() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

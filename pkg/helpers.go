@@ -65,3 +65,13 @@ func GetMax(a []float64) float64 {
 	}
 	return max
 }
+
+func GetVariance(a []float64) float64 {
+	mean := GetMean(a)
+	varianceSum := 0.0
+	for _, v := range a {
+		diff := v - mean
+		varianceSum += diff * diff
+	}
+	return varianceSum / float64(len(a))
+}
