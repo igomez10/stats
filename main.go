@@ -233,7 +233,8 @@ func (m multiValueFunction) IntegrateY(from, to, step float64, x float64) float6
 	return res
 }
 
-// IntegrateUntilValue returns the limit of integration until the accumulated value reaches or exceeds targetValue
+// IntegrateUntilValue returns the limit of integration until the accumulated value
+// reaches or exceeds targetValue.
 // THIS FUNCTION IS NOT A STANDARD INTEGRATION FUNCTION, IT DOES NOT RETURN THE AREA UNDER THE CURVE
 // INSTEAD, IT RETURNS THE ACCUMULATED VALUE OF THE INTEGRAL UNTIL IT REACHES OR EXCEEDS targetValue
 // To avoid infinite loops, it stops at maxValue
@@ -241,7 +242,8 @@ func (m multiValueFunction) IntegrateY(from, to, step float64, x float64) float6
 // The function fx is the integrand function
 // It returns the accumulated value of the integral until it reaches or exceeds targetValue
 // If the integral does not reach targetValue before maxValue, it returns the accumulated value
-// This is useful for numerical integration where you want to find the area under the curve until a certain value is reached
+// This is useful for numerical integration where you want to find the area under the curve
+// until a certain value is reached
 func IntegrateUntilValue(from, toMaxValue, targetValue float64, step float64, fx func(float64) float64) float64 {
 	var res float64 = 0
 	for x := from; x < toMaxValue; x += step {
@@ -253,7 +255,8 @@ func IntegrateUntilValue(from, toMaxValue, targetValue float64, step float64, fx
 	panic("Integral did not reach target value before maximum integration limit")
 }
 
-// GetDerivativeAtX derives / calculates the derivative of a function fx at a point x using the finite difference method
+// GetDerivativeAtX derives / calculates the derivative of a function fx at a point x
+// using the finite difference method
 // It returns a function that takes a float64 x and returns the derivative at that point
 // The derivative is calculated as:
 // f'(x) = (f(x + h) - f(x - h)) / (2 * h)
@@ -357,7 +360,8 @@ func GetMaximumLikelihoodPoisson(data []float64, start, end, step float64) float
 	return *criticalPoint
 }
 
-// GetLogLikelihoodFunctionPoisson is a wrapper function that returns a log-likelihood function for a Poisson distribution
+// GetLogLikelihoodFunctionPoisson is a wrapper function that returns a
+// log-likelihood function for a Poisson distribution
 func GetLogLikelihoodFunctionPoisson(data []float64) func(float64) float64 {
 	return func(lambda float64) float64 {
 		res := 1.0
@@ -368,7 +372,8 @@ func GetLogLikelihoodFunctionPoisson(data []float64) func(float64) float64 {
 	}
 }
 
-// GetLogLikelihoodFunctionNormal is a wrapper function that returns a log-likelihood function for a normal distribution
+// GetLogLikelihoodFunctionNormal is a wrapper function that returns a log-likelihood
+// function for a normal distribution
 func GetLogLikelihoodFunctionNormal(data []float64) func(float64, float64) float64 {
 	return func(mean, stdDev float64) float64 {
 		if stdDev <= 0 {
@@ -382,7 +387,8 @@ func GetLogLikelihoodFunctionNormal(data []float64) func(float64, float64) float
 	}
 }
 
-// GetLogLikelihoodFunctionExponential is a wrapper function that returns a log-likelihood function for an exponential distribution
+// GetLogLikelihoodFunctionExponential is a wrapper function that returns a log-likelihood
+// function for an exponential distribution
 func GetLogLikelihoodFunctionExponential(data []float64) func(float64) float64 {
 	return func(lambda float64) float64 {
 		res := 0.0
@@ -393,8 +399,9 @@ func GetLogLikelihoodFunctionExponential(data []float64) func(float64) float64 {
 	}
 }
 
-// GetMaximumLikelihoodExponentialDistribution finds the MLE, the best estimate for the lambda parameter of an exponential distribution
-// since we use numerrical approximations, we need to find the critical point of the log-likelihood function setting a minimum and maximum range
+// GetMaximumLikelihoodExponentialDistribution finds the MLE, the best estimate for the lambda
+// parameter of an exponential distribution since we use numerrical approximations, we need to
+// find the critical point of the log-likelihood function setting a minimum and maximum range
 // for the lambda parameter and the step size for the search.
 // the data is a slice of float64 representing the observed values
 func GetMaximumLikelihoodExponentialDistribution(data []float64, start, end, step float64) float64 {

@@ -267,7 +267,7 @@ func GetDesignMatrix(observations [][]float64) [][]float64 {
 }
 
 type MultiLinearModel struct {
-	Betas [][]float64
+	Betas []float64
 }
 
 // CreateLRModelWithOLS creates a multi linear regression model using ordinary least squares
@@ -298,5 +298,12 @@ func CreateLRModelWithOLS(observations [][]float64, actualOutput []float64) (Mul
 	}
 	result := linearalgebra.DotProduct(XtX_Inv_Xt, Y)
 
-	return MultiLinearModel{Betas: result}, nil
+	betas := make([]float64, len(result))
+	for i := range result {
+		betas[i] = result[i][0]
+	}
+
+	return MultiLinearModel{Betas: betas}, nil
+}
+
 }

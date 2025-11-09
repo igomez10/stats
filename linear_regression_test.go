@@ -781,11 +781,11 @@ func TestMultipleLinearRegression(t *testing.T) {
 				},
 				Y: []float64{420, 310, 460, 210, 560, 340},
 			},
-			want: MultiLinearModel{Betas: [][]float64{
-				{27.3114924},
-				{0.10495301},
-				{46.31520567},
-				{-1.85704885},
+			want: MultiLinearModel{Betas: []float64{
+				27.3114924,
+				0.10495301,
+				46.31520567,
+				-1.85704885,
 			}},
 			tolerance: 1e-4,
 		},
@@ -806,9 +806,9 @@ func TestMultipleLinearRegression(t *testing.T) {
 				},
 				Y: []float64{2.3, 2.5, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0},
 			},
-			want: MultiLinearModel{Betas: [][]float64{
-				{1.54},
-				{0.4291},
+			want: MultiLinearModel{Betas: []float64{
+				1.54,
+				0.4291,
 			}},
 			tolerance: 1e-4,
 		},
@@ -824,10 +824,10 @@ func TestMultipleLinearRegression(t *testing.T) {
 				},
 				Y: []float64{2, 3, 4, 5, 6},
 			},
-			want: MultiLinearModel{Betas: [][]float64{
-				{5.6114},
-				{0.2370},
-				{-0.7109},
+			want: MultiLinearModel{Betas: []float64{
+				5.6114,
+				0.2370,
+				-0.7109,
 			}},
 			tolerance: 1e-4,
 		},
@@ -847,11 +847,11 @@ func TestMultipleLinearRegression(t *testing.T) {
 				},
 				Y: []float64{2, 3, 4, 5, 6, 7, 8, 9, 10},
 			},
-			want: MultiLinearModel{Betas: [][]float64{
-				{1.0},
-				{0},
-				{0},
-				{1.0},
+			want: MultiLinearModel{Betas: []float64{
+				1.0,
+				0,
+				0,
+				1.0,
 			}},
 			tolerance: 1e-4,
 		},
@@ -869,13 +869,14 @@ func TestMultipleLinearRegression(t *testing.T) {
 			}
 
 			for i := range tt.want.Betas {
-				if len(got.Betas[i]) != len(tt.want.Betas[i]) {
-					t.Fatalf("Beta vector %d length mismatch: got %d, want %d", i, len(got.Betas[i]), len(tt.want.Betas[i]))
+				if got.Betas[i]-tt.want.Betas[i] > tt.tolerance {
+					t.Errorf("beta[%d] = %v, want %v (tol=%v)", i, got.Betas[i], tt.want.Betas[i], tt.tolerance)
 				}
-				for j := range tt.want.Betas[i] {
-					if math.Abs(got.Betas[i][j]-tt.want.Betas[i][j]) > tt.tolerance {
-						t.Errorf("beta[%d][%d] = %v, want %v (tol=%v)", i, j, got.Betas[i][j], tt.want.Betas[i][j], tt.tolerance)
-					}
+			}
+		})
+	}
+}
+
 				}
 			}
 		})
