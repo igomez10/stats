@@ -79,7 +79,6 @@ func GetLogLikelihoodFunctionLinearRegression(x, y []float64) func(b0, b1, sigma
 
 // Predict will predict y at x
 func (m SimpleModel) Predict(xInput float64) float64 {
-
 	return m.B0 + m.B1*xInput
 }
 
@@ -382,6 +381,10 @@ func CreateLRModelWithRidge(observations [][]float64, actualOutput []float64, la
 }
 
 // Σ(Yi− Yi_hat)² + λ Σ|βj|
+// Lasso regression loss function will add a penalty equal to the
+// absolute value of the magnitude of coefficients. This function
+// can be used to regularize a linear regression model and perform feature selection
+// by shrinking some coefficients to zero.
 func LassoLossFormula(observations [][]float64, actualOutput []float64, betas []float64, lambda float64) float64 {
 	if len(observations) != len(actualOutput) {
 		panic("Incompatible lengths between observations and actual output")
