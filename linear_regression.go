@@ -380,3 +380,35 @@ func CreateLRModelWithRidge(observations [][]float64, actualOutput []float64, la
 
 	return MultiLinearModel{Betas: betas}, nil
 }
+
+// Σ(Yi− Yi_hat)² + λ Σ|βj|
+func LassoLossFormula(observations [][]float64, actualOutput []float64, betas []float64, lambda float64) float64 {
+	if len(observations) != len(actualOutput) {
+		panic("Incompatible lengths between observations and actual output")
+	}
+
+	for i := range observations {
+		if len(observations[i])+1 != len(betas) {
+			panic("Incompatible lengths between observations and betas")
+		}
+	}
+
+	sse := 0.0
+	for i := range actualOutput {
+		yiHat := betas[0] // intercept
+		for j := 1; j < len(betas); j++ {
+			yiHat += observations[i][j-1] * betas[j]
+		}
+		errI := yiHat - actualOutput[i]
+		sse += errI * errI
+	}
+
+	// sum abs betas
+	sumAbsBetas := 0.0
+	for _, beta := range betas {
+		sumAbsBetas += math.Abs(beta)
+	}
+
+	return sse + lambda*sumAbsBetas
+}
+

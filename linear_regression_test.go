@@ -1047,3 +1047,90 @@ func TestCreateLRModelWithRidge(t *testing.T) {
 		})
 	}
 }
+func TestLassoLossFormula(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		observations [][]float64
+		actualOutput []float64
+		betas        []float64
+		lambda       float64
+		want         float64
+	}{
+		{
+			name: "no penalty, perfect fit",
+			observations: [][]float64{
+				{1, 0},
+				{0, 1},
+			},
+			actualOutput: []float64{1, 0},
+			betas:        []float64{0, 1, 0},
+			lambda:       0,
+			want:         0,
+		},
+		{
+			name: "no penalty, imperfect fit",
+			observations: [][]float64{
+				{1, 1},
+				{0, 1},
+			},
+			actualOutput: []float64{1, 0},
+			betas:        []float64{0, 1, 1},
+			lambda:       0,
+			want:         2,
+		},
+		{
+			name: "1 penalty, perfect fit",
+			observations: [][]float64{
+				{1, 1},
+				{0, 1},
+			},
+			actualOutput: []float64{1, 0},
+			betas:        []float64{0, 1, 0},
+			lambda:       1,
+			want:         1,
+		},
+		{
+			name: "1 penalty, other perfect fit",
+			observations: [][]float64{
+				{1, 1},
+				{0, 1},
+				{0, 1},
+			},
+			actualOutput: []float64{1, 0, 0},
+			betas:        []float64{0, 1, 0},
+			lambda:       1,
+			want:         1,
+		},
+		{
+			name: "1 penalty, imperfect fit",
+			observations: [][]float64{
+				{1, 1},
+				{0, 1},
+			},
+			actualOutput: []float64{1, 0},
+			betas:        []float64{0, 1, 1},
+			lambda:       1,
+			want:         4,
+		},
+		{
+			name: "2 penalty, imperfect fit",
+			observations: [][]float64{
+				{1, 1},
+				{0, 1},
+			},
+			actualOutput: []float64{1, 0},
+			betas:        []float64{0, 1, 1},
+			lambda:       2,
+			want:         6,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := LassoLossFormula(tt.observations, tt.actualOutput, tt.betas, tt.lambda)
+			if math.Abs(got-tt.want) > 1e-6 {
+				t.Errorf("LassoLossFormula() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
