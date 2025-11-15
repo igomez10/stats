@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"reflect"
 	"stats/pkg"
 	"testing"
 
@@ -1831,4 +1832,70 @@ func TestPredictionInterval(t *testing.T) {
 		0.01,
 	)
 	t.Log("Confidence Interval X: [", lowerX, ", ", upperX, "]")
+}
+
+func TestGetKFold(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		observations [][]float64
+		k            int
+		want         [][][]float64
+		wantErr      error
+	}{
+		{
+			name: "case 1",
+			observations: [][]float64{
+				{1, 2},
+				{3, 4},
+				{5, 6},
+				{7, 8},
+				{9, 10},
+			},
+			k: 2,
+			want: [][][]float64{
+				{
+					{1, 2},
+					{5, 6},
+					{9, 10},
+				},
+				{
+					{3, 4},
+					{7, 8},
+				},
+			},
+		},
+		{
+			name: "case 2 - k greater than 1",
+			observations: [][]float64{
+				{1, 2},
+			},
+			k:       1,
+			want:    nil,
+			wantErr: fmt.Errorf("k must be greater than 1"),
+		},
+		{
+			name: "case 3 - error k equal to 1",
+			observations: [][]float64{
+				{1, 2},
+				{1, 2},
+				{1, 2},
+			},
+			k:       4,
+			want:    nil,
+			wantErr: fmt.Errorf("Number of observations must be greater than k"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetKFold(tt.observations, tt.k)
+			if err != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("GetKFold() error = %v", err)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetKFold() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

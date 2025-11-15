@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"fmt"
 	"math"
 	"stats/pkg"
 )
@@ -738,4 +739,25 @@ func GetPValueFromZScore(zScore float64, testType HypothesisTest) float64 {
 	default:
 		return 0
 	}
+}
+
+// GetKFold splits the observations into k folds for cross-validation
+// when given n observations and k folds, it will split the data into k
+// slices of approximately equal size
+func GetKFold(observations [][]float64, k int) ([][][]float64, error) {
+	if k <= 1 {
+		return nil, fmt.Errorf("k must be greater than 1")
+	}
+	if len(observations) < k {
+		return nil, fmt.Errorf("Number of observations must be greater than k")
+	}
+
+	folds := make([][][]float64, k)
+	for i := range observations {
+		observationI := observations[i]
+		foldIndex := i % k
+		folds[foldIndex] = append(folds[foldIndex], observationI)
+	}
+
+	return folds, nil
 }
