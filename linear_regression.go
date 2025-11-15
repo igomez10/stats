@@ -415,3 +415,23 @@ func LassoLossFormula(observations [][]float64, actualOutput []float64, betas []
 	return sse + lambda*sumAbsBetas
 }
 
+// Σ(Yi− Yi_hat)² + λ Σ(βj)²
+func RidgeLossFormula(observations [][]float64, actualOutput []float64, betas []float64, lambda float64) float64 {
+	sse := 0.0
+	for i := range actualOutput {
+		yiHat := betas[0] // intercept
+		for j := 1; j < len(betas); j++ {
+			yiHat += observations[i][j-1] * betas[j]
+		}
+		errI := yiHat - actualOutput[i]
+		sse += errI * errI
+	}
+
+	// sum squared betas
+	sumSquaredBetas := 0.0
+	for _, beta := range betas {
+		sumSquaredBetas += beta * beta
+	}
+
+	return sse + lambda*sumSquaredBetas
+}
