@@ -1,5 +1,7 @@
 package pkg
 
+import "math"
+
 // GetMean is the average of a slice
 func GetMean(a []float64) float64 {
 	if len(a) == 0 {
@@ -66,7 +68,7 @@ func GetMax(a []float64) float64 {
 	return max
 }
 
-func GetVariance(a []float64) float64 {
+func GetSampleVariance(a []float64) float64 {
 	mean := GetMean(a)
 	varianceSum := 0.0
 	for _, v := range a {
@@ -74,4 +76,39 @@ func GetVariance(a []float64) float64 {
 		varianceSum += diff * diff
 	}
 	return varianceSum / float64(len(a)-1)
+}
+
+func NormalizeObservations(observations [][]float64) [][]float64 {
+	if len(observations) == 0 {
+		return observations
+	}
+
+	copyObservations := make([][]float64, len(observations))
+	for i := range observations {
+		copyObservations[i] = make([]float64, len(observations[i]))
+	}
+
+	CopyMatrix(copyObservations, observations)
+
+	for i := 0; i < len(copyObservations[0]); i++ {
+		obs := make([]float64, len(copyObservations))
+		for j := 0; j < len(copyObservations); j++ {
+			obs[j] = copyObservations[j][i]
+		}
+		mean := GetMean(obs)
+		variance := GetSampleVariance(obs)
+
+		for j := range copyObservations {
+			copyObservations[j][i] = (copyObservations[j][i] - mean) / math.Sqrt(variance)
+		}
+	}
+	return copyObservations
+}
+
+func CopyMatrix(to, from [][]float64) {
+	for i := range from {
+		for j := range from[i] {
+			to[i][j] = from[i][j]
+		}
+	}
 }

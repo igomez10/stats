@@ -29,24 +29,109 @@ func Test_mean(t *testing.T) {
 	}
 }
 
-func TestGetVariance(t *testing.T) {
+func TestGetSampleVariance(t *testing.T) {
 	tests := []struct {
 		name string // description of this test case
 		// Named input parameters for target function.
 		a    []float64
 		want float64
 	}{
-		{"case1", []float64{1, 2, 3}, 0.6666666666666666},
-		{"case2", []float64{4, 5, 6}, 0.6666666666666666},
-		{"case3", []float64{7, 8, 9}, 0.6666666666666666},
-		{"case4", []float64{10, 11, 12}, 0.6666666666666666},
-		{"case5", []float64{1, 100}, 2450.25},
+		{"case1", []float64{1, 2, 3}, 1.0},
+		{"case2", []float64{4, 5, 6}, 1.0},
+		{"case3", []float64{7, 8, 9}, 1.0},
+		{"case4", []float64{10, 11, 12}, 1.0},
+		{"case5", []float64{1, 100}, 4900.5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetVariance(tt.a)
+			got := GetSampleVariance(tt.a)
 			if math.Abs(got-tt.want) > 1e-9 {
 				t.Errorf("GetVariance() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeObservations(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		observations [][]float64
+		want         [][]float64
+	}{
+		{
+			name: "simple case",
+			observations: [][]float64{
+				{1, 2, 3},
+			},
+			want: [][]float64{
+				{0, 0, 0},
+			},
+		},
+		{
+			name: "multiple observations",
+			observations: [][]float64{
+				{1, 2, 3},
+				{1, 2, 3},
+			},
+			want: [][]float64{
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+		},
+		{
+			name: "multiple observations different values",
+			observations: [][]float64{
+				{1, 1, 1},
+				{2, 2, 2},
+			},
+			want: [][]float64{
+				{-0.7071067811, -0.7071067811, -0.7071067811},
+				{0.7071067811, 0.7071067811, 0.7071067811},
+			},
+		},
+		{
+			name: "complex case",
+			observations: [][]float64{
+				{1, 2},
+				{2, 1},
+				{3, 0},
+			},
+			want: [][]float64{
+				{-1, 1},
+				{0, 0},
+				{1, -1},
+			},
+		},
+		{
+			name:         "empty observations",
+			observations: [][]float64{},
+			want:         [][]float64{},
+		},
+		{
+			name: "3 observations with 3 features",
+			observations: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+			},
+			want: [][]float64{
+				{-1, -1, -1},
+				{0, 0, 0},
+				{1, 1, 1},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NormalizeObservations(tt.observations)
+			for i := range got {
+				for j := range got[i] {
+					if math.Abs(got[i][j]-tt.want[i][j]) > 1e-9 {
+						t.Errorf("NormalizeObservations() = %v, want %v", got, tt.want)
+						return
+					}
+				}
 			}
 		})
 	}

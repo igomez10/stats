@@ -343,7 +343,7 @@ func CreateLRModelWithRidge(observations [][]float64, actualOutput []float64, la
 			col[j] = observations[j][i]
 		}
 		meanCol := pkg.GetMean(col)
-		stdDevCol := math.Sqrt(pkg.GetVariance(col))
+		stdDevCol := math.Sqrt(pkg.GetSampleVariance(col))
 		if math.Abs(meanCol) > 1e-6 || math.Abs(stdDevCol-1) > 1e-6 {
 			return MultiLinearModel{}, fmt.Errorf("observations must be normalized for ridge regression")
 		}
