@@ -7,10 +7,10 @@ import (
 	"math"
 	"os"
 	"reflect"
-	"stats/pkg"
 	"strconv"
 	"testing"
 	"testing/quick"
+	"github.com/igomez10/stats/pkg"
 )
 
 func TestExampleSimpleLinearRegression(t *testing.T) {

@@ -5,11 +5,11 @@ import (
 	"math"
 	"os"
 	"reflect"
-	"stats/pkg"
 	"testing"
 
 	"github.com/NimbleMarkets/ntcharts/barchart"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/igomez10/stats/pkg"
 )
 
 func TestSomemain(t *testing.T) {

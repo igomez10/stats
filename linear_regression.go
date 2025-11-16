@@ -3,7 +3,8 @@ package stats
 import (
 	"fmt"
 	"math"
-	"stats/pkg"
+
+	"github.com/igomez10/stats/pkg"
 
 	"github.com/igomez10/linearalgebra"
 )

@@ -1,4 +1,4 @@
-module stats
+module github.com/igomez10/stats
 
 go 1.24.4
 

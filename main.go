@@ -3,7 +3,8 @@ package stats
 import (
 	"fmt"
 	"math"
-	"stats/pkg"
+
+	"github.com/igomez10/stats/pkg"
 )
 
 // Combination calculates the number of combinations of n items taken r at a time
