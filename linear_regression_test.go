@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 	"testing/quick"
+
 	"github.com/igomez10/stats/pkg"
 )
 
