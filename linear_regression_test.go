@@ -1017,7 +1017,7 @@ func TestCreateLRModelWithRidge(t *testing.T) {
 					col[j] = tt.observations[j][i]
 				}
 				mean := pkg.GetMean(col)
-				std := math.Sqrt(pkg.GetVariance(col))
+				std := math.Sqrt(pkg.GetSampleVariance(col))
 				for j := range tt.observations {
 					if normalizedObservations[j] == nil {
 						normalizedObservations[j] = make([]float64, len(tt.observations[0]))

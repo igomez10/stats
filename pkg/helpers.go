@@ -107,8 +107,6 @@ func NormalizeObservations(observations [][]float64) [][]float64 {
 
 func CopyMatrix(to, from [][]float64) {
 	for i := range from {
-		for j := range from[i] {
-			to[i][j] = from[i][j]
-		}
+		copy(to[i], from[i])
 	}
 }

@@ -124,11 +124,26 @@ func TestNormalizeObservations(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			before := [][]float64{}
+			for i := 0; i < len(tt.observations); i++ {
+				before = append(before, make([]float64, len(tt.observations[i])))
+			}
+			CopyMatrix(before, tt.observations)
+			// Ensure original observations are not modified
+			NormalizeObservations(tt.observations)
 			got := NormalizeObservations(tt.observations)
 			for i := range got {
 				for j := range got[i] {
 					if math.Abs(got[i][j]-tt.want[i][j]) > 1e-9 {
 						t.Errorf("NormalizeObservations() = %v, want %v", got, tt.want)
+						return
+					}
+				}
+			}
+			for i := range tt.observations {
+				for j := range tt.observations[i] {
+					if tt.observations[i][j] != before[i][j] {
+						t.Errorf("NormalizeObservations() modified the input observations")
 						return
 					}
 				}
