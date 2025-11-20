@@ -436,6 +436,7 @@ func RidgeLossFormula(observations [][]float64, actualOutput []float64, betas []
 
 	return sse + lambda*sumSquaredBetas
 }
+
 // FitModelGradientDescent fits a multi linear regression model using gradient descent
 func FitModelGradientDescent(observations [][]float64, actualOutput []float64, learningRate float64, maxIter int) MultiLinearModel {
 	model := MultiLinearModel{
@@ -446,12 +447,16 @@ func FitModelGradientDescent(observations [][]float64, actualOutput []float64, l
 		gradients := make([]float64, len(model.Betas))
 
 		// Compute gradients
-		for i := range actualOutput {
+		for i, yi := range actualOutput {
 			yiHat := model.Predict(observations[i])
-			errI := yiHat - actualOutput[i]
-			gradients[0] += errI                    // gradient for intercept
-			for j := 1; j < len(model.Betas); j++ { // gradients for other betas, exclude intercept
-				gradients[j] += errI * observations[i][j-1]
+			errI := yiHat - yi
+			for currentBeta := 0; currentBeta < len(model.Betas); currentBeta++ {
+				if currentBeta == 0 {
+					// handle intercept differently
+					gradients[currentBeta] += errI
+					continue
+				}
+				gradients[currentBeta] += errI * observations[i][currentBeta-1]
 			}
 		}
 
