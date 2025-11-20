@@ -445,18 +445,15 @@ func FitModelGradientDescent(observations [][]float64, actualOutput []float64, l
 
 	for iter := 0; iter < maxIter; iter++ {
 		gradients := make([]float64, len(model.Betas))
-
 		// Compute gradients
 		for i, yi := range actualOutput {
 			yiHat := model.Predict(observations[i])
 			errI := yiHat - yi
-			for currentBeta := 0; currentBeta < len(model.Betas); currentBeta++ {
-				if currentBeta == 0 {
-					// handle intercept differently
-					gradients[currentBeta] += errI
-					continue
-				}
-				gradients[currentBeta] += errI * observations[i][currentBeta-1]
+			gradients[0] += errI // gradient for intercept
+			for j, xi := range observations[i] {
+				currentBetaIndex := j + 1 // +1 to account for intercept beta at index 0
+				// gradient for beta j
+				gradients[currentBetaIndex] += (errI * xi) / float64(len(observations))
 			}
 		}
 
@@ -465,5 +462,59 @@ func FitModelGradientDescent(observations [][]float64, actualOutput []float64, l
 			model.Betas[j] -= (learningRate * gradients[j])
 		}
 	}
+	return model
+}
+
+// FitModelGradientDescentNumerical fits a multi linear regression model using gradient descent
+// with numerical gradient approximation via finite differences
+func FitModelGradientDescentNumerical(observations [][]float64, actualOutput []float64, learningRate float64, maxIter int) MultiLinearModel {
+	model := MultiLinearModel{
+		Betas: make([]float64, len(observations[0])+1),
+	}
+
+	smallStep := 1e-5 // small step for finite difference approximation
+
+	// Helper function to compute MSE loss
+	computeLoss := func(betas []float64) float64 {
+		sse := 0.0
+		for i := range actualOutput {
+			yiHat := betas[0] // intercept
+			for j := 1; j < len(betas); j++ {
+				yiHat += observations[i][j-1] * betas[j]
+			}
+			errI := yiHat - actualOutput[i]
+			sse += errI * errI
+		}
+		return sse / float64(len(actualOutput))
+	}
+
+	for iter := 0; iter < maxIter; iter++ {
+		gradients := make([]float64, len(model.Betas))
+
+		// Compute gradient for each beta using finite differences
+		for j := range model.Betas {
+			// Calculate loss at current beta values
+			lossAtX := computeLoss(model.Betas)
+
+			// Perturb beta[j] by small step
+			originalBeta := model.Betas[j]
+			model.Betas[j] = originalBeta + smallStep
+
+			// Calculate loss at perturbed beta values
+			lossAtXPlusH := computeLoss(model.Betas)
+
+			// Restore original beta value
+			model.Betas[j] = originalBeta
+
+			// Approximate gradient using finite difference
+			gradients[j] = (lossAtXPlusH - lossAtX) / smallStep
+		}
+
+		// Update betas using computed gradients
+		for j := range model.Betas {
+			model.Betas[j] -= learningRate * gradients[j]
+		}
+	}
+
 	return model
 }

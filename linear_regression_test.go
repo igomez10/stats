@@ -1262,21 +1262,30 @@ func TestFitModelGradientDescent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			gotNumerical := FitModelGradientDescentNumerical(tt.observations, tt.actualOutput, tt.learningRate, tt.maxIter)
 			got := FitModelGradientDescent(tt.observations, tt.actualOutput, tt.learningRate, tt.maxIter)
+			if len(got.Betas) != len(gotNumerical.Betas) {
+				t.Fatalf("Betas length mismatch between numerical and analytical: got %d, want %d", len(got.Betas), len(gotNumerical.Betas))
+			}
+			for i := range got.Betas {
+				if math.Abs(got.Betas[i]-gotNumerical.Betas[i]) > 1e-3 {
+					t.Errorf("FitModelGradientDescent() beta[%d] = %v, numerical beta %v", i, got.Betas[i], gotNumerical.Betas[i])
+				}
+			}
 			// compare with ols
 			olsModel, err := CreateLRModelWithOLS(tt.observations, tt.actualOutput)
 			if err != nil {
 				t.Errorf("CreateSLRModelWithOLS() = %v", err)
 			}
 			for i := range olsModel.Betas {
-				if math.Abs(got.Betas[i]-olsModel.Betas[i]) > 1e-2 {
-					t.Errorf("FitModelGradientDescent() beta[%d] = %v, OLS beta %v", i, got.Betas[i], olsModel.Betas[i])
+				if math.Abs(gotNumerical.Betas[i]-olsModel.Betas[i]) > 1e-2 {
+					t.Errorf("FitModelGradientDescent() beta[%d] = %v, OLS beta %v", i, gotNumerical.Betas[i], olsModel.Betas[i])
 				}
 			}
 
-			for i := range got.Betas {
-				if math.Abs(got.Betas[i]-tt.want.Betas[i]) > 1e-2 {
-					t.Errorf("FitModelGradientDescent() beta[%d] = %v, want %v", i, got.Betas[i], tt.want.Betas[i])
+			for i := range gotNumerical.Betas {
+				if math.Abs(gotNumerical.Betas[i]-tt.want.Betas[i]) > 1e-2 {
+					t.Errorf("FitModelGradientDescent() beta[%d] = %v, want %v", i, gotNumerical.Betas[i], tt.want.Betas[i])
 				}
 			}
 		})
