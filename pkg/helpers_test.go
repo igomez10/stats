@@ -54,18 +54,21 @@ func TestGetSampleVariance(t *testing.T) {
 
 func TestNormalizeObservations(t *testing.T) {
 	tests := []struct {
-		name string // description of this test case
-		// Named input parameters for target function.
+		name         string
 		observations [][]float64
 		want         [][]float64
 	}{
 		{
 			name: "simple case",
 			observations: [][]float64{
-				{1, 2, 3},
+				{1},
+				{2},
+				{3},
 			},
 			want: [][]float64{
-				{0, 0, 0},
+				{-1},
+				{0},
+				{1},
 			},
 		},
 		{
@@ -129,8 +132,6 @@ func TestNormalizeObservations(t *testing.T) {
 				before = append(before, make([]float64, len(tt.observations[i])))
 			}
 			CopyMatrix(before, tt.observations)
-			// Ensure original observations are not modified
-			NormalizeObservations(tt.observations)
 			got := NormalizeObservations(tt.observations)
 			for i := range got {
 				for j := range got[i] {
@@ -147,6 +148,50 @@ func TestNormalizeObservations(t *testing.T) {
 						return
 					}
 				}
+			}
+		})
+	}
+}
+
+func Test_normalize(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		arr  []float64
+		want []float64
+	}{
+		{"case1", []float64{1, 2, 3}, []float64{-1.2247448714, 0, 1.2247448714}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := normalize(tt.arr)
+			for i := range got {
+				if math.Abs(got[i]-tt.want[i]) > 1e-9 {
+					t.Errorf("normalize() = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func TestGetPopulationVariance(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		a    []float64
+		want float64
+	}{
+		{"case1", []float64{1, 2, 3}, 0.6666666667},
+		{"case2", []float64{4, 5, 6}, 0.6666666667},
+		{"case3", []float64{7, 8, 9}, 0.6666666667},
+		{"case4", []float64{10, 11, 12}, 0.6666666667},
+		{"case5", []float64{1, 100}, 2450.25},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetPopulationVariance(tt.a)
+			if math.Abs(got-tt.want) > 1e-9 {
+				t.Errorf("GetPopulationVariance() = %v, want %v", got, tt.want)
 			}
 		})
 	}

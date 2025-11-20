@@ -69,6 +69,9 @@ func GetMax(a []float64) float64 {
 }
 
 func GetSampleVariance(a []float64) float64 {
+	if len(a) < 2 {
+		panic("sample variance requires at least two data points")
+	}
 	mean := GetMean(a)
 	varianceSum := 0.0
 	for _, v := range a {
@@ -76,6 +79,29 @@ func GetSampleVariance(a []float64) float64 {
 		varianceSum += diff * diff
 	}
 	return varianceSum / float64(len(a)-1)
+}
+
+func GetPopulationVariance(a []float64) float64 {
+	if len(a) == 0 {
+		panic("population variance requires at least one data point")
+	}
+	mean := GetMean(a)
+	varianceSum := 0.0
+	for _, v := range a {
+		diff := v - mean
+		varianceSum += diff * diff
+	}
+	return varianceSum / float64(len(a))
+}
+
+func normalize(arr []float64) []float64 {
+	mean := GetMean(arr)
+	variance := GetPopulationVariance(arr)
+	normalized := make([]float64, len(arr))
+	for i := range arr {
+		normalized[i] = (arr[i] - mean) / math.Sqrt(variance)
+	}
+	return normalized
 }
 
 func NormalizeObservations(observations [][]float64) [][]float64 {

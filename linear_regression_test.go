@@ -1223,3 +1223,62 @@ func TestRidgeLossFormula(t *testing.T) {
 		})
 	}
 }
+func TestFitModelGradientDescent(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		observations [][]float64
+		actualOutput []float64
+		learningRate float64
+		maxIter      int
+		want         MultiLinearModel
+	}{
+		{
+			name: "simple-1-feature",
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			actualOutput: []float64{1, 2, 3, 4},
+			learningRate: 0.001,
+			maxIter:      1000000,
+			want:         MultiLinearModel{Betas: []float64{0, 1}},
+		},
+		{
+			name: "two-features",
+			observations: [][]float64{
+				{1, 2},
+				{1.5, 3},
+				{3, 4},
+				{4, 5},
+			},
+			actualOutput: []float64{5, 7, 9, 11},
+			learningRate: 0.01,
+			maxIter:      1000000,
+			want:         MultiLinearModel{Betas: []float64{1, 0, 2}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FitModelGradientDescent(tt.observations, tt.actualOutput, tt.learningRate, tt.maxIter)
+			// compare with ols
+			olsModel, err := CreateLRModelWithOLS(tt.observations, tt.actualOutput)
+			if err != nil {
+				t.Errorf("CreateSLRModelWithOLS() = %v", err)
+			}
+			for i := range olsModel.Betas {
+				if math.Abs(got.Betas[i]-olsModel.Betas[i]) > 1e-2 {
+					t.Errorf("FitModelGradientDescent() beta[%d] = %v, OLS beta %v", i, got.Betas[i], olsModel.Betas[i])
+				}
+			}
+
+			for i := range got.Betas {
+				if math.Abs(got.Betas[i]-tt.want.Betas[i]) > 1e-2 {
+					t.Errorf("FitModelGradientDescent() beta[%d] = %v, want %v", i, got.Betas[i], tt.want.Betas[i])
+				}
+			}
+		})
+	}
+}
