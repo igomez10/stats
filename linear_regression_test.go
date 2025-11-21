@@ -1223,6 +1223,7 @@ func TestRidgeLossFormula(t *testing.T) {
 		})
 	}
 }
+
 func TestFitModelGradientDescent(t *testing.T) {
 	tests := []struct {
 		name string // description of this test case
