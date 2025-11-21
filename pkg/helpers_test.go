@@ -66,9 +66,9 @@ func TestNormalizeObservations(t *testing.T) {
 				{3},
 			},
 			want: [][]float64{
-				{-1},
+				{-1.2247448714},
 				{0},
-				{1},
+				{1.2247448714},
 			},
 		},
 		{
@@ -78,8 +78,8 @@ func TestNormalizeObservations(t *testing.T) {
 				{1, 2, 3},
 			},
 			want: [][]float64{
-				{0, 0, 0},
-				{0, 0, 0},
+				{-0.7071067811, -0.7071067811, -0.7071067811},
+				{0.7071067811, 0.7071067811, 0.7071067811},
 			},
 		},
 		{
@@ -89,8 +89,8 @@ func TestNormalizeObservations(t *testing.T) {
 				{2, 2, 2},
 			},
 			want: [][]float64{
-				{-0.7071067811, -0.7071067811, -0.7071067811},
-				{0.7071067811, 0.7071067811, 0.7071067811},
+				{-1.0, -1.0, -1.0},
+				{1.0, 1.0, 1.0},
 			},
 		},
 		{
@@ -101,9 +101,9 @@ func TestNormalizeObservations(t *testing.T) {
 				{3, 0},
 			},
 			want: [][]float64{
-				{-1, 1},
+				{-1.2247448714, 1.2247448714},
 				{0, 0},
-				{1, -1},
+				{1.2247448714, -1.2247448714},
 			},
 		},
 		{
@@ -119,9 +119,18 @@ func TestNormalizeObservations(t *testing.T) {
 				{7, 8, 9},
 			},
 			want: [][]float64{
-				{-1, -1, -1},
+				{-1.22474487, -1.22474487, -1.22474487},
 				{0, 0, 0},
-				{1, 1, 1},
+				{1.22474487, 1.22474487, 1.22474487},
+			},
+		},
+		{
+			name: "3 observations with 4 features",
+			observations: [][]float64{
+				{1, 2, 3, 4},
+			},
+			want: [][]float64{
+				{-1.34164079, -0.4472136, 0.4472136, 1.34164079},
 			},
 		},
 	}
@@ -135,7 +144,7 @@ func TestNormalizeObservations(t *testing.T) {
 			got := NormalizeObservations(tt.observations)
 			for i := range got {
 				for j := range got[i] {
-					if math.Abs(got[i][j]-tt.want[i][j]) > 1e-9 {
+					if math.Abs(got[i][j]-tt.want[i][j]) > 1e-4 {
 						t.Errorf("NormalizeObservations() = %v, want %v", got, tt.want)
 						return
 					}

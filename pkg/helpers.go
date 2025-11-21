@@ -122,7 +122,7 @@ func NormalizeObservations(observations [][]float64) [][]float64 {
 			obs[j] = copyObservations[j][i]
 		}
 		mean := GetMean(obs)
-		variance := GetSampleVariance(obs)
+		variance := GetPopulationVariance(obs)
 
 		for j := range copyObservations {
 			copyObservations[j][i] = (copyObservations[j][i] - mean) / math.Sqrt(variance)
