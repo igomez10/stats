@@ -1292,3 +1292,64 @@ func TestFitModelGradientDescent(t *testing.T) {
 		})
 	}
 }
+
+func TestFitModelGradientDescentNumericalLasso(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		observations [][]float64
+		actualOutput []float64
+		learningRate float64
+		maxIter      int
+		lambda       float64
+		want         MultiLinearModel
+	}{
+		{
+			name: "simple-1-feature",
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			actualOutput: []float64{1, 2, 3, 4},
+			learningRate: 0.0001,
+			maxIter:      1000000,
+			lambda:       0.0,
+			want:         MultiLinearModel{Betas: []float64{0, 1}},
+		},
+		{
+			name: "simple-1-feature-lambda-1",
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+				{5},
+				{6},
+				{7},
+				{8},
+				{9},
+				{10},
+			},
+			actualOutput: []float64{2.3, 2.5, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0},
+			learningRate: 0.0001,
+			maxIter:      1000000,
+			lambda:       0.0,
+			want:         MultiLinearModel{Betas: []float64{1.541, 0.429}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FitModelGradientDescentNumericalLasso(tt.observations, tt.actualOutput, tt.learningRate, tt.maxIter, tt.lambda)
+			if len(got.Betas) != len(tt.want.Betas) {
+				t.Fatalf("Betas length mismatch: got %d, want %d", len(got.Betas), len(tt.want.Betas))
+			}
+			for i := range tt.want.Betas {
+				if math.Abs(got.Betas[i]-tt.want.Betas[i]) > 1e-3 {
+					t.Errorf("beta[%d] = %v, want %v", i, got.Betas[i], tt.want.Betas[i])
+				}
+			}
+		})
+	}
+}

@@ -518,3 +518,59 @@ func FitModelGradientDescentNumerical(observations [][]float64, actualOutput []f
 
 	return model
 }
+
+func FitModelGradientDescentNumericalLasso(observations [][]float64, actualOutput []float64, learningRate float64, maxIter int, lambda float64) MultiLinearModel {
+	model := MultiLinearModel{
+		Betas: make([]float64, len(observations[0])+1),
+	}
+
+	// Helper function to compute MSE loss
+	computeLoss := func(betas []float64) float64 {
+		sse := 0.0
+		for i := range actualOutput {
+			yiHat := betas[0] // intercept
+			for j := 1; j < len(betas); j++ {
+				yiHat += observations[i][j-1] * betas[j]
+			}
+			errI := yiHat - actualOutput[i]
+			sse += errI * errI
+		}
+		// add lasso penalty
+		sumAbsBetas := 0.0
+		for _, beta := range betas {
+			sumAbsBetas += math.Abs(beta)
+		}
+		sse += lambda * sumAbsBetas
+		return sse / float64(len(actualOutput))
+	}
+
+	for iter := 0; iter < maxIter; iter++ {
+		gradients := make([]float64, len(model.Betas))
+
+		// Compute gradient for each beta using finite differences
+		for j := range model.Betas {
+			// Calculate loss at current beta values
+			lossAtX := computeLoss(model.Betas)
+
+			// Perturb beta[j] by small step
+			originalBeta := model.Betas[j]
+			model.Betas[j] = originalBeta + learningRate
+
+			// Calculate loss at perturbed beta values
+			lossAtXPlusH := computeLoss(model.Betas)
+
+			// Restore original beta value
+			model.Betas[j] = originalBeta
+
+			// Approximate gradient using finite difference
+			gradients[j] = (lossAtXPlusH - lossAtX) / learningRate
+		}
+
+		// Update betas using computed gradients
+		for j := range model.Betas {
+			model.Betas[j] -= learningRate * gradients[j]
+		}
+	}
+
+	return model
+}
