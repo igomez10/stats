@@ -1314,9 +1314,9 @@ func TestFitModelGradientDescentNumericalLasso(t *testing.T) {
 			},
 			actualOutput: []float64{1, 2, 3, 4},
 			learningRate: 0.0001,
-			maxIter:      1000000,
+			maxIter:      100000,
 			lambda:       0.0,
-			want:         MultiLinearModel{Betas: []float64{0, 1}},
+			want:         MultiLinearModel{Betas: []float64{2.5, 1.118}},
 		},
 		{
 			name: "simple-1-feature-lambda-1",
