@@ -543,15 +543,16 @@ func FitLassoLRModelGradientDescentNumerical(observations [][]float64, actualOut
 		for i := 1; i < len(betas); i++ {
 			sumAbsBetas += math.Abs(betas[i])
 		}
-		return (sse / float64(2*len(actualOutput))) + lambda*sumAbsBetas
+		return sse/(2*float64(len(actualOutput))) + lambda*sumAbsBetas
 	}
 
 	for iter := 0; iter < maxIter; iter++ {
 		gradients := make([]float64, len(model.Betas))
-		lossAtX := computeLoss(model.Betas)
+
 		// Compute gradient for each beta using finite differences
 		for j := range model.Betas {
 			// Calculate loss at current beta values
+			lossAtX := computeLoss(model.Betas)
 
 			// Perturb beta[j] by small step
 			originalBeta := model.Betas[j]

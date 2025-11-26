@@ -1334,14 +1334,18 @@ func TestFitModelGradientDescentNumericalLasso(t *testing.T) {
 			},
 			actualOutput: []float64{2.3, 2.5, 2.7, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0},
 			learningRate: 0.0001,
-			maxIter:      1000000,
+			maxIter:      100000000,
+			lambda:       1,
+			want:         MultiLinearModel{Betas: []float64{3.9, 0.2324}},
+		},
 			lambda:       0.0,
 			want:         MultiLinearModel{Betas: []float64{1.541, 0.429}},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := FitModelGradientDescentNumericalLasso(tt.observations, tt.actualOutput, tt.learningRate, tt.maxIter, tt.lambda)
+			normalizedObservations := pkg.NormalizeObservations(tt.observations)
+			got := FitLassoLRModelGradientDescentNumerical(normalizedObservations, tt.actualOutput, tt.learningRate, tt.maxIter, tt.lambda)
 			if len(got.Betas) != len(tt.want.Betas) {
 				t.Fatalf("Betas length mismatch: got %d, want %d", len(got.Betas), len(tt.want.Betas))
 			}
