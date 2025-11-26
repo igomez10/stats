@@ -519,10 +519,13 @@ func FitModelGradientDescentNumerical(observations [][]float64, actualOutput []f
 	return model
 }
 
-func FitModelGradientDescentNumericalLasso(observations [][]float64, actualOutput []float64, learningRate float64, maxIter int, lambda float64) MultiLinearModel {
+// FitLassoLRModelGradientDescentNumerical fits a multi linear regression model with Lasso regularization
+// using gradient descent with numerical gradient approximation via finite differences
+func FitLassoLRModelGradientDescentNumerical(observations [][]float64, actualOutput []float64, learningRate float64, maxIter int, lambda float64) MultiLinearModel {
 	model := MultiLinearModel{
 		Betas: make([]float64, len(observations[0])+1),
 	}
+	smallStep := 1e-5
 
 	// Helper function to compute MSE loss
 	computeLoss := func(betas []float64) float64 {
@@ -537,24 +540,22 @@ func FitModelGradientDescentNumericalLasso(observations [][]float64, actualOutpu
 		}
 		// add lasso penalty
 		sumAbsBetas := 0.0
-		for _, beta := range betas {
-			sumAbsBetas += math.Abs(beta)
+		for i := 1; i < len(betas); i++ {
+			sumAbsBetas += math.Abs(betas[i])
 		}
-		sse += lambda * sumAbsBetas
-		return sse / float64(len(actualOutput))
+		return (sse / float64(2*len(actualOutput))) + lambda*sumAbsBetas
 	}
 
 	for iter := 0; iter < maxIter; iter++ {
 		gradients := make([]float64, len(model.Betas))
-
+		lossAtX := computeLoss(model.Betas)
 		// Compute gradient for each beta using finite differences
 		for j := range model.Betas {
 			// Calculate loss at current beta values
-			lossAtX := computeLoss(model.Betas)
 
 			// Perturb beta[j] by small step
 			originalBeta := model.Betas[j]
-			model.Betas[j] = originalBeta + learningRate
+			model.Betas[j] = originalBeta + smallStep
 
 			// Calculate loss at perturbed beta values
 			lossAtXPlusH := computeLoss(model.Betas)
@@ -563,7 +564,7 @@ func FitModelGradientDescentNumericalLasso(observations [][]float64, actualOutpu
 			model.Betas[j] = originalBeta
 
 			// Approximate gradient using finite difference
-			gradients[j] = (lossAtXPlusH - lossAtX) / learningRate
+			gradients[j] = (lossAtXPlusH - lossAtX) / smallStep
 		}
 
 		// Update betas using computed gradients
