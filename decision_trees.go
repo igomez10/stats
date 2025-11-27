@@ -64,7 +64,6 @@ func GetBestSplit(labels []string, minSamplesLeaf int) (index int, err error) {
 		rightWeighted := float64((len(labels) - i)) / float64(len(labels)) * currentRightGini
 
 		score := leftWeighted + rightWeighted
-
 		if score < minGiniSoFar {
 			minGiniSoFar = score
 			minGiniIndex = i
