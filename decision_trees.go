@@ -54,7 +54,7 @@ func GetBestSplit(labels []string, minSamplesLeaf int) (index int, err error) {
 	}
 
 	// try on every split, keep lowest gini
-	minGiniSoFar := 0.5
+	minGiniSoFar := 1.0
 	minGiniIndex := minSamplesLeaf
 	for i := minSamplesLeaf; i <= len(labels)-minSamplesLeaf; i++ {
 		currentLeftGini := GetGiniImpurity(labels[:i])
