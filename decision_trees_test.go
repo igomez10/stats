@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"fmt"
 	"math"
 	"testing"
 )
@@ -170,10 +169,6 @@ func TestGetBestSplit(t *testing.T) {
 
 			if got != tt.want {
 				t.Errorf("unexpected split for %+v got %d wanted %d", tt.labels, got, tt.want)
-			}
-			if err == nil {
-				fmt.Println("left", tt.labels[got:])
-				fmt.Println("right", tt.labels[:got])
 			}
 		})
 	}

@@ -59,16 +59,14 @@ func GetBestSplit(labels []string, minSamplesLeaf int) (index int, err error) {
 	for i := minSamplesLeaf; i <= len(labels)-minSamplesLeaf; i++ {
 		currentLeftGini := GetGiniImpurity(labels[:i])
 		currentRightGini := GetGiniImpurity(labels[i:])
-		fmt.Println("left gini", i, currentLeftGini)
-		fmt.Println("right gini", i, currentRightGini)
 
-		currentMin := currentLeftGini
-		if currentMin < currentRightGini {
-			currentMin = currentRightGini
-		}
+		leftWeighted := float64(i) / float64(len(labels)) * currentLeftGini
+		rightWeighted := float64((len(labels) - i)) / float64(len(labels)) * currentRightGini
 
-		if currentMin < minGiniSoFar {
-			minGiniSoFar = currentMin
+		score := leftWeighted + rightWeighted
+
+		if score < minGiniSoFar {
+			minGiniSoFar = score
 			minGiniIndex = i
 		}
 	}
