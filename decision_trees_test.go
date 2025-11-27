@@ -108,35 +108,35 @@ func TestGetBestSplit(t *testing.T) {
 			wantErr:        nil,
 		},
 		{
-			name:           "ex6 ", //---------------|
+			name:           "ex7 ", //---------------|
 			labels:         []string{"a", "b", "a", "b", "b", "b"},
 			minSamplesLeaf: 2,
 			want:           3,
 			wantErr:        nil,
 		},
 		{
-			name:           "ex6 ", //---------------|
+			name:           "ex8 ", //---------------|
 			labels:         []string{"a", "b", "a", "b", "b", "b"},
 			minSamplesLeaf: 3,
 			want:           3,
 			wantErr:        nil,
 		},
 		{
-			name:           "ex7 min samples > 2*len input ",
+			name:           "ex9 min samples > 2*len input ",
 			labels:         []string{"a", "b", "a", "b", "b", "b"},
 			minSamplesLeaf: 4,
 			want:           0,
 			wantErr:        errInvalidSamplesPerLeaf,
 		},
 		{
-			name:           "ex8 ", //---------------|
+			name:           "ex10 ", //---------------|
 			labels:         []string{"a", "a", "a", "b", "b", "b", "b", "b"},
 			minSamplesLeaf: 2,
 			want:           3,
 			wantErr:        nil,
 		},
 		{
-			name: "ex9 left not totally pure",
+			name: "ex11 left not totally pure",
 			//---------------------------------------|
 			labels:         []string{"a", "b", "a", "b", "b", "b", "b", "b"},
 			minSamplesLeaf: 2,
@@ -144,7 +144,7 @@ func TestGetBestSplit(t *testing.T) {
 			wantErr:        nil,
 		},
 		{
-			name: "ex10 right not totally pure",
+			name: "ex11 right not totally pure",
 			//---------------------------------------|
 			labels:         []string{"a", "b", "a", "b", "b", "b", "b", "a"},
 			minSamplesLeaf: 2,
@@ -152,7 +152,7 @@ func TestGetBestSplit(t *testing.T) {
 			wantErr:        nil,
 		},
 		{
-			name: "ex10 left is more pure",
+			name: "ex12 left is more pure",
 			//---------------------------------------|
 			labels:         []string{"a", "a", "a", "b", "b", "b", "b", "a"},
 			minSamplesLeaf: 2,
