@@ -1,10 +1,9 @@
-package stats_test
+package stats
 
 import (
+	"fmt"
 	"math"
 	"testing"
-
-	"github.com/igomez10/stats"
 )
 
 func TestGetGiniImpurity(t *testing.T) {
@@ -36,9 +35,145 @@ func TestGetGiniImpurity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := stats.GetGiniImpurity(tt.labels)
+			got := GetGiniImpurity(tt.labels)
 			if math.Abs(got-tt.want) > 1e-9 {
 				t.Errorf("GetGiniImpurity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetBestSplit(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		labels         []string
+		minSamplesLeaf int
+		want           int
+		wantErr        error
+	}{
+		{
+			name:           "no labels",
+			labels:         []string{},
+			minSamplesLeaf: 1,
+			want:           0,
+			wantErr:        errEmptySplits,
+		},
+		{
+			name:           "invalid min nodes",
+			labels:         []string{"a", "b"},
+			minSamplesLeaf: 3,
+			want:           0,
+			wantErr:        errInvalidSamplesPerLeaf,
+		},
+		{
+			name:           "invalid min nodes",
+			labels:         []string{"a", "b"},
+			minSamplesLeaf: 3,
+			want:           0,
+			wantErr:        errInvalidSamplesPerLeaf,
+		},
+		{
+			name:           "ex1 ", //-----|
+			labels:         []string{"a", "b"},
+			minSamplesLeaf: 1,
+			want:           1,
+			wantErr:        nil,
+		},
+		{
+			name:           "ex2 ", //-----|
+			labels:         []string{"a", "b", "b"},
+			minSamplesLeaf: 1,
+			want:           1,
+			wantErr:        nil,
+		},
+		{
+			name:           "ex3 ", //----------|
+			labels:         []string{"a", "a", "b"},
+			minSamplesLeaf: 1,
+			want:           2,
+			wantErr:        nil,
+		},
+		{
+			name:           "ex4 ", //----------|
+			labels:         []string{"a", "a", "b", "b"},
+			minSamplesLeaf: 2,
+			want:           2,
+			wantErr:        nil,
+		},
+		{
+			name:           "ex5 ", //----------|
+			labels:         []string{"a", "a", "b", "a", "b"},
+			minSamplesLeaf: 2,
+			want:           2,
+			wantErr:        nil,
+		},
+		{
+			name:           "ex6 ", //---------------|
+			labels:         []string{"a", "b", "a", "b", "b", "b"},
+			minSamplesLeaf: 2,
+			want:           3,
+			wantErr:        nil,
+		},
+		{
+			name:           "ex6 ", //---------------|
+			labels:         []string{"a", "b", "a", "b", "b", "b"},
+			minSamplesLeaf: 3,
+			want:           3,
+			wantErr:        nil,
+		},
+		{
+			name:           "ex7 min samples > 2*len input ",
+			labels:         []string{"a", "b", "a", "b", "b", "b"},
+			minSamplesLeaf: 4,
+			want:           0,
+			wantErr:        errInvalidSamplesPerLeaf,
+		},
+		{
+			name:           "ex8 ", //---------------|
+			labels:         []string{"a", "a", "a", "b", "b", "b", "b", "b"},
+			minSamplesLeaf: 2,
+			want:           3,
+			wantErr:        nil,
+		},
+		{
+			name: "ex9 left not totally pure",
+			//---------------------------------------|
+			labels:         []string{"a", "b", "a", "b", "b", "b", "b", "b"},
+			minSamplesLeaf: 2,
+			want:           3,
+			wantErr:        nil,
+		},
+		{
+			name: "ex10 right not totally pure",
+			//---------------------------------------|
+			labels:         []string{"a", "b", "a", "b", "b", "b", "b", "a"},
+			minSamplesLeaf: 2,
+			want:           3,
+			wantErr:        nil,
+		},
+		{
+			name: "ex10 left is more pure",
+			//---------------------------------------|
+			labels:         []string{"a", "a", "a", "b", "b", "b", "b", "a"},
+			minSamplesLeaf: 2,
+			want:           3,
+			wantErr:        nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBestSplit(tt.labels, tt.minSamplesLeaf)
+			if tt.wantErr != err {
+				t.Error("unexpected err")
+			}
+
+			if got != tt.want {
+				t.Errorf("unexpected split for %+v got %d wanted %d", tt.labels, got, tt.want)
+			}
+			if err == nil {
+				fmt.Println("left", tt.labels[got:])
+				fmt.Println("right", tt.labels[:got])
 			}
 		})
 	}

@@ -1,5 +1,9 @@
 package stats
 
+import (
+	"fmt"
+)
+
 type DecisionTreeNode struct {
 	// If the node is a leaf, Value holds the prediction value.
 	Feature string
@@ -34,4 +38,40 @@ func GetGiniImpurity(labels []string) float64 {
 
 	res := 1.0 - summedSquaredProb
 	return res
+}
+
+var errEmptySplits = fmt.Errorf("cannot split empty labels")
+var errInvalidSamplesPerLeaf = fmt.Errorf("invalid samples per leaf")
+
+func GetBestSplit(labels []string, minSamplesLeaf int) (index int, err error) {
+	if len(labels) == 0 {
+		return 0, errEmptySplits
+	}
+	// we need at least two halves with the same number of nodes
+	if minSamplesLeaf < 1 || len(labels) < 2*minSamplesLeaf {
+
+		return 0, errInvalidSamplesPerLeaf
+	}
+
+	// try on every split, keep lowest gini
+	minGiniSoFar := 0.5
+	minGiniIndex := minSamplesLeaf
+	for i := minSamplesLeaf; i <= len(labels)-minSamplesLeaf; i++ {
+		currentLeftGini := GetGiniImpurity(labels[:i])
+		currentRightGini := GetGiniImpurity(labels[i:])
+		fmt.Println("left gini", i, currentLeftGini)
+		fmt.Println("right gini", i, currentRightGini)
+
+		currentMin := currentLeftGini
+		if currentMin < currentRightGini {
+			currentMin = currentRightGini
+		}
+
+		if currentMin < minGiniSoFar {
+			minGiniSoFar = currentMin
+			minGiniIndex = i
+		}
+	}
+
+	return minGiniIndex, nil
 }
