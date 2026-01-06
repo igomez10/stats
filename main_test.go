@@ -1924,8 +1924,10 @@ func TestTTestExample(t *testing.T) {
 	t.Logf("Sample 1 Mean: %.4f, StdDev: %.4f", pkg.GetMean(sample1), math.Sqrt(GetVariance(sample1)))
 	t.Logf("Sample 2 Mean: %.4f, StdDev: %.4f", pkg.GetMean(sample2), math.Sqrt(GetVariance(sample2)))
 
+	mean1 := pkg.GetMean(sample1)
+	mean2 := pkg.GetMean(sample2)
 	tStatistic := GetStudentTStatistic(
-		pkg.GetMean(sample1)-pkg.GetMean(sample2),
+		mean1-mean2,
 		0,
 		math.Sqrt(GetVariance(sample1)+GetVariance(sample2)),
 		len(sample1)+len(sample2)-2,
@@ -1934,11 +1936,9 @@ func TestTTestExample(t *testing.T) {
 
 	// get p-value
 	degreesFreedom := len(sample1) + len(sample2) - 2
-	tdistFunction := GetTDistributionFunction(float64(degreesFreedom))
-	pValue := Integrate(-1000, tStatistic, 0.001, tdistFunction)
+	pValue := GetPValueFromTStatistic(tStatistic, float64(degreesFreedom), TwoTailed)
 
 	t.Logf("P-value: %.4f", pValue)
-
 	if pValue > 0.05 {
 		t.Log("Do not reject H0: means are equal")
 	} else {

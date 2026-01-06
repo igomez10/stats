@@ -799,3 +799,19 @@ func GetKFold(observations [][]float64, k int) ([][][]float64, error) {
 
 	return folds, nil
 }
+
+func GetPValueFromTStatistic(tStatistic float64, degreesFreedom float64, testType HypothesisTest) float64 {
+	switch testType {
+	case LeftTailed:
+		return Integrate(-100, tStatistic, 0.001, GetTDistributionFunction(degreesFreedom))
+	case TwoTailed:
+		if tStatistic < 0 {
+			return 2 * Integrate(-100, tStatistic, 0.001, GetTDistributionFunction(degreesFreedom))
+		}
+		return 2 * (1 - Integrate(-100, tStatistic, 0.001, GetTDistributionFunction(degreesFreedom)))
+	case RightTailed:
+		return 1 - Integrate(-100, tStatistic, 0.001, GetTDistributionFunction(degreesFreedom))
+	default:
+		return 0
+	}
+}
