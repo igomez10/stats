@@ -445,7 +445,7 @@ func Test3_6_1(t *testing.T) {
 	t.Log("=== 3.6.1 Exercise ===")
 	// find t value for P(T < 2.228)  with degrees of freedom 10
 	degreesOfFreedom := 10.0
-	tDistributionFunction := GetStudentTDistributionFunction(degreesOfFreedom)
+	tDistributionFunction := GetTDistributionFunction(degreesOfFreedom)
 
 	t.Logf("Integrate(-1000, 2.228, 0.0001, tDistributionFunction): %v", Integrate(-10000, 2.227, 0.001, tDistributionFunction))
 }
@@ -455,7 +455,7 @@ func TestStudentTDistribution(t *testing.T) {
 	// Example parameters for Student's T distribution
 	degreesOfFreedom := 10
 
-	tDistributionFunction := GetStudentTDistributionFunction(float64(degreesOfFreedom))
+	tDistributionFunction := GetTDistributionFunction(float64(degreesOfFreedom))
 	// Example usage of the Student's T distribution PDF
 	t.Log("PDF at x=0:", tDistributionFunction(0))
 	t.Log("PDF at x=1:", tDistributionFunction(1))
@@ -521,7 +521,7 @@ func TestGetStudentTDistributionFunction(t *testing.T) {
 				500,
 				tt.args.probability,
 				0.0001,
-				GetStudentTDistributionFunction(tt.args.degreesOfFreedom),
+				GetTDistributionFunction(tt.args.degreesOfFreedom),
 			)
 			if math.Abs(tscore-tt.want) > 0.01 {
 				t.Errorf("GetStudentTDistributionFunction() = %v, want %v", tscore, tt.want)
@@ -1567,7 +1567,7 @@ func TestSolve465(t *testing.T) {
 	fmt.Printf("T-statistic: %.4f\n", tStatistic)
 
 	// get p-value
-	pValue := Integrate(-1000, tStatistic, 0.001, GetStudentTDistributionFunction(float64(len(diff)-1)))
+	pValue := Integrate(-1000, tStatistic, 0.001, GetTDistributionFunction(float64(len(diff)-1)))
 	fmt.Printf("P-value: %.4f\n", pValue)
 
 	// obtain a point estimate with a 95% confidence interval
@@ -1934,8 +1934,8 @@ func TestTTestExample(t *testing.T) {
 
 	// get p-value
 	degreesFreedom := len(sample1) + len(sample2) - 2
-	tdistFunction := GetStudentTDistributionFunction(float64(degreesFreedom))
-	pValue := Integrate(-1000, tStatistic+0.00001, 0.001, tdistFunction)
+	tdistFunction := GetTDistributionFunction(float64(degreesFreedom))
+	pValue := Integrate(-1000, tStatistic, 0.001, tdistFunction)
 
 	t.Logf("P-value: %.4f", pValue)
 

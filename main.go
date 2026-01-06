@@ -109,10 +109,10 @@ func GetNormalDistributionFunction(mean, stdDev float64) func(float64) float64 {
 	}
 }
 
-// GetStudentTDistributionFunction returns a function that represents the Student's t-distribution
+// GetTDistributionFunction returns a function that represents the Student's t-distribution
 // for simplicity we keep the easy branch for small degrees of freedom and the log-gamma branch for large degrees of freedom
 // we use the log gamma function to avoid overflow issues with large degrees of freedom.
-func GetStudentTDistributionFunction(df float64) func(float64) float64 {
+func GetTDistributionFunction(df float64) func(float64) float64 {
 	if df <= 0 || math.IsNaN(df) || math.IsInf(df, 0) {
 		return func(x float64) float64 { return math.NaN() }
 	}
@@ -176,7 +176,7 @@ func NewStudentTDistributionPDF(degreesOfFreedom, rangeMin, rangeMax float64) *P
 	}
 
 	tDistributionPDF := NewPDF(
-		GetStudentTDistributionFunction(degreesOfFreedom),
+		GetTDistributionFunction(degreesOfFreedom),
 		rangeMin,
 		rangeMax,
 	)
@@ -612,7 +612,7 @@ func GetStandardErrorEmpirical(estimator float64, sampleSize int) float64 {
 }
 
 func GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step float64) float64 {
-	tDistribution := GetStudentTDistributionFunction(degreesOfFreedom)
+	tDistribution := GetTDistributionFunction(degreesOfFreedom)
 	return IntegrateUntilValue(from, to, confidenceLevel, step, tDistribution)
 }
 
