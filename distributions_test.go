@@ -92,12 +92,6 @@ func TestGetRandomSample(t *testing.T) {
 			sampleSize: 5,
 			want:       nil, // TODO: fill in expected output
 		},
-		{
-			name:       "Sample 2 from empty slice",
-			data:       []float64{},
-			sampleSize: 2,
-			want:       nil, // TODO: fill in expected output
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

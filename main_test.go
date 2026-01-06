@@ -1934,7 +1934,7 @@ func TestTTestExample(t *testing.T) {
 
 	// get p-value
 	degreesFreedom := len(sample1) + len(sample2) - 2
-	tdistFunction := GetStudentTPDF(float64(degreesFreedom))
+	tdistFunction := GetStudentTDistributionFunction(float64(degreesFreedom))
 	pValue := Integrate(-1000, tStatistic+0.00001, 0.001, tdistFunction)
 
 	t.Logf("P-value: %.4f", pValue)

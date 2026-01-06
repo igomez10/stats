@@ -109,47 +109,44 @@ func GetNormalDistributionFunction(mean, stdDev float64) func(float64) float64 {
 	}
 }
 
-func GetStudentTDistributionFunction(degreesOfFreedom float64) func(float64) float64 {
-	return func(x float64) float64 {
-		// fx = (Gamma((degreesOfFreedom+1)/2) / (sqrt(degreesOfFreedom*math.Pi) * Gamma(degreesOfFreedom/2))) * (1 + ((x*x)/degreesOfFreedom))^(-(degreesOfFreedom+1)/2)
-		b := math.Pow(1+((x*x)/degreesOfFreedom), -(degreesOfFreedom+1)/2)
-		c := (math.Sqrt(degreesOfFreedom*math.Pi) * math.Gamma(degreesOfFreedom/2))
-		a := (math.Gamma((degreesOfFreedom+1)/2) / c)
-		res := a * b
-		return res
-	}
-}
-
-// GetStudentTPDF returns the Student-t probability density function (PDF)
-// for the given degrees of freedom (df).
-//
-// PDF: f(x) = Γ((df+1)/2) / (sqrt(df*pi) * Γ(df/2)) * (1 + x^2/df)^(-(df+1)/2)
-func GetStudentTPDF(df float64) func(x float64) float64 {
-	// Precompute constants that depend only on df.
+// GetStudentTDistributionFunction returns a function that represents the Student's t-distribution
+// for simplicity we keep the easy branch for small degrees of freedom and the log-gamma branch for large degrees of freedom
+// we use the log gamma function to avoid overflow issues with large degrees of freedom.
+func GetStudentTDistributionFunction(df float64) func(float64) float64 {
 	if df <= 0 || math.IsNaN(df) || math.IsInf(df, 0) {
 		return func(x float64) float64 { return math.NaN() }
 	}
 
-	// logCoeff = log( Γ((df+1)/2) ) - 0.5*log(df*pi) - log( Γ(df/2) )
+	expFactor := -0.5 * (df + 1)
+
+	// Branch 1: small df -> direct Gamma
+	if df <= 30 {
+		den := math.Sqrt(df*math.Pi) * math.Gamma(df/2)
+		num := math.Gamma((df + 1) / 2)
+		coeff := num / den
+
+		return func(x float64) float64 {
+			if math.IsNaN(x) {
+				return math.NaN()
+			}
+			t := (x * x) / df
+			// (1 + t)^expFactor, computed via log1p for better accuracy when t is small.
+			return coeff * math.Exp(expFactor*math.Log1p(t))
+		}
+	}
+
+	// Branch 2: large df -> log-gamma to avoid overflow
 	lg1, _ := math.Lgamma((df + 1) / 2) // log Γ((df+1)/2)
 	lg2, _ := math.Lgamma(df / 2)       // log Γ(df/2)
 	logCoeff := lg1 - 0.5*math.Log(df*math.Pi) - lg2
-
-	// exponent factor: -(df+1)/2
-	expFactor := -0.5 * (df + 1)
 
 	return func(x float64) float64 {
 		if math.IsNaN(x) {
 			return math.NaN()
 		}
-		// logPow = expFactor * log(1 + x^2/df)
-		// Use Log1p for better accuracy when x^2/df is small.
 		t := (x * x) / df
 		logPow := expFactor * math.Log1p(t)
-
-		// log f(x) = logCoeff + logPow
-		logPDF := logCoeff + logPow
-		return math.Exp(logPDF)
+		return math.Exp(logCoeff + logPow)
 	}
 }
 

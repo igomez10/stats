@@ -17,6 +17,9 @@ func (g *Generator) GenerateNormalSamples(mean, stddev float64, n int) []float64
 }
 
 func (g *Generator) GetRandomSample(data []float64, sampleSize int) []float64 {
+	if sampleSize > len(data) {
+		panic("sample size cannot be larger than data size")
+	}
 	sample := make([]float64, sampleSize)
 	dataLen := len(data)
 	for i := range sampleSize {
