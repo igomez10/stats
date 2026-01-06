@@ -2,6 +2,7 @@ package stats_test
 
 import (
 	"math"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/igomez10/stats"
@@ -43,6 +44,11 @@ func TestGenerateNormalSamples(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			src := rand.NewPCG(0, 0)
+			generator := stats.Generator{
+				Random: rand.New(src),
+			}
+			stats := &generator
 			got := stats.GenerateNormalSamples(tt.mean, tt.stddev, tt.n)
 			if len(got) != tt.n {
 				t.Errorf("GenerateNormalSamples() length = %v, want %v", len(got), tt.n)

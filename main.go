@@ -626,6 +626,7 @@ func GetProportionConfidenceInterval(successProbability, sampleSize, confidenceL
 	return lower, upper
 }
 
+// GetTScore returns the t-score for a given degrees of freedom and confidence level
 func GetTScore(degreesOfFreedom, confidenceLevel, from, to, step float64) float64 {
 	if degreesOfFreedom <= 0 {
 		panic("Degrees of freedom must be greater than 0")
@@ -637,6 +638,8 @@ func GetTScore(degreesOfFreedom, confidenceLevel, from, to, step float64) float6
 	return GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step)
 }
 
+// GetStudentTStatistic calculates the t-statistic for a sample
+// t = (sampleMean - populationMean) / (sampleStandardDeviation / sqrt(sampleSize))
 func GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation float64, sampleSize int) float64 {
 	tStatistic := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
 	return tStatistic
