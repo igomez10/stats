@@ -1933,7 +1933,10 @@ func TestTTestExample(t *testing.T) {
 	t.Logf("T-statistic: %.4f", tStatistic)
 
 	// get p-value
-	pValue := Integrate(-1000, tStatistic+0.00001, 0.001, GetStudentTPDF(float64(len(sample1)+len(sample2)-2)))
+	degreesFreedom := len(sample1) + len(sample2) - 2
+	tdistFunction := GetStudentTPDF(float64(degreesFreedom))
+	pValue := Integrate(-1000, tStatistic+0.00001, 0.001, tdistFunction)
+
 	t.Logf("P-value: %.4f", pValue)
 
 	if pValue < 0.05 {
