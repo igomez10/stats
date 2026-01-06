@@ -1966,7 +1966,7 @@ func TestPerformHypothesisTTest(t *testing.T) {
 		want            HypothesisTestResult
 	}{
 		{
-			name:            "case 1 - equal means",
+			name:            "two tailed equal means",
 			sample1:         generator1.GenerateNormalSamples(10, 1, 1000),
 			sample2:         generator2.GenerateNormalSamples(10, 1, 1000),
 			confidenceLevel: 0.95,
@@ -1978,7 +1978,7 @@ func TestPerformHypothesisTTest(t *testing.T) {
 			},
 		},
 		{
-			name:            "case 2 - different means",
+			name:            "two tailed different means",
 			sample1:         generator1.GenerateNormalSamples(10, 1, 1000),
 			sample2:         generator2.GenerateNormalSamples(12, 1, 1000),
 			confidenceLevel: 0.95,
@@ -1989,12 +1989,48 @@ func TestPerformHypothesisTTest(t *testing.T) {
 				RejectNull:   true,
 			},
 		},
+		{
+			name:            "left tailed equal means",
+			sample1:         generator1.GenerateNormalSamples(10, 1, 1000),
+			sample2:         generator2.GenerateNormalSamples(10, 1, 1000),
+			confidenceLevel: 0.95,
+			testType:        LeftTailed,
+			want: HypothesisTestResult{
+				Significance: 0.05,
+				PValue:       0.32692,
+				RejectNull:   false,
+			},
+		},
+		{
+			name:            "right tailed u1 less than u2",
+			sample1:         generator1.GenerateNormalSamples(10, 1, 1000), // smaller
+			sample2:         generator2.GenerateNormalSamples(12, 1, 1000), // larger
+			confidenceLevel: 0.95,
+			testType:        RightTailed,
+			want: HypothesisTestResult{
+				Significance: 0.05,
+				PValue:       0.000005,
+				RejectNull:   false, // do not reject null since u1 < u2
+			},
+		},
+		{
+			name:            "right tailed u1 greater than u2",
+			sample1:         generator1.GenerateNormalSamples(12, 1, 1000), // larger
+			sample2:         generator2.GenerateNormalSamples(10, 1, 1000), // smaller
+			confidenceLevel: 0.95,
+			testType:        RightTailed,
+			want: HypothesisTestResult{
+				Significance: 0.05,
+				PValue:       0.999995,
+				RejectNull:   true, // reject null since u1 > u2
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := PerformHypothesisTTest(tt.sample1, tt.sample2, tt.confidenceLevel, tt.testType)
 			if !got.RejectNull == tt.want.RejectNull {
-				t.Errorf("PerformHypothesisTTest() = %v, want %v", got, tt.want)
+				t.Errorf("PerformHypothesisTTest() = \n%+v\n want \n%+v\n", got, tt.want)
 			}
 		})
 	}
