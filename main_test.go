@@ -3,6 +3,7 @@ package stats
 import (
 	"fmt"
 	"math"
+	"math/rand/v2"
 	"os"
 	"reflect"
 	"testing"
@@ -1897,5 +1898,47 @@ func TestGetKFold(t *testing.T) {
 				t.Errorf("GetKFold() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestTTestExample(t *testing.T) {
+	src := rand.NewPCG(0, 0)
+	generator := Generator{
+		Random: rand.New(src),
+	}
+	totalnums := generator.GenerateNormalSamples(10, 1, 1000000)
+	t.Log("=== T-Test Example ===")
+	g1 := Generator{
+		Random: rand.New(rand.NewPCG(42, 99)),
+	}
+	g2 := Generator{
+		Random: rand.New(rand.NewPCG(99, 1)),
+	}
+	sample1 := g1.GetRandomSample(totalnums, 1000)
+	sample2 := g2.GetRandomSample(totalnums, 1000)
+	// check sum is different
+	if sum(sample1) == sum(sample2) || pkg.GetMean(sample1) == pkg.GetMean(sample2) {
+		t.Error("Samples are equal, which is unlikely")
+	}
+
+	t.Logf("Sample 1 Mean: %.4f, StdDev: %.4f", pkg.GetMean(sample1), math.Sqrt(GetVariance(sample1)))
+	t.Logf("Sample 2 Mean: %.4f, StdDev: %.4f", pkg.GetMean(sample2), math.Sqrt(GetVariance(sample2)))
+
+	tStatistic := GetStudentTStatistic(
+		pkg.GetMean(sample1)-pkg.GetMean(sample2),
+		0,
+		math.Sqrt(GetVariance(sample1)+GetVariance(sample2)),
+		len(sample1)+len(sample2)-2,
+	)
+	t.Logf("T-statistic: %.4f", tStatistic)
+
+	// get p-value
+	pValue := Integrate(-1000, tStatistic+0.00001, 0.001, GetStudentTPDF(float64(len(sample1)+len(sample2)-2)))
+	t.Logf("P-value: %.4f", pValue)
+
+	if pValue < 0.05 {
+		t.Log("Reject H0: means are different")
+	} else {
+		t.Error("Failed to reject H0: means are equal")
 	}
 }

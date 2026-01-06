@@ -65,3 +65,52 @@ func TestGenerateNormalSamples(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRandomSample(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		data       []float64
+		sampleSize int
+		want       []float64
+	}{
+		{
+			name:       "Sample 3 from 5 elements",
+			data:       []float64{1, 2, 3, 4, 5},
+			sampleSize: 3,
+			want:       nil, // TODO: fill in expected output
+		},
+		{
+			name:       "Sample 0 from 5 elements",
+			data:       []float64{1, 2, 3, 4, 5},
+			sampleSize: 0,
+			want:       []float64{},
+		},
+		{
+			name:       "Sample 5 from 5 elements",
+			data:       []float64{1, 2, 3, 4, 5},
+			sampleSize: 5,
+			want:       nil, // TODO: fill in expected output
+		},
+		{
+			name:       "Sample 2 from empty slice",
+			data:       []float64{},
+			sampleSize: 2,
+			want:       nil, // TODO: fill in expected output
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			src := rand.NewPCG(0, 0)
+			generator := stats.Generator{
+				Random: rand.New(src),
+			}
+			stats := &generator
+			got := stats.GetRandomSample(tt.data, tt.sampleSize)
+			if len(got) != tt.sampleSize {
+				t.Errorf("GetRandomSample() length = %v, want %v", len(got), tt.sampleSize)
+			}
+			// Note: Further checks can be added here to validate the contents of 'got' if needed.
+		})
+	}
+}
