@@ -173,3 +173,33 @@ func TestGetBestSplit(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildDecisionTree(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		labels         [][]string
+		minSamplesLeaf int
+		maxDepth       int
+		want           *DecisionTreeNode
+	}{
+		{
+			name: "simple case",
+			labels: [][]string{
+				{"A", "green", "1"},
+				{"A", "yellow", "1"},
+				{"B", "yellow", "0"},
+				{"B", "yellow", "0"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := BuildDecisionTree(tt.labels, tt.minSamplesLeaf, tt.maxDepth)
+			// TODO: update the condition below to compare got with tt.want.
+			if true {
+				t.Errorf("BuildDecisionTree() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -4,19 +4,6 @@ import (
 	"fmt"
 )
 
-type DecisionTreeNode struct {
-	// If the node is a leaf, Value holds the prediction value.
-	Feature string
-	// If the node is not a leaf, Threshold holds the split threshold.
-	Threshold float64
-	// Left child node for values <= Threshold.
-	Left *DecisionTreeNode
-	// Right child node for values > Threshold.
-	Right *DecisionTreeNode
-	// If the node is a leaf, Value holds the prediction value.
-	Value *float64
-}
-
 // GetGiniImpurity calculates the Gini impurity for a list of class labels.
 // formula Gini = 1 - sum(p_i^2) for all classes i
 // where p_i = (number of instances of class i) / (total number of instances)
@@ -71,4 +58,22 @@ func GetBestSplit(labels []string, minSamplesLeaf int) (index int, err error) {
 	}
 
 	return minGiniIndex, nil
+}
+
+type DecisionTreeNode struct {
+	// If the node is a leaf, Value holds the prediction value.
+	Feature string
+	// If the node is not a leaf, Threshold holds the split threshold.
+	Threshold float64
+	// Left child node for values <= Threshold.
+	Left *DecisionTreeNode
+	// Right child node for values > Threshold.
+	Right *DecisionTreeNode
+	// If the node is a leaf, Value holds the prediction value.
+	Value *float64
+}
+
+func BuildDecisionTree(labels [][]string, minSamplesLeaf int, maxDepth int) *DecisionTreeNode {
+
+	return nil
 }
