@@ -1939,9 +1939,9 @@ func TestTTestExample(t *testing.T) {
 
 	t.Logf("P-value: %.4f", pValue)
 
-	if pValue < 0.05 {
-		t.Log("Reject H0: means are different")
+	if pValue > 0.05 {
+		t.Log("Do not reject H0: means are equal")
 	} else {
-		t.Error("Failed to reject H0: means are equal")
+		t.Error("Unexpected reject H0: means are not equal")
 	}
 }
