@@ -1945,3 +1945,57 @@ func TestTTestExample(t *testing.T) {
 		t.Error("Unexpected reject H0: means are not equal")
 	}
 }
+
+func TestPerformHypothesisTTest(t *testing.T) {
+
+	generator1 := Generator{
+		Random: rand.New(rand.NewPCG(0, 0)),
+	}
+
+	generator2 := Generator{
+		Random: rand.New(rand.NewPCG(1, 1)),
+	}
+
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		sample1         []float64
+		sample2         []float64
+		confidenceLevel float64
+		testType        HypothesisTest
+		want            HypothesisTestResult
+	}{
+		{
+			name:            "case 1 - equal means",
+			sample1:         generator1.GenerateNormalSamples(10, 1, 1000),
+			sample2:         generator2.GenerateNormalSamples(10, 1, 1000),
+			confidenceLevel: 0.95,
+			testType:        TwoTailed,
+			want: HypothesisTestResult{
+				Significance: 0.05,
+				PValue:       0.65384,
+				RejectNull:   false,
+			},
+		},
+		{
+			name:            "case 2 - different means",
+			sample1:         generator1.GenerateNormalSamples(10, 1, 1000),
+			sample2:         generator2.GenerateNormalSamples(12, 1, 1000),
+			confidenceLevel: 0.95,
+			testType:        TwoTailed,
+			want: HypothesisTestResult{
+				Significance: 0.05,
+				PValue:       0.00001,
+				RejectNull:   true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := PerformHypothesisTTest(tt.sample1, tt.sample2, tt.confidenceLevel, tt.testType)
+			if !got.RejectNull == tt.want.RejectNull {
+				t.Errorf("PerformHypothesisTTest() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

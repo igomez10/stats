@@ -815,3 +815,40 @@ func GetPValueFromTStatistic(tStatistic float64, degreesFreedom float64, testTyp
 		return 0
 	}
 }
+
+type HypothesisTestResult struct {
+	Significance float64
+	PValue       float64
+	RejectNull   bool
+}
+
+func PerformHypothesisTTest(sample1, sample2 []float64, confidenceLevel float64, testType HypothesisTest) HypothesisTestResult {
+	mean1 := pkg.GetMean(sample1)
+	mean2 := pkg.GetMean(sample2)
+	var1 := GetVariance(sample1)
+	var2 := GetVariance(sample2)
+	n1 := float64(len(sample1))
+	n2 := float64(len(sample2))
+
+	// calculate pooled variance (weighted average of the two variances)
+	degreesFreedom := n1 + n2 - 2
+	pooledVariance := (var1*(n1-1) + var2*(n2-1)) / degreesFreedom
+
+	// Calculate the t-statistic
+	signal := mean1 - mean2
+	noise := math.Sqrt(pooledVariance * ((1 / n1) + (1 / n2)))
+	tStatistic := signal / noise
+
+	// Calculate the p-value
+	pValue := GetPValueFromTStatistic(tStatistic, degreesFreedom, testType)
+
+	// Determine if we reject the null hypothesis
+	significanceLevel := 1 - confidenceLevel
+	rejectNull := pValue < significanceLevel
+
+	return HypothesisTestResult{
+		Significance: significanceLevel,
+		PValue:       pValue,
+		RejectNull:   rejectNull,
+	}
+}
