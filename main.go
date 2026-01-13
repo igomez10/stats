@@ -672,8 +672,9 @@ func GetTScore(degreesOfFreedom, confidenceLevel, from, to, step float64) float6
 	return GetRightTailTScoreFromProbability(confidenceLevel, degreesOfFreedom, from, to, step)
 }
 
-// GetStudentTStatistic calculates the t-statistic for a sample
+// GetStudentTStatistic calculates the t-statistic for one sample
 // t = (sampleMean - populationMean) / (sampleStandardDeviation / sqrt(sampleSize))
+// For two sample t-test, use GetTwoSampleTStatistic
 func GetStudentTStatistic(sampleMean, populationMean, sampleStandardDeviation float64, sampleSize int) float64 {
 	tStatistic := (sampleMean - populationMean) / (sampleStandardDeviation / math.Sqrt(float64(sampleSize)))
 	return tStatistic
@@ -800,6 +801,7 @@ func GetKFold(observations [][]float64, k int) ([][][]float64, error) {
 	return folds, nil
 }
 
+// GetPValueFromTStatistic returns the p-value corresponding to a t-statistic
 func GetPValueFromTStatistic(tStatistic float64, degreesFreedom float64, testType HypothesisTest) float64 {
 	switch testType {
 	case LeftTailed:
@@ -812,16 +814,18 @@ func GetPValueFromTStatistic(tStatistic float64, degreesFreedom float64, testTyp
 	case RightTailed:
 		return 1 - Integrate(-100, tStatistic, 0.001, GetTDistributionFunction(degreesFreedom))
 	default:
-		return 0
+		panic("Invalid test type")
 	}
 }
 
+// HypothesisTestResult represents the result of a hypothesis test
 type HypothesisTestResult struct {
 	Significance float64
 	PValue       float64
 	RejectNull   bool
 }
 
+// PerformHypothesisTTest performs a hypothesis t-test for two samples
 func PerformHypothesisTTest(sample1, sample2 []float64, confidenceLevel float64, testType HypothesisTest) HypothesisTestResult {
 	mean1 := pkg.GetMean(sample1)
 	mean2 := pkg.GetMean(sample2)
@@ -832,12 +836,7 @@ func PerformHypothesisTTest(sample1, sample2 []float64, confidenceLevel float64,
 
 	// calculate pooled variance (weighted average of the two variances)
 	degreesFreedom := n1 + n2 - 2
-	pooledVariance := (var1*(n1-1) + var2*(n2-1)) / degreesFreedom
-
-	// Calculate the t-statistic
-	signal := mean1 - mean2
-	noise := math.Sqrt(pooledVariance * ((1 / n1) + (1 / n2)))
-	tStatistic := signal / noise
+	tStatistic := GetTwoSamplePooledTStatistic(mean1, mean2, var1, var2, int(n1), int(n2))
 
 	// Calculate the p-value
 	pValue := GetPValueFromTStatistic(tStatistic, degreesFreedom, testType)
@@ -851,4 +850,22 @@ func PerformHypothesisTTest(sample1, sample2 []float64, confidenceLevel float64,
 		PValue:       pValue,
 		RejectNull:   rejectNull,
 	}
+}
+
+// GetTwoSamplePooledTStatistic calculates the t-statistic for two samples
+// using the pooled variance method
+// mean1, mean2: means of the two samples
+// variance1, variance2: variances of the two samples
+// n1, n2: sizes of the two samples
+func GetTwoSamplePooledTStatistic(mean1, mean2, variance1, variance2 float64, n1, n2 int) float64 {
+	// Pooled standard deviation
+	pooledVariance := ((float64(n1-1) * variance1) + (float64(n2-1) * variance2)) / float64(n1+n2-2)
+	pooledStdDev := math.Sqrt(pooledVariance)
+
+	// Standard error of the difference
+	seDifference := pooledStdDev * math.Sqrt(1/float64(n1)+1/float64(n2))
+
+	// t-statistic
+	tStatistic := (mean1 - mean2) / seDifference
+	return tStatistic
 }

@@ -2035,3 +2035,46 @@ func TestPerformHypothesisTTest(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTwoSamplePooledTStatistic(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		mean1     float64
+		mean2     float64
+		variance1 float64
+		variance2 float64
+		n1        int
+		n2        int
+		want      float64
+	}{
+		{
+			name:      "example 1",
+			mean1:     4.9162,
+			mean2:     3.0518,
+			variance1: 0.9634 * 0.9634,
+			variance2: 0.9950 * 0.9950,
+			n1:        500,
+			n2:        500,
+			want:      30.1010,
+		},
+		{
+			name:      "example 2",
+			mean1:     100,
+			mean2:     90,
+			variance1: 15 * 15,
+			variance2: 20 * 20,
+			n1:        30,
+			n2:        30,
+			want:      2.1908,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetTwoSamplePooledTStatistic(tt.mean1, tt.mean2, tt.variance1, tt.variance2, tt.n1, tt.n2)
+			if math.Abs(got-tt.want) > 1e-4 {
+				t.Errorf("GetTwoSamplePooledTStatistic() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
