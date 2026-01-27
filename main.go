@@ -896,13 +896,14 @@ func SVD(matrix [][]float64) ([][]float64, [][]float64, [][]float64) {
 		diagonalScaling[i][i] = singularValues[i]
 	}
 
-	// compute V by finding the eigenvectors of AtA
-	vectors := linearalgebra.GetEigenvectors(AtA)
-	V := make([][]float64, len(vectors))
-	for i := range vectors {
-		V[i] = make([]float64, len(vectors))
-		for j := range vectors {
-			V[i][j] = real(vectors[i][j])
+	// compute V by finding the eigenvectorsImaginary of AtA
+	// go from imaginary to real
+	eigenvectorsImaginary := linearalgebra.GetEigenvectors(AtA)
+	EigenVectorMatrix := make([][]float64, len(eigenvectorsImaginary))
+	for i := range eigenvectorsImaginary {
+		EigenVectorMatrix[i] = make([]float64, len(eigenvectorsImaginary))
+		for j := range eigenvectorsImaginary {
+			EigenVectorMatrix[i][j] = real(eigenvectorsImaginary[i][j])
 		}
 	}
 
@@ -919,8 +920,8 @@ func SVD(matrix [][]float64) ([][]float64, [][]float64, [][]float64) {
 		}
 	}
 
-	AV := linearalgebra.DotProduct(matrix, V)
+	AV := linearalgebra.DotProduct(matrix, EigenVectorMatrix)
 	U := linearalgebra.DotProduct(AV, SInv)
 
-	return U, diagonalScaling, V
+	return U, diagonalScaling, EigenVectorMatrix
 }
