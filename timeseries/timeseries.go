@@ -1,6 +1,10 @@
 package timeseries
 
-import "math"
+import (
+	"math"
+
+	"github.com/igomez10/stats/pkg"
+)
 
 // GetTrend returns the trend of the given data
 func GetTrend(data []float64, window int) []float64 {
@@ -26,6 +30,52 @@ func GetTrend(data []float64, window int) []float64 {
 			counter -= 0.5 * data[i+half]
 		}
 		res[i] = counter / float64(window)
+	}
+	return res
+}
+
+// GetSeasonality returns the seasonal component of the given data using additive decomposition
+func GetSeasonality(originalData []float64, windowSize int) []float64 {
+	trend := GetTrend(originalData, windowSize)
+
+	// Detrend
+	detrended := make([]float64, len(originalData))
+	for i := range originalData {
+		if math.IsNaN(trend[i]) {
+			detrended[i] = math.NaN()
+		} else {
+			detrended[i] = originalData[i] - trend[i]
+		}
+	}
+
+	// Average each seasonal position
+	seasonalAvg := make([]float64, windowSize)
+	counts := make([]int, windowSize)
+	for i := range detrended {
+		if math.IsNaN(detrended[i]) {
+			continue
+		}
+
+		indexInWindow := i % windowSize
+		seasonalAvg[indexInWindow] += detrended[i]
+		counts[indexInWindow]++
+	}
+	for k := 0; k < windowSize; k++ {
+		if counts[k] > 0 {
+			seasonalAvg[k] /= float64(counts[k])
+		}
+	}
+
+	// Normalize so seasonal averages sum to zero
+	grandMean := pkg.GetMean(seasonalAvg)
+	for k := 0; k < windowSize; k++ {
+		seasonalAvg[k] -= grandMean
+	}
+
+	// Tile
+	res := make([]float64, len(originalData))
+	for i := range res {
+		res[i] = seasonalAvg[i%windowSize]
 	}
 	return res
 }

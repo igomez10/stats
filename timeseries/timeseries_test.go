@@ -64,16 +64,32 @@ func TestGetSeasonality(t *testing.T) {
 
 	testcases := []testcase{
 		{
-			name:     "simple moving average",
+			name:   "periodic data with linear trend window 4",
+			data:   []float64{2, 3, 5, 2, 3, 4, 6, 3, 4, 5, 7, 4},
+			window: 4,
+			expected: []float64{
+				-0.625, 0.125, 1.875, -1.375,
+				-0.625, 0.125, 1.875, -1.375,
+				-0.625, 0.125, 1.875, -1.375,
+			},
+		},
+		{
+			name:     "constant data has zero seasonality",
+			data:     []float64{5, 5, 5, 5, 5, 5, 5, 5, 5},
+			window:   3,
+			expected: []float64{0, 0, 0, 0, 0, 0, 0, 0, 0},
+		},
+		{
+			name:     "linear data has zero seasonality",
 			data:     []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 			window:   3,
-			expected: []float64{math.NaN(), 2, 3, 4, 5, 6, 7, 8, 9, math.NaN()},
+			expected: []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := GetTrend(tc.data, tc.window)
+			result := GetSeasonality(tc.data, tc.window)
 			for i := range result {
 				if diff := math.Abs(result[i] - tc.expected[i]); diff > 0.01 {
 					t.Errorf("index %d", i)
