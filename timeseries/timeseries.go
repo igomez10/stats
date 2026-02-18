@@ -7,13 +7,26 @@ import (
 )
 
 // GetTrend returns the trend of the given data
-func GetTrend(data []float64, window int) []float64 {
+// The trend is calculated using a centered moving average with
+// the specified window size. The first and last floor(window/2) values will be NaN.
+func GetTrend(data []float64, window int, useCenter bool) []float64 {
 	if len(data) < window {
 		panic("invalid window size cannot be larger than data length")
 	}
 	res := make([]float64, len(data))
 	for i := range res {
 		res[i] = math.NaN()
+	}
+
+	if !useCenter {
+		for i := window - 1; i < len(data); i++ {
+			counter := 0.0
+			for j := 0; j < window; j++ {
+				counter += data[i-j]
+			}
+			res[i] = counter / float64(window)
+		}
+		return res
 	}
 
 	half := window / 2
@@ -35,9 +48,7 @@ func GetTrend(data []float64, window int) []float64 {
 }
 
 // GetSeasonality returns the seasonal component of the given data using additive decomposition
-func GetSeasonality(originalData []float64, windowSize int) []float64 {
-	trend := GetTrend(originalData, windowSize)
-
+func GetSeasonality(originalData, trend []float64, windowSize int) []float64 {
 	// Detrend
 	detrended := make([]float64, len(originalData))
 	for i := range originalData {
