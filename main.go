@@ -346,12 +346,16 @@ func FindCriticalPoint(fx func(float64) float64, start, end, step float64) *floa
 // This function assumes the data is normally distributed
 // It returns the mean of the data as the MLE
 // If the data is empty, it panics
-func GetMaximumLikelihoodNormal(data []float64) float64 {
+func GetMaximumLikelihoodNormal(data []float64) (mean float64, stdDev float64) {
 	if len(data) == 0 {
 		panic("Data cannot be empty")
 	}
 
-	return pkg.GetMean(data)
+	mean = pkg.GetMean(data)
+
+	variance := pkg.GetSampleVariance(data)
+	stdDev = math.Sqrt(variance)
+	return
 }
 
 // GetMin returns the minimum value in a slice of float64
