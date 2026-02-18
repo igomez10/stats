@@ -318,12 +318,14 @@ func TestDecomposeMultiplicative(t *testing.T) {
 		// Named input parameters for target function.
 		data       []float64
 		windowSize int
+		useCenter  bool
 		want       DecompositionResult
 	}{
 		{
 			name:       "decompose simple linear data",
 			data:       []float64{1, 2, 3, 4, 5},
 			windowSize: 3,
+			useCenter:  true,
 			want: DecompositionResult{
 				Trend:       []float64{math.NaN(), 2, 3, 4, math.NaN()},
 				Seasonality: []float64{1, 1, 1, 1, 1},
@@ -334,16 +336,42 @@ func TestDecomposeMultiplicative(t *testing.T) {
 			name:       "decompose data with linear trend and seasonality",
 			data:       []float64{2, 3, 5, 2, 3},
 			windowSize: 3,
+			useCenter:  true,
 			want: DecompositionResult{
 				Trend:       []float64{math.NaN(), 10.0 / 3, 10.0 / 3, 10.0 / 3, math.NaN()},
 				Seasonality: []float64{0.6, 0.9, 1.5, 0.6, 0.9},
 				Residuals:   []float64{math.NaN(), 1, 1, 1, math.NaN()},
 			},
 		},
+		{
+			// trend is constant 5, seasonal averages all 1, residuals all 1
+			name:       "decompose constant data",
+			data:       []float64{5, 5, 5, 5, 5, 5, 5},
+			windowSize: 3,
+			useCenter:  false,
+			want: DecompositionResult{
+				Trend:       []float64{math.NaN(), math.NaN(), 5, 5, 5, 5, 5},
+				Seasonality: []float64{1, 1, 1, 1, 1, 1, 1},
+				Residuals:   []float64{math.NaN(), math.NaN(), 1, 1, 1, 1, 1},
+			},
+		},
+		{
+			// data[i] = trend * seasonal[i%3], with trend=3 and seasonal=[1/3, 1, 5/3]
+			// each window of 3 sums to 9, so trailing MA is constant 3
+			name:       "decompose multiple full periods with clear seasonality",
+			useCenter:  false,
+			data:       []float64{1, 3, 5, 1, 3, 5, 1, 3, 5},
+			windowSize: 3,
+			want: DecompositionResult{
+				Trend:       []float64{math.NaN(), math.NaN(), 3, 3, 3, 3, 3, 3, 3},
+				Seasonality: []float64{1.0 / 3, 1, 5.0 / 3, 1.0 / 3, 1, 5.0 / 3, 1.0 / 3, 1, 5.0 / 3},
+				Residuals:   []float64{math.NaN(), math.NaN(), 1, 1, 1, 1, 1, 1, 1},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := DecomposeMultiplicative(tt.data, tt.windowSize)
+			got := DecomposeMultiplicative(tt.data, tt.windowSize, tt.useCenter)
 			for i := range got.Trend {
 				if diff := math.Abs(got.Trend[i] - tt.want.Trend[i]); diff > 0.01 {
 					t.Errorf("index %d", i)

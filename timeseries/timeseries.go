@@ -150,8 +150,8 @@ func DecomposeAdditive(data []float64, windowSize int, useCenter bool) Decomposi
 	}
 }
 
-func DecomposeMultiplicative(data []float64, windowSize int) DecompositionResult {
-	trend := GetTrend(data, windowSize, true)
+func DecomposeMultiplicative(data []float64, windowSize int, useCenter bool) DecompositionResult {
+	trend := GetTrend(data, windowSize, useCenter)
 	residuals := make([]float64, len(data))
 	detrended := detrend(data, trend, MultiplicativeDecomposition)
 	seasonality := GetSeasonality(detrended, windowSize, MultiplicativeDecomposition)
