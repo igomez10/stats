@@ -103,3 +103,31 @@ func detrend(data []float64, trend []float64) []float64 {
 	}
 	return detrended
 }
+
+// DecompositionResult holds the result of the additive and multiplicative decomposition of a time series
+type DecompositionResult struct {
+	Trend       []float64
+	Seasonality []float64
+	Residuals   []float64
+}
+
+// DecomposeAdditive performs additive decomposition of the given time series data using the specified window size for trend estimation
+func DecomposeAdditive(data []float64, windowSize int, useCenter bool) DecompositionResult {
+	trend := GetTrend(data, windowSize, useCenter)
+	seasonality := GetSeasonality(data, trend, windowSize)
+	residuals := make([]float64, len(data))
+
+	detrended := detrend(data, trend)
+	for i := range data {
+		if math.IsNaN(detrended[i]) {
+			residuals[i] = math.NaN()
+		} else {
+			residuals[i] = detrended[i] - seasonality[i]
+		}
+	}
+	return DecompositionResult{
+		Trend:       trend,
+		Seasonality: seasonality,
+		Residuals:   residuals,
+	}
+}
