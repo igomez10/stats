@@ -90,3 +90,16 @@ func GetSeasonality(originalData, trend []float64, windowSize int) []float64 {
 	}
 	return res
 }
+
+// detrend returns the detrended data by subtracting the trend from the original data
+func detrend(data []float64, trend []float64) []float64 {
+	detrended := make([]float64, len(data))
+	for i := range data {
+		if math.IsNaN(trend[i]) {
+			detrended[i] = math.NaN()
+		} else {
+			detrended[i] = data[i] - trend[i]
+		}
+	}
+	return detrended
+}

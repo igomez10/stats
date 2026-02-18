@@ -122,3 +122,47 @@ func TestGetSeasonality(t *testing.T) {
 		})
 	}
 }
+
+func Test_detrend(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		data  []float64
+		trend []float64
+		want  []float64
+	}{
+		{
+			name:  "detrend simple linear data",
+			data:  []float64{1, 2, 3, 4, 5},
+			trend: []float64{1, 2, 3, 4, 5},
+			want:  []float64{0, 0, 0, 0, 0},
+		},
+		{
+			name:  "detrend data with linear trend and seasonality",
+			data:  []float64{2, 3, 5, 2, 3},
+			trend: []float64{1, 2, 3, 4, 5},
+			want:  []float64{1, 1, 2, -2, -2},
+		},
+		{
+			name:  "detrend data with missing trend values",
+			data:  []float64{2, 3, 5, 2, 3},
+			trend: []float64{math.NaN(), 2, math.NaN(), 4, math.NaN()},
+			want:  []float64{math.NaN(), 1, math.NaN(), -2, math.NaN()},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := detrend(tt.data, tt.trend)
+			for i := range got {
+				if diff := math.Abs(got[i] - tt.want[i]); diff > 0.01 {
+					t.Errorf("index %d", i)
+					t.Errorf("value %f", tt.want[i])
+					t.Errorf("diff, %f", diff)
+					t.Errorf("value %f", got[i])
+					t.Error("expected:", tt.want)
+					t.Error("got:", got)
+				}
+			}
+		})
+	}
+}
