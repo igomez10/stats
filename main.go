@@ -945,3 +945,42 @@ func Logit(x float64) float64 {
 	}
 	return math.Log(x / (1 - x))
 }
+
+// LogisticRegression performs logistic regression using gradient descent
+// X is the input data, where each row is a sample and each column is a feature
+// y is the target variable, which should be binary (0 or 1)
+func LogisticRegression(X [][]float64, y []float64, learningRate float64, iterations int) []float64 {
+	if len(X) == 0 || len(X) != len(y) {
+		panic("X and y must have the same number of samples and cannot be empty")
+	}
+
+	nRows := len(X)
+	nCols := len(X[0])
+	coefficients := make([]float64, nCols)
+
+	// perform gradient descent to optimize the coefficients
+	for iter := 0; iter < iterations; iter++ {
+		// for each sample, calculate the predicted value and update the weights
+		for irow := 0; irow < nRows; irow++ {
+			// calculate the predicted value using the current coefficients
+			sumBeforeSigmoid := 0.0
+
+			// calculate the linear combination of the features and coefficients
+			for jcol := 0; jcol < nCols; jcol++ {
+				//																 betaI * xI
+				sumBeforeSigmoid += coefficients[jcol] * X[irow][jcol]
+			}
+
+			// apply the sigmoid function to get the predicted probability
+			yPredicted := Sigmoid(sumBeforeSigmoid)
+
+			errorI := yPredicted - y[irow]
+			// update each coefficient based on the error and the feature value
+			for jcol := 0; jcol < nCols; jcol++ {
+				coefficients[jcol] -= learningRate * errorI * X[irow][jcol]
+			}
+		}
+	}
+
+	return coefficients
+}

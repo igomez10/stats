@@ -2185,3 +2185,138 @@ func TestLogit(t *testing.T) {
 		})
 	}
 }
+
+func TestLogisticRegression(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		X            [][]float64
+		y            []float64
+		learningRate float64
+		iterations   int
+		want         []float64
+	}{
+		{
+			name: "case 1",
+			X: [][]float64{
+				{1, 2},
+				{2, 3},
+				{3, 4},
+				{4, 5},
+			},
+			y:            []float64{0, 0, 1, 1},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{2.6879, -1.7818},
+		},
+		{
+			name: "case 2",
+			X: [][]float64{
+				{1, 1},
+				{2, 2},
+				{3, 3},
+				{4, 4},
+			},
+			y:            []float64{0, 0, 1, 1},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{0.1553, 0.1553},
+		},
+		{
+			name: "case 3",
+			X: [][]float64{
+				{1, 0},
+				{0, 1},
+				{1, 1},
+				{0, 0},
+			},
+			y:            []float64{0, 0, 1, 0},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{0.0033, 0.0033},
+		},
+		{
+			// Single feature: positive correlation between x and y
+			name:         "single feature positive correlation",
+			X:            [][]float64{{1}, {2}, {3}, {4}},
+			y:            []float64{0, 0, 1, 1},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{0.2991},
+		},
+		{
+			// Negative correlation: first feature decreases as label goes 0→1,
+			// second increases; weights should have opposite signs
+			name: "negative and positive feature correlation",
+			X: [][]float64{
+				{4, 1},
+				{3, 2},
+				{2, 3},
+				{1, 4},
+			},
+			y:            []float64{0, 0, 1, 1},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{-2.4138, 2.4159},
+		},
+		{
+			// Three features: third column is constant so its weight diverges
+			// from zero differently than the informative first two
+			name: "three features",
+			X: [][]float64{
+				{1, 2, 5},
+				{2, 3, 5},
+				{3, 4, 5},
+				{4, 5, 5},
+			},
+			y:            []float64{0, 0, 1, 1},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{2.2373, 1.7701, -2.3357},
+		},
+		{
+			// All labels are 1: weights should be driven positive
+			name: "all positive labels",
+			X: [][]float64{
+				{1, 1},
+				{2, 2},
+				{3, 3},
+				{4, 4},
+			},
+			y:            []float64{1, 1, 1, 1},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{1.6076, 1.6076},
+		},
+		{
+			// Larger dataset: lower samples in bottom-left → 0, upper-right → 1
+			name: "larger dataset",
+			X: [][]float64{
+				{1, 1},
+				{1, 2},
+				{2, 1},
+				{2, 2},
+				{3, 3},
+				{3, 4},
+				{4, 3},
+				{4, 4},
+			},
+			y:            []float64{0, 0, 0, 0, 1, 1, 1, 1},
+			learningRate: 0.01,
+			iterations:   1000,
+			want:         []float64{0.1585, 0.1744},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := LogisticRegression(tt.X, tt.y, tt.learningRate, tt.iterations)
+			for i := range got {
+				if math.Abs(got[i]-tt.want[i]) > 1e-2 {
+					t.Errorf("LogisticRegression() = %v, want %v", got, tt.want)
+					return
+				}
+			}
+		})
+	}
+}
