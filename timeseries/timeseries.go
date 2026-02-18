@@ -68,13 +68,13 @@ func GetSeasonality(detrended []float64, windowSize int, dtype DecompositionType
 	}
 
 	switch dtype {
-	case Additive:
+	case AdditiveDecomposition:
 		// Center the seasonal component by subtracting the mean of the seasonal averages
 		mean := pkg.GetMean(seasonalAvg)
 		for i := range seasonalAvg {
 			seasonalAvg[i] -= mean
 		}
-	case Multiplicative:
+	case MultiplicativeDecomposition:
 		// Center the seasonal component by dividing by the mean of the seasonal averages
 		mean := pkg.GetMean(seasonalAvg)
 		for i := range seasonalAvg {
@@ -98,8 +98,8 @@ func GetSeasonality(detrended []float64, windowSize int, dtype DecompositionType
 type DecompositionType int
 
 const (
-	Additive DecompositionType = iota
-	Multiplicative
+	AdditiveDecomposition DecompositionType = iota
+	MultiplicativeDecomposition
 )
 
 // detrend returns the detrended data by subtracting the trend from the original data
@@ -110,10 +110,10 @@ func detrend(data []float64, trend []float64, dtype DecompositionType) []float64
 			detrended[i] = math.NaN()
 		} else {
 			switch dtype {
-			case Additive:
+			case AdditiveDecomposition:
 				// detrended is the original data minus the trend
 				detrended[i] = data[i] - trend[i]
-			case Multiplicative:
+			case MultiplicativeDecomposition:
 				// detrended is the original data divided by the trend
 				detrended[i] = data[i] / trend[i]
 			}
@@ -132,8 +132,8 @@ type DecompositionResult struct {
 // DecomposeAdditive performs additive decomposition of the given time series data using the specified window size for trend estimation
 func DecomposeAdditive(data []float64, windowSize int, useCenter bool) DecompositionResult {
 	trend := GetTrend(data, windowSize, useCenter)
-	detrended := detrend(data, trend, Additive)
-	seasonality := GetSeasonality(detrended, windowSize, Additive)
+	detrended := detrend(data, trend, AdditiveDecomposition)
+	seasonality := GetSeasonality(detrended, windowSize, AdditiveDecomposition)
 	residuals := make([]float64, len(data))
 
 	for i := range data {
@@ -153,8 +153,8 @@ func DecomposeAdditive(data []float64, windowSize int, useCenter bool) Decomposi
 func DecomposeMultiplicative(data []float64, windowSize int) DecompositionResult {
 	trend := GetTrend(data, windowSize, true)
 	residuals := make([]float64, len(data))
-	detrended := detrend(data, trend, Multiplicative)
-	seasonality := GetSeasonality(detrended, windowSize, Multiplicative)
+	detrended := detrend(data, trend, MultiplicativeDecomposition)
+	seasonality := GetSeasonality(detrended, windowSize, MultiplicativeDecomposition)
 	for i := range data {
 		if math.IsNaN(detrended[i]) {
 			seasonality[i] = math.NaN()
