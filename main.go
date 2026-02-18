@@ -930,8 +930,7 @@ func SVD(matrix [][]float64) ([][]float64, [][]float64, [][]float64) {
 	return U, diagonalScaling, EigenVectorMatrix
 }
 
-// Sigmoid is the activation function used in logistic regression and neural networks
-// It maps any real-valued number into the (0, 1) interval, making it useful for modeling probabilities
+// Sigmoid maps any real-valued number into the (0, 1)
 // The sigmoid is the opposite of the logit function.
 func Sigmoid(x float64) float64 {
 	return 1 / (1 + math.Exp(-x))
@@ -977,7 +976,8 @@ func LogisticRegression(X [][]float64, y []float64, learningRate float64, iterat
 			errorI := yPredicted - y[irow]
 			// update each coefficient based on the error and the feature value
 			for jcol := 0; jcol < nCols; jcol++ {
-				coefficients[jcol] -= learningRate * errorI * X[irow][jcol]
+				errorCorrection := learningRate * errorI
+				coefficients[jcol] -= errorCorrection * X[irow][jcol]
 			}
 		}
 	}
