@@ -77,6 +77,7 @@ func TestGetSeasonality(t *testing.T) {
 		name     string
 		data     []float64
 		window   int
+		dtype    DecompositionType
 		expected []float64
 	}
 
@@ -85,6 +86,7 @@ func TestGetSeasonality(t *testing.T) {
 			name:   "periodic data with linear trend window 4",
 			data:   []float64{2, 3, 5, 2, 3, 4, 6, 3, 4, 5, 7, 4},
 			window: 4,
+			dtype:  Additive,
 			expected: []float64{
 				-0.625, 0.125, 1.875, -1.375,
 				-0.625, 0.125, 1.875, -1.375,
@@ -95,20 +97,37 @@ func TestGetSeasonality(t *testing.T) {
 			name:     "constant data has zero seasonality",
 			data:     []float64{5, 5, 5, 5, 5, 5, 5, 5, 5},
 			window:   3,
+			dtype:    Additive,
 			expected: []float64{0, 0, 0, 0, 0, 0, 0, 0, 0},
 		},
 		{
 			name:     "linear data has zero seasonality",
 			data:     []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 			window:   3,
+			dtype:    Additive,
 			expected: []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		},
+		{
+			name:     "periodic data with linear trend multiplicative",
+			data:     []float64{2, 3, 5, 2, 3, 4, 6, 3, 4, 5, 7, 4},
+			window:   4,
+			dtype:    Multiplicative,
+			expected: []float64{0.8375, 1.0184, 1.5116, 0.6326, 0.8375, 1.0184, 1.5116, 0.6326, 0.8375, 1.0184, 1.5116, 0.6326},
+		},
+		{
+			name:     "constant data has unit seasonality",
+			data:     []float64{5, 5, 5, 5, 5, 5, 5, 5, 5},
+			window:   3,
+			dtype:    Multiplicative,
+			expected: []float64{1, 1, 1, 1, 1, 1, 1, 1, 1},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			trend := GetTrend(tc.data, tc.window, true)
-			result := GetSeasonality(tc.data, trend, tc.window)
+			detrended := detrend(tc.data, trend, tc.dtype)
+			result := GetSeasonality(detrended, tc.window, tc.dtype)
 			for i := range result {
 				if diff := math.Abs(result[i] - tc.expected[i]); diff > 0.01 {
 					t.Errorf("index %d", i)
@@ -129,30 +148,48 @@ func Test_detrend(t *testing.T) {
 		// Named input parameters for target function.
 		data  []float64
 		trend []float64
+		dtype DecompositionType
 		want  []float64
 	}{
 		{
 			name:  "detrend simple linear data",
 			data:  []float64{1, 2, 3, 4, 5},
 			trend: []float64{1, 2, 3, 4, 5},
+			dtype: Additive,
 			want:  []float64{0, 0, 0, 0, 0},
 		},
 		{
 			name:  "detrend data with linear trend and seasonality",
 			data:  []float64{2, 3, 5, 2, 3},
 			trend: []float64{1, 2, 3, 4, 5},
+			dtype: Additive,
 			want:  []float64{1, 1, 2, -2, -2},
 		},
 		{
 			name:  "detrend data with missing trend values",
 			data:  []float64{2, 3, 5, 2, 3},
 			trend: []float64{math.NaN(), 2, math.NaN(), 4, math.NaN()},
+			dtype: Additive,
 			want:  []float64{math.NaN(), 1, math.NaN(), -2, math.NaN()},
+		},
+		{
+			name:  "detrend simple linear data multiplicative",
+			data:  []float64{1, 2, 3, 4, 5},
+			trend: []float64{1, 2, 3, 4, 5},
+			dtype: Multiplicative,
+			want:  []float64{1, 1, 1, 1, 1},
+		},
+		{
+			name:  "detrend data with linear trend and seasonality multiplicative",
+			data:  []float64{2, 3, 5, 2, 3},
+			trend: []float64{1, 2, 3, 4, 5},
+			dtype: Multiplicative,
+			want:  []float64{2, 1.5, 1.6666666666666667, 0.5, 0.6},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := detrend(tt.data, tt.trend)
+			got := detrend(tt.data, tt.trend, tt.dtype)
 			for i := range got {
 				if diff := math.Abs(got[i] - tt.want[i]); diff > 0.01 {
 					t.Errorf("index %d", i)
@@ -241,6 +278,72 @@ func TestDecomposeAdditive(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := DecomposeAdditive(tt.data, tt.windowSize, tt.useCenter)
+			for i := range got.Trend {
+				if diff := math.Abs(got.Trend[i] - tt.want.Trend[i]); diff > 0.01 {
+					t.Errorf("index %d", i)
+					t.Errorf("value %f", tt.want.Trend[i])
+					t.Errorf("diff, %f", diff)
+					t.Errorf("value %f", got.Trend[i])
+					t.Error("expected:", tt.want.Trend)
+					t.Error("got:", got.Trend)
+				}
+			}
+			for i := range got.Seasonality {
+				if diff := math.Abs(got.Seasonality[i] - tt.want.Seasonality[i]); diff > 0.01 {
+					t.Errorf("index %d", i)
+					t.Errorf("value %f", tt.want.Seasonality[i])
+					t.Errorf("diff, %f", diff)
+					t.Errorf("value %f", got.Seasonality[i])
+					t.Error("expected:", tt.want.Seasonality)
+					t.Error("got:", got.Seasonality)
+				}
+			}
+			for i := range got.Residuals {
+				if diff := math.Abs(got.Residuals[i] - tt.want.Residuals[i]); diff > 0.01 {
+					t.Errorf("index %d", i)
+					t.Errorf("value %f", tt.want.Residuals[i])
+					t.Errorf("diff, %f", diff)
+					t.Errorf("value %f", got.Residuals[i])
+					t.Error("expected:", tt.want.Residuals)
+					t.Error("got:", got.Residuals)
+				}
+			}
+		})
+	}
+}
+
+func TestDecomposeMultiplicative(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		data       []float64
+		windowSize int
+		want       DecompositionResult
+	}{
+		{
+			name:       "decompose simple linear data",
+			data:       []float64{1, 2, 3, 4, 5},
+			windowSize: 3,
+			want: DecompositionResult{
+				Trend:       []float64{math.NaN(), 2, 3, 4, math.NaN()},
+				Seasonality: []float64{1, 1, 1, 1, 1},
+				Residuals:   []float64{math.NaN(), 1, 1, 1, math.NaN()},
+			},
+		},
+		{
+			name:       "decompose data with linear trend and seasonality",
+			data:       []float64{2, 3, 5, 2, 3},
+			windowSize: 3,
+			want: DecompositionResult{
+				Trend:       []float64{math.NaN(), 10.0 / 3, 10.0 / 3, 10.0 / 3, math.NaN()},
+				Seasonality: []float64{0.6, 0.9, 1.5, 0.6, 0.9},
+				Residuals:   []float64{math.NaN(), 1, 1, 1, math.NaN()},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DecomposeMultiplicative(tt.data, tt.windowSize)
 			for i := range got.Trend {
 				if diff := math.Abs(got.Trend[i] - tt.want.Trend[i]); diff > 0.01 {
 					t.Errorf("index %d", i)
