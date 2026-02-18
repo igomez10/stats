@@ -2143,3 +2143,45 @@ func TestSVD(t *testing.T) {
 		})
 	}
 }
+
+func TestSigmoid(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		x    float64
+		want float64
+	}{
+		{name: "case 1", x: 0, want: 0.5},
+		{name: "case 2", x: 1, want: 0.7311},
+		{name: "case 3", x: -1, want: 0.2689},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Sigmoid(tt.x)
+			if math.Abs(got-tt.want) > 1e-4 {
+				t.Errorf("Sigmoid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLogit(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		x    float64
+		want float64
+	}{
+		{name: "case 1", x: 0.5, want: 0},
+		{name: "case 2", x: 0.7311, want: 1},
+		{name: "case 3", x: 0.2689, want: -1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Logit(tt.x)
+			if math.Abs(got-tt.want) > 1e-3 {
+				t.Errorf("Logit() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

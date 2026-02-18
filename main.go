@@ -929,3 +929,19 @@ func SVD(matrix [][]float64) ([][]float64, [][]float64, [][]float64) {
 
 	return U, diagonalScaling, EigenVectorMatrix
 }
+
+// Sigmoid is the activation function used in logistic regression and neural networks
+// It maps any real-valued number into the (0, 1) interval, making it useful for modeling probabilities
+// The sigmoid is the opposite of the logit function.
+func Sigmoid(x float64) float64 {
+	return 1 / (1 + math.Exp(-x))
+}
+
+// Logit is the inverse of the sigmoid function,
+// it maps a probability in the (0, 1) interval back to the real numbers
+func Logit(x float64) float64 {
+	if x <= 0 || x >= 1 {
+		panic("Input to logit function must be in the range (0, 1)")
+	}
+	return math.Log(x / (1 - x))
+}
