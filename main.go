@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/igomez10/linearalgebra"
 	"github.com/igomez10/stats/pkg"
 )
 
@@ -873,61 +872,6 @@ func GetTwoSamplePooledTStatistic(mean1, mean2, variance1, variance2 float64, n1
 	// t-statistic
 	tStatistic := (mean1 - mean2) / seDifference
 	return tStatistic
-}
-
-// SVD performs Singular Value Decomposition on a matrix A
-// It returns matrices U, S, and V such that A = U * S * V^T
-func SVD(matrix [][]float64) ([][]float64, [][]float64, [][]float64) {
-	// compute AtA to find eigenvalues
-	AtA := linearalgebra.DotProduct(matrix, matrix)
-	eigenValues := linearalgebra.GetEigenvalues(AtA)
-	singularValues := make([]float64, len(eigenValues))
-	for i, val := range eigenValues {
-		if real(val) < 0 {
-			singularValues[i] = 0
-		} else {
-			singularValues[i] = math.Sqrt(real(val))
-		}
-	}
-
-	// create diagonal matrix S with singular values
-	diagonalScaling := make([][]float64, len(singularValues))
-	// fill with 0s
-	for i := range diagonalScaling {
-		diagonalScaling[i] = make([]float64, len(singularValues))
-	}
-	for i := range singularValues {
-		diagonalScaling[i][i] = singularValues[i]
-	}
-
-	// compute V by finding the eigenvectorsImaginary of AtA
-	// go from imaginary to real
-	eigenvectorsImaginary := linearalgebra.GetEigenvectors(AtA)
-	EigenVectorMatrix := make([][]float64, len(eigenvectorsImaginary))
-	for i := range eigenvectorsImaginary {
-		EigenVectorMatrix[i] = make([]float64, len(eigenvectorsImaginary))
-		for j := range eigenvectorsImaginary {
-			EigenVectorMatrix[i][j] = real(eigenvectorsImaginary[i][j])
-		}
-	}
-
-	// compute U as A * V * S^-1
-	SInv := make([][]float64, len(diagonalScaling))
-	for i := range diagonalScaling {
-		SInv[i] = make([]float64, len(diagonalScaling))
-		for j := range diagonalScaling {
-			if diagonalScaling[i][j] != 0 {
-				SInv[i][j] = 1 / diagonalScaling[i][j]
-			} else {
-				SInv[i][j] = 0
-			}
-		}
-	}
-
-	AV := linearalgebra.DotProduct(matrix, EigenVectorMatrix)
-	U := linearalgebra.DotProduct(AV, SInv)
-
-	return U, diagonalScaling, EigenVectorMatrix
 }
 
 // Sigmoid maps any real-valued number into the (0, 1)
