@@ -1637,3 +1637,77 @@ func TestGetF1Score(t *testing.T) {
 		})
 	}
 }
+
+func TestGetClassificationMetrics(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		predictedProbs []float64
+		trueLabels     []bool
+		threshold      float64
+		want           ClassificationMetrics
+	}{
+		{
+			name:           "simple-case",
+			predictedProbs: []float64{0.9, 0.8, 0.2, 0.1},
+			trueLabels:     []bool{true, true, false, false},
+			threshold:      0.5,
+			want: ClassificationMetrics{
+				Accuracy:  1.0,
+				Precision: 1.0,
+				Recall:    1.0,
+				F1Score:   1.0,
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  2,
+					TrueNegatives:  2,
+					FalsePositives: 0,
+					FalseNegatives: 0,
+				},
+			},
+		},
+		{
+			name:           "mixed-case",
+			predictedProbs: []float64{0.9, 0.8, 0.2, 0.1},
+			trueLabels:     []bool{true, false, false, false},
+			threshold:      0.5,
+			want: ClassificationMetrics{
+				Accuracy:  0.75,
+				Precision: 1.0,
+				Recall:    0.5,
+				F1Score:   2.0 / 3.0,
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  1,
+					TrueNegatives:  2,
+					FalsePositives: 0,
+					FalseNegatives: 1,
+				},
+			},
+		},
+		{
+			name:           "worst-case",
+			predictedProbs: []float64{0.9, 0.8, 0.2, 0.1},
+			trueLabels:     []bool{false, false, true, true},
+			threshold:      0.5,
+			want: ClassificationMetrics{
+				Accuracy:  0.0,
+				Precision: 0.0,
+				Recall:    0.0,
+				F1Score:   0.0,
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  0,
+					TrueNegatives:  0,
+					FalsePositives: 2,
+					FalseNegatives: 2,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetClassificationMetrics(tt.predictedProbs, tt.trueLabels, tt.threshold)
+			if math.Abs(got.Accuracy-tt.want.Accuracy) > 1e-6 {
+				t.Errorf("GetClassificationMetrics() Accuracy = %v, want %v", got.Accuracy, tt.want.Accuracy)
+			}
+		})
+	}
+}

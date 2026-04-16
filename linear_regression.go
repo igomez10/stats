@@ -528,8 +528,7 @@ func sigmoid(z float64) float64 {
 	return 1 / (1 + math.Exp(-z))
 }
 
-// Predict returns the predicted probability of the positive class for a given input vector xInput. It computes the logit as a linear combination of the input features and the model coefficients, then applies the sigmoid function to map it to a probability between 0 and 1.
-func (m LogisticModel) Predict(xInput []float64) float64 {
+func (m LogisticModel) PredictLogOdds(xInput []float64) float64 {
 	if len(xInput)+1 != len(m.Betas) {
 		panic("Incompatible input length")
 	}
@@ -538,6 +537,11 @@ func (m LogisticModel) Predict(xInput []float64) float64 {
 	logit := linearalgebra.DotProduct([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
 	logitValue := logit[0][0] + m.Betas[0]
 	return sigmoid(logitValue)
+}
+
+func (m LogisticModel) PredictBinary(xInput []float64, threshold float64) bool {
+	prob := m.PredictLogOdds(xInput)
+	return prob >= threshold
 }
 
 type ConfusionMatrix struct {
@@ -556,14 +560,14 @@ type ClassificationMetrics struct {
 }
 
 // GetClassificationMetrics computes accuracy, precision, recall, and F1 score for a logistic regression model given the true labels and predicted probabilities. It uses a threshold of 0.5 to convert predicted probabilities into binary class predictions.
-func GetClassificationMetrics(model LogisticModel, inputFeatures [][]float64, trueLabels []bool, threshold float64) ClassificationMetrics {
-	if len(inputFeatures) != len(trueLabels) {
-		panic("Incompatible lengths between observations and actual output")
+func GetClassificationMetrics(predictedProbs []float64, trueLabels []bool, threshold float64) ClassificationMetrics {
+	if len(predictedProbs) != len(trueLabels) {
+		panic("Incompatible lengths between predicted probabilities and true labels")
 	}
 
 	var truePositives, trueNegatives, falsePositives, falseNegatives float64
 	for i := range trueLabels {
-		prob := model.Predict(inputFeatures[i])
+		prob := predictedProbs[i]
 		predicted := false
 		if prob >= threshold {
 			predicted = true
