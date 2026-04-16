@@ -1292,3 +1292,348 @@ func TestFitModelGradientDescent(t *testing.T) {
 		})
 	}
 }
+
+func TestLogisticModel_Predict(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		xInput []float64
+		want   float64
+		Betas  []float64
+	}{
+		{
+			name:   "simple-1-feature",
+			xInput: []float64{4},
+			want:   0.9820137900379085, // sigmoid(4) = 1 / (1 + exp(-4))
+			Betas:  []float64{0, 1},
+		},
+		{
+			name:   "two-features",
+			xInput: []float64{3, 4},
+			want:   0.9990889488055994, // sigmoid(3 + 4) = sigmoid(7)
+			Betas:  []float64{0, 1, 1},
+		},
+		{
+			name:   "three-features",
+			xInput: []float64{10, 0, 9},
+			want:   0.9999999943972036, // sigmoid(10 + 0 + 9) = sigmoid(19)
+			Betas:  []float64{0, 1, 1, 1},
+		},
+		{
+			name:   "four-features",
+			xInput: []float64{1, 2, 3, 4},
+			want:   0.9999546021312976, // sigmoid(1 + 2 + 3 + 4) = sigmoid(10)
+			Betas:  []float64{0, 1, 1, 1, 1},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// TODO: construct the receiver type.
+			m := LogisticModel{Betas: tt.Betas}
+			got := m.Predict(tt.xInput)
+			if math.Abs(got-tt.want) > 1e-6 {
+				t.Errorf("LogisticModel.Predict() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetClassificationMetrics(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		model         LogisticModel
+		inputFeatures [][]float64
+		trueLabels    []bool
+		threshold     float64
+		want          ClassificationMetrics
+	}{
+		{
+			// sigmoid(0)=0.5 >= threshold=0.5 → predicted true → FP for label false
+			// sigmoid(1)≈0.731 >= 0.5 → FP; sigmoid(2,3) → TP; result: TP=2,TN=0,FP=2,FN=0
+			name:  "simple-case",
+			model: LogisticModel{Betas: []float64{0, 1}},
+			inputFeatures: [][]float64{
+				{0},
+				{1},
+				{2},
+				{3},
+			},
+			trueLabels: []bool{false, false, true, true},
+			threshold:  0.5,
+			want: ClassificationMetrics{
+				Accuracy:  0.5,
+				Precision: 0.5,
+				Recall:    1.0,
+				F1Score:   2.0 / 3.0,
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  2,
+					FalsePositives: 2,
+					TrueNegatives:  0,
+					FalseNegatives: 0,
+				},
+			},
+		},
+		{
+			name:  "threshold-case",
+			model: LogisticModel{Betas: []float64{0, 1}},
+			inputFeatures: [][]float64{
+				{0},
+				{1},
+				{2},
+				{3},
+			},
+			trueLabels: []bool{false, false, true, true},
+			threshold:  0.8,
+			want: ClassificationMetrics{
+				Accuracy:  1.0,
+				Precision: 1.0,
+				Recall:    1.0,
+				F1Score:   1.0,
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  2,
+					FalsePositives: 0,
+					TrueNegatives:  2,
+					FalseNegatives: 0,
+				},
+			},
+		},
+		{
+			// threshold=0.8: sigmoid(0)=0.5 and sigmoid(1)≈0.731 are below → predicted false
+			// sigmoid(2)≈0.881, sigmoid(3)≈0.953, sigmoid(4)≈0.982 are above → predicted true
+			// labels: false true false true true → TN FN FP TP TP
+			name:  "mixed-tp-tn-fp-fn",
+			model: LogisticModel{Betas: []float64{0, 1}},
+			inputFeatures: [][]float64{
+				{0},
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			trueLabels: []bool{false, true, false, true, true},
+			threshold:  0.8,
+			want: ClassificationMetrics{
+				Accuracy:  3.0 / 5.0,
+				Precision: 2.0 / 3.0,
+				Recall:    2.0 / 3.0,
+				F1Score:   GetF1Score(2.0/3.0, 2.0/3.0),
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  2,
+					TrueNegatives:  1,
+					FalsePositives: 1,
+					FalseNegatives: 1,
+				},
+			},
+		},
+		{
+			// betas {-5, 2}: decision boundary at x=2.5 (sigmoid(-5+2x)=0.5 when x=2.5)
+			// sigmoid(-5)≈0.007, sigmoid(-3)≈0.047, sigmoid(-1)≈0.269 < 0.5 → false
+			// sigmoid(1)≈0.731, sigmoid(3)≈0.953 > 0.5 → true
+			name:  "non-zero-intercept-perfect-classification",
+			model: LogisticModel{Betas: []float64{-5, 2}},
+			inputFeatures: [][]float64{
+				{0},
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			trueLabels: []bool{false, false, false, true, true},
+			threshold:  0.5,
+			want: ClassificationMetrics{
+				Accuracy:  1.0,
+				Precision: 1.0,
+				Recall:    1.0,
+				F1Score:   1.0,
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  2,
+					TrueNegatives:  3,
+					FalsePositives: 0,
+					FalseNegatives: 0,
+				},
+			},
+		},
+		{
+			// threshold=0.97: sigmoid(0)=0.5, sigmoid(1)≈0.731, sigmoid(3)≈0.953 all < 0.97
+			// sigmoid(4)≈0.982 >= 0.97 → only x=4 predicted true
+			// labels false false true true → TN TN FN TP
+			name:  "high-threshold-high-precision-low-recall",
+			model: LogisticModel{Betas: []float64{0, 1}},
+			inputFeatures: [][]float64{
+				{0},
+				{1},
+				{3},
+				{4},
+			},
+			trueLabels: []bool{false, false, true, true},
+			threshold:  0.97,
+			want: ClassificationMetrics{
+				Accuracy:  3.0 / 4.0,
+				Precision: 1.0,
+				Recall:    0.5,
+				F1Score:   GetF1Score(1.0, 0.5),
+				ConfusionMatrix: ConfusionMatrix{
+					TruePositives:  1,
+					TrueNegatives:  2,
+					FalsePositives: 0,
+					FalseNegatives: 1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetClassificationMetrics(tt.model, tt.inputFeatures, tt.trueLabels, tt.threshold)
+			const tol = 1e-9
+			if math.Abs(got.Accuracy-tt.want.Accuracy) > tol ||
+				math.Abs(got.Precision-tt.want.Precision) > tol ||
+				math.Abs(got.Recall-tt.want.Recall) > tol ||
+				math.Abs(got.F1Score-tt.want.F1Score) > tol ||
+				got.ConfusionMatrix != tt.want.ConfusionMatrix {
+				t.Errorf("GetClassificationMetrics() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAccuracy(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		truePositive  float64
+		trueNegative  float64
+		falsePositive float64
+		falseNegative float64
+		want          float64
+	}{
+		{
+			name:          "simple-case",
+			truePositive:  2,
+			trueNegative:  0,
+			falsePositive: 2,
+			falseNegative: 0,
+			want:          0.5, // (TP+TN) / (TP+TN+FP+FN) = (2+0)/(2+0+2+0)
+		},
+		{
+			name:          "perfect-case",
+			truePositive:  3,
+			trueNegative:  4,
+			falsePositive: 0,
+			falseNegative: 0,
+			want:          1.0, // (3+4)/(3+4+0+0)
+		},
+		{
+			name:          "worst-case",
+			truePositive:  0,
+			trueNegative:  0,
+			falsePositive: 5,
+			falseNegative: 5,
+			want:          0.0, // (0+0)/(0+0+5+5)
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetAccuracy(tt.truePositive, tt.trueNegative, tt.falsePositive, tt.falseNegative)
+			if math.Abs(got-tt.want) > 1e-6 {
+				t.Errorf("GetAccuracy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetPrecision(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		truePositive  float64
+		falsePositive float64
+		want          float64
+	}{
+		{
+			name:          "simple-case",
+			truePositive:  2,
+			falsePositive: 2,
+			want:          0.5, // TP / (TP + FP) = 2/(2+2)
+		},
+		{
+			name:          "perfect-case",
+			truePositive:  3,
+			falsePositive: 0,
+			want:          1.0, // 3/(3+0)
+		},
+		{
+			name:          "worst-case",
+			truePositive:  0,
+			falsePositive: 5,
+			want:          0.0, // 0/(0+5)
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetPrecision(tt.truePositive, tt.falsePositive)
+			if math.Abs(got-tt.want) > 1e-6 {
+				t.Errorf("GetPrecision() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetRecall(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		truePositive  float64
+		falseNegative float64
+		want          float64
+	}{
+		{
+			name:          "simple-case",
+			truePositive:  2,
+			falseNegative: 0,
+			want:          1.0, // TP / (TP + FN) = 2/(2+0)
+		},
+		{
+			name:          "perfect-case",
+			truePositive:  3,
+			falseNegative: 0,
+			want:          1.0, // 3/(3+0)
+		},
+		{
+			name:          "worst-case",
+			truePositive:  0,
+			falseNegative: 5,
+			want:          0.0, // 0/(0+5)
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetRecall(tt.truePositive, tt.falseNegative)
+			if math.Abs(got-tt.want) > 1e-6 {
+				t.Errorf("GetRecall() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetF1Score(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		precision float64
+		recall    float64
+		want      float64
+	}{
+		{name: "simple-case", precision: 0.5, recall: 1.0, want: 2.0 / 3.0},
+		{name: "perfect-case", precision: 1.0, recall: 1.0, want: 1.0},
+		{name: "worst-case", precision: 0.0, recall: 0.0, want: 0.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetF1Score(tt.precision, tt.recall)
+			if math.Abs(got-tt.want) > 1e-6 {
+				t.Errorf("GetF1Score() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -518,3 +518,100 @@ func FitModelGradientDescentNumerical(observations [][]float64, actualOutput []f
 
 	return model
 }
+
+// LogisticModel is a logistic regression model that can be used for binary classification tasks. It models the probability of the positive class as a logistic function of a linear combination of the input features.
+type LogisticModel struct {
+	Betas []float64
+}
+
+func sigmoid(z float64) float64 {
+	return 1 / (1 + math.Exp(-z))
+}
+
+// Predict returns the predicted probability of the positive class for a given input vector xInput. It computes the logit as a linear combination of the input features and the model coefficients, then applies the sigmoid function to map it to a probability between 0 and 1.
+func (m LogisticModel) Predict(xInput []float64) float64 {
+	if len(xInput)+1 != len(m.Betas) {
+		panic("Incompatible input length")
+	}
+
+	betasNoIntercept := m.Betas[1:]
+	logit := linearalgebra.DotProduct([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
+	logitValue := logit[0][0] + m.Betas[0]
+	return sigmoid(logitValue)
+}
+
+type ConfusionMatrix struct {
+	TruePositives  float64
+	TrueNegatives  float64
+	FalsePositives float64
+	FalseNegatives float64
+}
+
+type ClassificationMetrics struct {
+	Accuracy        float64
+	Precision       float64
+	Recall          float64
+	F1Score         float64
+	ConfusionMatrix ConfusionMatrix
+}
+
+// GetClassificationMetrics computes accuracy, precision, recall, and F1 score for a logistic regression model given the true labels and predicted probabilities. It uses a threshold of 0.5 to convert predicted probabilities into binary class predictions.
+func GetClassificationMetrics(model LogisticModel, inputFeatures [][]float64, trueLabels []bool, threshold float64) ClassificationMetrics {
+	if len(inputFeatures) != len(trueLabels) {
+		panic("Incompatible lengths between observations and actual output")
+	}
+
+	var truePositives, trueNegatives, falsePositives, falseNegatives float64
+	for i := range trueLabels {
+		prob := model.Predict(inputFeatures[i])
+		predicted := false
+		if prob >= threshold {
+			predicted = true
+		}
+
+		if predicted == true && trueLabels[i] == true {
+
+			truePositives++
+		} else if predicted == false && trueLabels[i] == false {
+			trueNegatives++
+		} else if predicted == true && trueLabels[i] == false {
+			falsePositives++
+		} else if predicted == false && trueLabels[i] == true {
+			falseNegatives++
+		}
+	}
+
+	accuracy := GetAccuracy(truePositives, trueNegatives, falsePositives, falseNegatives)
+	precision := GetPrecision(truePositives, falsePositives)
+	recall := GetRecall(truePositives, falseNegatives)
+	f1Score := GetF1Score(precision, recall)
+
+	return ClassificationMetrics{
+		Accuracy:  accuracy,
+		Precision: precision,
+		Recall:    recall,
+		F1Score:   f1Score,
+		ConfusionMatrix: ConfusionMatrix{
+			TruePositives:  truePositives,
+			TrueNegatives:  trueNegatives,
+			FalsePositives: falsePositives,
+			FalseNegatives: falseNegatives,
+		},
+	}
+}
+
+func GetAccuracy(truePositive, trueNegative, falsePositive, falseNegative float64) float64 {
+	return (truePositive + trueNegative) / (truePositive + trueNegative + falsePositive + falseNegative)
+}
+
+func GetPrecision(truePositive, falsePositive float64) float64 {
+	return truePositive / (truePositive + falsePositive)
+}
+
+func GetRecall(truePositive, falseNegative float64) float64 {
+	return truePositive / (truePositive + falseNegative)
+}
+
+func GetF1Score(precision, recall float64) float64 {
+	return 2 * (precision * recall) / (precision + recall)
+}
