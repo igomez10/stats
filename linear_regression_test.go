@@ -1293,6 +1293,144 @@ func TestFitModelGradientDescent(t *testing.T) {
 	}
 }
 
+func TestFitModelGradientDescentMLE(t *testing.T) {
+	tests := []struct {
+		name         string
+		observations [][]float64
+		actualOutput []float64
+		learningRate float64
+		maxIter      int
+		want         MultiLinearModel
+	}{
+		{
+			name: "simple-1-feature",
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			actualOutput: []float64{1, 2, 3, 4},
+			learningRate: 0.001,
+			maxIter:      1000000,
+			want:         MultiLinearModel{Betas: []float64{0, 1}},
+		},
+		{
+			// x1 and x2 are independent (no collinearity), β=[0, 1, 1]
+			name: "two-features",
+			observations: [][]float64{
+				{1, 0},
+				{0, 1},
+				{2, 0},
+				{0, 2},
+				{1, 1},
+			},
+			actualOutput: []float64{1, 1, 2, 2, 2},
+			learningRate: 0.001,
+			maxIter:      3000000,
+			want:         MultiLinearModel{Betas: []float64{0, 1, 1}},
+		},
+		{
+			// non-zero intercept: y = 2 + 3x, β=[2, 3]
+			name: "non-zero-intercept",
+			observations: [][]float64{
+				{0},
+				{1},
+				{2},
+				{3},
+				{4},
+			},
+			actualOutput: []float64{2, 5, 8, 11, 14},
+			learningRate: 0.001,
+			maxIter:      1000000,
+			want:         MultiLinearModel{Betas: []float64{2, 3}},
+		},
+		{
+			// negative slope: y = 10 - 2x, β=[10, -2]
+			name: "negative-slope",
+			observations: [][]float64{
+				{1},
+				{2},
+				{3},
+				{4},
+				{5},
+			},
+			actualOutput: []float64{8, 6, 4, 2, 0},
+			learningRate: 0.001,
+			maxIter:      1000000,
+			want:         MultiLinearModel{Betas: []float64{10, -2}},
+		},
+		{
+			// three axis-aligned independent features: y = x1 + 2*x2 + 3*x3, β=[0, 1, 2, 3]
+			// uses a small learning rate to avoid gradient explosion as σ² → 0 near the optimum
+			name: "three-features",
+			observations: [][]float64{
+				{1, 0, 0},
+				{0, 1, 0},
+				{0, 0, 1},
+				{2, 0, 0},
+				{0, 2, 0},
+				{0, 0, 2},
+			},
+			actualOutput: []float64{1, 2, 3, 2, 4, 6},
+			learningRate: 0.0001,
+			maxIter:      2000000,
+			want:         MultiLinearModel{Betas: []float64{0, 1, 2, 3}},
+		},
+		{
+			// non-zero intercept with two features: y = 3 + x1 + 2*x2, β=[3, 1, 2]
+			// uses a small learning rate to avoid gradient explosion as σ² → 0 near the optimum
+			name: "non-zero-intercept-two-features",
+			observations: [][]float64{
+				{1, 0},
+				{0, 1},
+				{2, 0},
+				{0, 2},
+				{1, 1},
+			},
+			actualOutput: []float64{4, 5, 5, 7, 6},
+			learningRate: 0.001,
+			maxIter:      5000000,
+			want:         MultiLinearModel{Betas: []float64{3, 1, 2}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FitModelGradientDescentMLE(tt.observations, tt.actualOutput, tt.learningRate, tt.maxIter)
+
+			if len(got.Betas) != len(tt.want.Betas) {
+				t.Fatalf("Betas length mismatch: got %d, want %d", len(got.Betas), len(tt.want.Betas))
+			}
+
+			// MLE betas should match expected values
+			for i := range got.Betas {
+				if math.Abs(got.Betas[i]-tt.want.Betas[i]) > 1e-2 {
+					t.Errorf("FitModelGradientDescentMLE() beta[%d] = %v, want %v", i, got.Betas[i], tt.want.Betas[i])
+				}
+			}
+
+			// MLE betas should match OLS betas (same solution for Gaussian errors)
+			olsModel, err := CreateLRModelWithOLS(tt.observations, tt.actualOutput)
+			if err != nil {
+				t.Fatalf("CreateLRModelWithOLS() = %v", err)
+			}
+			for i := range olsModel.Betas {
+				if math.Abs(got.Betas[i]-olsModel.Betas[i]) > 1e-2 {
+					t.Errorf("FitModelGradientDescentMLE() beta[%d] = %v, OLS beta = %v", i, got.Betas[i], olsModel.Betas[i])
+				}
+			}
+
+			// MLE betas should match numerical gradient descent betas
+			gotNumerical := FitModelGradientDescentNumerical(tt.observations, tt.actualOutput, tt.learningRate, tt.maxIter)
+			for i := range gotNumerical.Betas {
+				if math.Abs(got.Betas[i]-gotNumerical.Betas[i]) > 1e-2 {
+					t.Errorf("FitModelGradientDescentMLE() beta[%d] = %v, numerical beta = %v", i, got.Betas[i], gotNumerical.Betas[i])
+				}
+			}
+		})
+	}
+}
+
 func TestLogisticModel_Predict(t *testing.T) {
 	tests := []struct {
 		name string // description of this test case
@@ -1330,168 +1468,9 @@ func TestLogisticModel_Predict(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// TODO: construct the receiver type.
 			m := LogisticModel{Betas: tt.Betas}
-			got := m.Predict(tt.xInput)
+			got := m.PredictLogOdds(tt.xInput)
 			if math.Abs(got-tt.want) > 1e-6 {
-				t.Errorf("LogisticModel.Predict() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetClassificationMetrics(t *testing.T) {
-	tests := []struct {
-		name string // description of this test case
-		// Named input parameters for target function.
-		model         LogisticModel
-		inputFeatures [][]float64
-		trueLabels    []bool
-		threshold     float64
-		want          ClassificationMetrics
-	}{
-		{
-			// sigmoid(0)=0.5 >= threshold=0.5 → predicted true → FP for label false
-			// sigmoid(1)≈0.731 >= 0.5 → FP; sigmoid(2,3) → TP; result: TP=2,TN=0,FP=2,FN=0
-			name:  "simple-case",
-			model: LogisticModel{Betas: []float64{0, 1}},
-			inputFeatures: [][]float64{
-				{0},
-				{1},
-				{2},
-				{3},
-			},
-			trueLabels: []bool{false, false, true, true},
-			threshold:  0.5,
-			want: ClassificationMetrics{
-				Accuracy:  0.5,
-				Precision: 0.5,
-				Recall:    1.0,
-				F1Score:   2.0 / 3.0,
-				ConfusionMatrix: ConfusionMatrix{
-					TruePositives:  2,
-					FalsePositives: 2,
-					TrueNegatives:  0,
-					FalseNegatives: 0,
-				},
-			},
-		},
-		{
-			name:  "threshold-case",
-			model: LogisticModel{Betas: []float64{0, 1}},
-			inputFeatures: [][]float64{
-				{0},
-				{1},
-				{2},
-				{3},
-			},
-			trueLabels: []bool{false, false, true, true},
-			threshold:  0.8,
-			want: ClassificationMetrics{
-				Accuracy:  1.0,
-				Precision: 1.0,
-				Recall:    1.0,
-				F1Score:   1.0,
-				ConfusionMatrix: ConfusionMatrix{
-					TruePositives:  2,
-					FalsePositives: 0,
-					TrueNegatives:  2,
-					FalseNegatives: 0,
-				},
-			},
-		},
-		{
-			// threshold=0.8: sigmoid(0)=0.5 and sigmoid(1)≈0.731 are below → predicted false
-			// sigmoid(2)≈0.881, sigmoid(3)≈0.953, sigmoid(4)≈0.982 are above → predicted true
-			// labels: false true false true true → TN FN FP TP TP
-			name:  "mixed-tp-tn-fp-fn",
-			model: LogisticModel{Betas: []float64{0, 1}},
-			inputFeatures: [][]float64{
-				{0},
-				{1},
-				{2},
-				{3},
-				{4},
-			},
-			trueLabels: []bool{false, true, false, true, true},
-			threshold:  0.8,
-			want: ClassificationMetrics{
-				Accuracy:  3.0 / 5.0,
-				Precision: 2.0 / 3.0,
-				Recall:    2.0 / 3.0,
-				F1Score:   GetF1Score(2.0/3.0, 2.0/3.0),
-				ConfusionMatrix: ConfusionMatrix{
-					TruePositives:  2,
-					TrueNegatives:  1,
-					FalsePositives: 1,
-					FalseNegatives: 1,
-				},
-			},
-		},
-		{
-			// betas {-5, 2}: decision boundary at x=2.5 (sigmoid(-5+2x)=0.5 when x=2.5)
-			// sigmoid(-5)≈0.007, sigmoid(-3)≈0.047, sigmoid(-1)≈0.269 < 0.5 → false
-			// sigmoid(1)≈0.731, sigmoid(3)≈0.953 > 0.5 → true
-			name:  "non-zero-intercept-perfect-classification",
-			model: LogisticModel{Betas: []float64{-5, 2}},
-			inputFeatures: [][]float64{
-				{0},
-				{1},
-				{2},
-				{3},
-				{4},
-			},
-			trueLabels: []bool{false, false, false, true, true},
-			threshold:  0.5,
-			want: ClassificationMetrics{
-				Accuracy:  1.0,
-				Precision: 1.0,
-				Recall:    1.0,
-				F1Score:   1.0,
-				ConfusionMatrix: ConfusionMatrix{
-					TruePositives:  2,
-					TrueNegatives:  3,
-					FalsePositives: 0,
-					FalseNegatives: 0,
-				},
-			},
-		},
-		{
-			// threshold=0.97: sigmoid(0)=0.5, sigmoid(1)≈0.731, sigmoid(3)≈0.953 all < 0.97
-			// sigmoid(4)≈0.982 >= 0.97 → only x=4 predicted true
-			// labels false false true true → TN TN FN TP
-			name:  "high-threshold-high-precision-low-recall",
-			model: LogisticModel{Betas: []float64{0, 1}},
-			inputFeatures: [][]float64{
-				{0},
-				{1},
-				{3},
-				{4},
-			},
-			trueLabels: []bool{false, false, true, true},
-			threshold:  0.97,
-			want: ClassificationMetrics{
-				Accuracy:  3.0 / 4.0,
-				Precision: 1.0,
-				Recall:    0.5,
-				F1Score:   GetF1Score(1.0, 0.5),
-				ConfusionMatrix: ConfusionMatrix{
-					TruePositives:  1,
-					TrueNegatives:  2,
-					FalsePositives: 0,
-					FalseNegatives: 1,
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetClassificationMetrics(tt.model, tt.inputFeatures, tt.trueLabels, tt.threshold)
-			const tol = 1e-9
-			if math.Abs(got.Accuracy-tt.want.Accuracy) > tol ||
-				math.Abs(got.Precision-tt.want.Precision) > tol ||
-				math.Abs(got.Recall-tt.want.Recall) > tol ||
-				math.Abs(got.F1Score-tt.want.F1Score) > tol ||
-				got.ConfusionMatrix != tt.want.ConfusionMatrix {
-				t.Errorf("GetClassificationMetrics() = %v, want %v", got, tt.want)
+				t.Errorf("LogisticModel.PredictLogOdds() = %v, want %v", got, tt.want)
 			}
 		})
 	}

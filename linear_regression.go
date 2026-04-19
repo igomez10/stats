@@ -519,6 +519,59 @@ func FitModelGradientDescentNumerical(observations [][]float64, actualOutput []f
 	return model
 }
 
+// FitModelGradientDescentMLE fits a multi linear regression model using gradient descent
+// by maximizing the Gaussian log-likelihood via numerical gradient approximation (finite differences).
+// It jointly optimizes the regression coefficients and the noise variance σ², parameterizing
+// σ² as exp(logσ²) to keep it strictly positive.
+func FitModelGradientDescentMLE(observations [][]float64, actualOutput []float64, learningRate float64, maxIter int) MultiLinearModel {
+	n := len(actualOutput)
+	numBetas := len(observations[0]) + 1
+
+	// params = [beta_0, beta_1, ..., beta_p, log(σ²)]
+	// log(σ²) is optimized instead of σ² directly to keep σ² > 0
+	params := make([]float64, numBetas+1)
+	params[numBetas] = 0.0 // initial log(σ²) = 0 → σ² = 1
+
+	const smallStep = 1e-5
+
+	// Negative log-likelihood (dropping the constant (n/2)*log(2π)):
+	// NLL = (n/2)*log(σ²) + SSE / (2σ²)
+	computeNLL := func(p []float64) float64 {
+		logSigma2 := p[numBetas]
+		sigma2 := math.Exp(logSigma2)
+		sse := 0.0
+		for i := range actualOutput {
+			yHat := p[0]
+			for j := 1; j < numBetas; j++ {
+				yHat += observations[i][j-1] * p[j]
+			}
+			err := yHat - actualOutput[i]
+			sse += err * err
+		}
+		return float64(n)/2.0*logSigma2 + sse/(2.0*sigma2)
+	}
+
+	for range maxIter {
+		gradients := make([]float64, len(params))
+
+		for j := range params {
+			original := params[j]
+			// GetDerivativeAtX uses central differences: (f(x+h) - f(x-h)) / (2h)
+			gradients[j] = GetDerivativeAtX(original, smallStep, func(v float64) float64 {
+				params[j] = v
+				return computeNLL(params)
+			})
+			params[j] = original // restore after the two evaluations
+		}
+
+		for j := range params {
+			params[j] -= learningRate * gradients[j]
+		}
+	}
+
+	return MultiLinearModel{Betas: params[:numBetas]}
+}
+
 // LogisticModel is a logistic regression model that can be used for binary classification tasks. It models the probability of the positive class as a logistic function of a linear combination of the input features.
 type LogisticModel struct {
 	Betas []float64
@@ -574,7 +627,6 @@ func GetClassificationMetrics(predictedProbs []float64, trueLabels []bool, thres
 		}
 
 		if predicted == true && trueLabels[i] == true {
-
 			truePositives++
 		} else if predicted == false && trueLabels[i] == false {
 			trueNegatives++
@@ -602,6 +654,90 @@ func GetClassificationMetrics(predictedProbs []float64, trueLabels []bool, thres
 			FalseNegatives: falseNegatives,
 		},
 	}
+}
+
+func GetTruePositives(predictedProbs []float64, trueLabels []bool, threshold float64) float64 {
+	if len(predictedProbs) != len(trueLabels) {
+		panic("Incompatible lengths between predicted probabilities and true labels")
+	}
+
+	var truePositives float64
+	for i := range trueLabels {
+		prob := predictedProbs[i]
+		predicted := false
+		if prob >= threshold {
+			predicted = true
+		}
+
+		if predicted == true && trueLabels[i] == true {
+			truePositives++
+		}
+	}
+
+	return truePositives
+}
+
+func GetTrueNegatives(predictedProbs []float64, trueLabels []bool, threshold float64) float64 {
+	if len(predictedProbs) != len(trueLabels) {
+		panic("Incompatible lengths between predicted probabilities and true labels")
+	}
+
+	var trueNegatives float64
+	for i := range trueLabels {
+		prob := predictedProbs[i]
+		predicted := false
+		if prob >= threshold {
+			predicted = true
+		}
+
+		if predicted == false && trueLabels[i] == false {
+			trueNegatives++
+		}
+	}
+
+	return trueNegatives
+}
+
+func GetFalsePositives(predictedProbs []float64, trueLabels []bool, threshold float64) float64 {
+	if len(predictedProbs) != len(trueLabels) {
+		panic("Incompatible lengths between predicted probabilities and true labels")
+	}
+
+	var falsePositives float64
+	for i := range trueLabels {
+		prob := predictedProbs[i]
+		predicted := false
+		if prob >= threshold {
+			predicted = true
+		}
+
+		if predicted == true && trueLabels[i] == false {
+			falsePositives++
+		}
+	}
+
+	return falsePositives
+}
+
+func GetFalseNegatives(predictedProbs []float64, trueLabels []bool, threshold float64) float64 {
+	if len(predictedProbs) != len(trueLabels) {
+		panic("Incompatible lengths between predicted probabilities and true labels")
+	}
+
+	var falseNegatives float64
+	for i := range trueLabels {
+		prob := predictedProbs[i]
+		predicted := false
+		if prob >= threshold {
+			predicted = true
+		}
+
+		if predicted == false && trueLabels[i] == true {
+			falseNegatives++
+		}
+	}
+
+	return falseNegatives
 }
 
 func GetAccuracy(truePositive, trueNegative, falsePositive, falseNegative float64) float64 {
