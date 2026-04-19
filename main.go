@@ -928,3 +928,38 @@ func LogisticRegression(X [][]float64, y []float64, learningRate float64, iterat
 
 	return coefficients
 }
+
+type Kernel struct {
+	matrix [][]float64
+}
+
+func NewKernel(matrix [][]float64) *Kernel {
+	if len(matrix) == 0 || len(matrix[0]) == 0 {
+		panic("Kernel matrix cannot be empty")
+	}
+	if len(matrix) != len(matrix[0]) {
+		panic("Kernel matrix must be square")
+	}
+	return &Kernel{
+		matrix: matrix,
+	}
+}
+
+func ComputeActivationAt(inputmatrix, kernel [][]float64, startingI, startingJ int) float64 {
+	// validate we can do the convolution
+	if len(inputmatrix[0]) < len(kernel[0])-startingJ-1 || len(inputmatrix) < len(kernel)-startingI-1 {
+		panic(fmt.Sprintf("we cannot run this convolution %+v %+v", len(inputmatrix[0]), len(kernel[0])))
+	}
+
+	// doing dot product between submatrix in inputmatrix and kernel
+	res := 0.0
+	for i := 0; i < len(kernel); i++ {
+		for j := 0; j < len(kernel[0]); j++ {
+			kernelElement := kernel[i][j]
+			inputElement := inputmatrix[startingI+i][startingJ+j]
+			res += kernelElement * inputElement
+		}
+	}
+
+	return res
+}

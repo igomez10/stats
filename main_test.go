@@ -2255,3 +2255,86 @@ func TestLogisticRegression(t *testing.T) {
 		})
 	}
 }
+
+func TestComputeActivationAt(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		inputmatrix [][]float64
+		kernel      [][]float64
+		i           int
+		j           int
+		want        float64
+	}{
+		{
+			name: "case 1",
+			inputmatrix: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+			},
+			kernel: [][]float64{
+				{0, 1},
+				{2, 3},
+			},
+			i:    0,
+			j:    0,
+			want: 25.0,
+		},
+		{
+			name: "case 2",
+			inputmatrix: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+			},
+			kernel: [][]float64{
+				{0, 1},
+				{2, 3},
+			},
+			i:    1,
+			j:    1,
+			want: 49.0,
+		},
+		{
+			name: "case 3",
+			inputmatrix: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+			},
+			kernel: [][]float64{
+				{0, 1},
+				{2, 3},
+			},
+			i:    0,
+			j:    1,
+			want: 31.0,
+		},
+		{
+			name: "case 4",
+
+			inputmatrix: [][]float64{
+				{1, 2, 3, 4},
+				{5, 6, 7, 8},
+				{9, 10, 11, 12},
+				{13, 14, 15, 16},
+			},
+			kernel: [][]float64{
+				{0, 1},
+				{2, 3},
+			},
+			i:    1,
+			j:    2,
+			want: 66.0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ComputeActivationAt(tt.inputmatrix, tt.kernel, tt.i, tt.j)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ComputeActivationAt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
