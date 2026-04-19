@@ -271,7 +271,7 @@ func (m MultiLinearModel) Predict(xInput []float64) float64 {
 	}
 
 	betasNoIntercept := m.Betas[1:]
-	yHat := linearalgebra.DotProduct([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
+	yHat := linearalgebra.MultiplyMatrices([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
 	return yHat[0][0] + m.Betas[0]
 }
 
@@ -309,18 +309,18 @@ func CreateLRModelWithOLS(observations [][]float64, actualOutput []float64) (Mul
 
 	xCopy := linearalgebra.CopyMatrix(designMatrix)
 
-	XtX := linearalgebra.DotProduct(Xt, xCopy)
+	XtX := linearalgebra.MultiplyMatrices(Xt, xCopy)
 	XtXInv := linearalgebra.GetInverseMatrixByDeterminant(XtX)
 
 	Xt2 := linearalgebra.CopyMatrix(designMatrix)
 	Xt2 = linearalgebra.TransposeMatrix(Xt2)
 
-	XtX_Inv_Xt := linearalgebra.DotProduct(XtXInv, Xt2)
+	XtX_Inv_Xt := linearalgebra.MultiplyMatrices(XtXInv, Xt2)
 	Y := make([][]float64, len(actualOutput))
 	for i := range actualOutput {
 		Y[i] = []float64{actualOutput[i]}
 	}
-	result := linearalgebra.DotProduct(XtX_Inv_Xt, Y)
+	result := linearalgebra.MultiplyMatrices(XtX_Inv_Xt, Y)
 
 	betas := make([]float64, len(result))
 	for i := range result {
@@ -355,7 +355,7 @@ func CreateLRModelWithRidge(observations [][]float64, actualOutput []float64, la
 
 	xCopy := linearalgebra.CopyMatrix(observations)
 
-	XtX := linearalgebra.DotProduct(Xt, xCopy)
+	XtX := linearalgebra.MultiplyMatrices(Xt, xCopy)
 
 	// Add lambda*I to XtX
 	for i := range XtX {
@@ -366,12 +366,12 @@ func CreateLRModelWithRidge(observations [][]float64, actualOutput []float64, la
 	Xt2 := linearalgebra.CopyMatrix(observations)
 	Xt2 = linearalgebra.TransposeMatrix(Xt2)
 
-	XtX_Inv_Xt := linearalgebra.DotProduct(XtXInv, Xt2)
+	XtX_Inv_Xt := linearalgebra.MultiplyMatrices(XtXInv, Xt2)
 	Y := make([][]float64, len(actualOutput))
 	for i := range actualOutput {
 		Y[i] = []float64{actualOutput[i]}
 	}
-	result := linearalgebra.DotProduct(XtX_Inv_Xt, Y)
+	result := linearalgebra.MultiplyMatrices(XtX_Inv_Xt, Y)
 
 	betas := make([]float64, len(result))
 	for i := range result {
@@ -587,7 +587,7 @@ func (m LogisticModel) PredictLogOdds(xInput []float64) float64 {
 	}
 
 	betasNoIntercept := m.Betas[1:]
-	logit := linearalgebra.DotProduct([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
+	logit := linearalgebra.MultiplyMatrices([][]float64{xInput}, linearalgebra.TransposeMatrix([][]float64{betasNoIntercept}))
 	logitValue := logit[0][0] + m.Betas[0]
 	return sigmoid(logitValue)
 }

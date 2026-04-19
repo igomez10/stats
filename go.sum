@@ -30,6 +30,12 @@ github.com/igomez10/linearalgebra v0.0.0-20251004044931-cf833fe1ace7 h1:k/KOZT7n
 github.com/igomez10/linearalgebra v0.0.0-20251004044931-cf833fe1ace7/go.mod h1:wEtL9XiPY+03ZL9b2+qgX4lfwbmNf15bHUKS8X7JJPA=
 github.com/igomez10/linearalgebra v0.0.0-20260127062355-2b817349bd44 h1:RASImPFQUD1oyrBVG8pIUINCL5t0zNs0zy4lf6dGfTM=
 github.com/igomez10/linearalgebra v0.0.0-20260127062355-2b817349bd44/go.mod h1:wEtL9XiPY+03ZL9b2+qgX4lfwbmNf15bHUKS8X7JJPA=
+github.com/igomez10/linearalgebra v0.0.0-20260303005457-a2065c2ffa98 h1:rC4cE+aELZaUvQ6gHY3zCVta4LcrV7IxpHwZFtIh4Ko=
+github.com/igomez10/linearalgebra v0.0.0-20260303005457-a2065c2ffa98/go.mod h1:wEtL9XiPY+03ZL9b2+qgX4lfwbmNf15bHUKS8X7JJPA=
+github.com/igomez10/linearalgebra v0.0.0-20260419234031-039a544b4524 h1:2WTXLmoppCpWYE9Libe1Qk2Xc4e5MMK8leTvkVu2Nb8=
+github.com/igomez10/linearalgebra v0.0.0-20260419234031-039a544b4524/go.mod h1:wEtL9XiPY+03ZL9b2+qgX4lfwbmNf15bHUKS8X7JJPA=
+github.com/igomez10/linearalgebra v0.0.0-20260419234919-9df90b472dd9 h1:5hAIuroZr36Es7GioLrHULM+imZJ3Ql38Lm2NcGgkZ0=
+github.com/igomez10/linearalgebra v0.0.0-20260419234919-9df90b472dd9/go.mod h1:wEtL9XiPY+03ZL9b2+qgX4lfwbmNf15bHUKS8X7JJPA=
 github.com/lrstanley/bubblezone v1.0.0 h1:bIpUaBilD42rAQwlg/4u5aTqVAt6DSRKYZuSdmkr8UA=
 github.com/lrstanley/bubblezone v1.0.0/go.mod h1:kcTekA8HE/0Ll2bWzqHlhA2c513KDNLW7uDfDP4Mly8=
 github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69Aj6K7nkY=

@@ -964,6 +964,7 @@ func ComputeActivationAt(inputmatrix, kernel [][]float64, startingI, startingJ i
 	return res
 }
 
+// Convolution performs a convolution operation between an input matrix and a kernel
 func Convolution(inputmatrix, kernel [][]float64) [][]float64 {
 	output := make([][]float64, len(inputmatrix)-len(kernel)+1)
 	for i := 0; i < len(inputmatrix)-len(kernel)+1; i++ {

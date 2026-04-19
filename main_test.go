@@ -10,6 +10,7 @@ import (
 
 	"github.com/NimbleMarkets/ntcharts/barchart"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/igomez10/linearalgebra"
 	"github.com/igomez10/stats/pkg"
 )
 
@@ -2388,5 +2389,52 @@ func TestConvolution(t *testing.T) {
 				t.Errorf("unexpected \n%+v\n%+v\n", got, tt.want)
 			}
 		})
+	}
+}
+
+func GenerateOne(size int) [][]float64 {
+	img := make([][]float64, size)
+	for i := range img {
+		img[i] = make([]float64, size)
+	}
+
+	center := size / 2
+
+	// vertical line
+	for i := 0; i < size; i++ {
+		img[i][center] = 1
+		img[i][center-1] = 1
+	}
+
+	// base
+	for j := center - 2; j <= center+2; j++ {
+		img[size-2][j] = 1
+		img[size-1][j] = 1
+	}
+
+	// top slant
+	for i := 0; i < size/5; i++ {
+		img[i][center-i] = 1
+	}
+
+	return img
+}
+
+func TestMultipleConvolutions(t *testing.T) {
+	one := GenerateOne(100)
+	// dump one to tmp file
+	m := linearalgebra.NewMatrix(one)
+
+	kernel := [][]float64{
+		{-1, -1, -1},
+		{-1, 8, -1},
+		{-1, -1, -1},
+	}
+
+	for i := range 3 {
+		// edge detection kernel
+		fmt.Printf("Performing convolution %d\n", i+1)
+		m.Data = Convolution(m.Data, kernel)
+		fmt.Println(m.ToString())
 	}
 }
