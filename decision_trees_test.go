@@ -196,8 +196,7 @@ func TestBuildDecisionTree(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := BuildDecisionTree(tt.labels, tt.minSamplesLeaf, tt.maxDepth)
-			// TODO: update the condition below to compare got with tt.want.
-			if true {
+			if got != tt.want {
 				t.Errorf("BuildDecisionTree() = %v, want %v", got, tt.want)
 			}
 		})

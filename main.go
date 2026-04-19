@@ -963,3 +963,15 @@ func ComputeActivationAt(inputmatrix, kernel [][]float64, startingI, startingJ i
 
 	return res
 }
+
+func Convolution(inputmatrix, kernel [][]float64) [][]float64 {
+	output := make([][]float64, len(inputmatrix)-len(kernel)+1)
+	for i := 0; i < len(inputmatrix)-len(kernel)+1; i++ {
+		output[i] = make([]float64, len(inputmatrix[0])-len(kernel[0])+1)
+		for j := 0; j < len(inputmatrix[0])-len(kernel[0])+1; j++ {
+			output[i][j] = ComputeActivationAt(inputmatrix, kernel, i, j)
+		}
+	}
+
+	return output
+}

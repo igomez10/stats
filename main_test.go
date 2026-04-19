@@ -2338,3 +2338,55 @@ func TestComputeActivationAt(t *testing.T) {
 		})
 	}
 }
+
+func TestConvolution(t *testing.T) {
+	tests := []struct {
+		name        string // description of this test case
+		inputmatrix [][]float64
+		kernel      [][]float64
+		want        [][]float64
+	}{
+		{
+			name: "case1",
+			inputmatrix: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+			},
+			kernel: [][]float64{
+				{1, 0, -1},
+				{1, 0, -1},
+				{1, 0, -1},
+			},
+			want: [][]float64{
+				{-6},
+			},
+		},
+		{
+			name: "case2",
+			inputmatrix: [][]float64{
+				{1, 2, 3, 4},
+				{5, 6, 7, 8},
+				{9, 10, 11, 12},
+				{13, 14, 15, 16},
+			},
+			kernel: [][]float64{
+				{0, 1},
+				{2, 3},
+			},
+			want: [][]float64{
+				{30, 36, 42},
+				{54, 60, 66},
+				{78, 84, 90},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Convolution(tt.inputmatrix, tt.kernel)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("unexpected \n%+v\n%+v\n", got, tt.want)
+			}
+		})
+	}
+}
