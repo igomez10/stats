@@ -2431,10 +2431,10 @@ func TestMultipleConvolutions(t *testing.T) {
 		{-1, -1, -1},
 	}
 
-	for i := range 3 {
+	for i := range 85 {
 		// edge detection kernel
 		fmt.Printf("Performing convolution %d\n", i+1)
 		m.Data = Convolution(m.Data, kernel)
-		fmt.Println(m.ToString())
+		fmt.Println(m.ToString(1))
 	}
 }

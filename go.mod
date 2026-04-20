@@ -6,7 +6,7 @@ require (
 	github.com/NimbleMarkets/ntcharts v0.3.1
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/go-echarts/go-echarts/v2 v2.6.1
-	github.com/igomez10/linearalgebra v0.0.0-20260419234919-9df90b472dd9
+	github.com/igomez10/linearalgebra v0.0.0-20260419235612-7a1200d7daf8
 )
 
 require (
